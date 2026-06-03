@@ -1,0 +1,106 @@
+﻿{
+   "CodeGenerationMode": 4,
+   "ContextClassName": "MangaPublishDBContext",
+   "ContextNamespace": null,
+   "FilterSchemas": false,
+   "IncludeConnectionString": false,
+   "IrregularWords": null,
+   "MinimumProductVersion": "2.6.1382",
+   "ModelNamespace": null,
+   "OutputContextPath": null,
+   "OutputPath": "Models",
+   "PluralRules": null,
+   "PreserveCasingWithRegex": true,
+   "ProjectRootNamespace": "Entities",
+   "Schemas": null,
+   "SelectedHandlebarsLanguage": 2,
+   "SelectedToBeGenerated": 0,
+   "SingularRules": null,
+   "T4TemplatePath": null,
+   "Tables": [
+      {
+         "Name": "[dbo].[assistant_profiles]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[board_evaluations]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[chapters]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[issue_resources]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[mangaka_assistants]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[mangaka_profiles]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[notifications]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[page_issues]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[pagelayers]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[pages]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[roles]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[series]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[users]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[weekly_rankings]",
+         "ObjectType": 0
+      }
+   ],
+   "UiHint": null,
+   "UncountableWords": null,
+   "UseAsyncStoredProcedureCalls": true,
+   "UseBoolPropertiesWithoutDefaultSql": false,
+   "UseDatabaseNames": false,
+   "UseDatabaseNamesForRoutines": true,
+   "UseDateOnlyTimeOnly": true,
+   "UseDbContextSplitting": false,
+   "UseDecimalDataAnnotationForSprocResult": true,
+   "UseFluentApiOnly": true,
+   "UseHandleBars": false,
+   "UseHierarchyId": false,
+   "UseInflector": true,
+   "UseInternalAccessModifiersForSprocsAndFunctions": false,
+   "UseLegacyPluralizer": false,
+   "UseManyToManyEntity": false,
+   "UseNoDefaultConstructor": false,
+   "UseNoNavigations": false,
+   "UseNoObjectFilter": false,
+   "UseNodaTime": false,
+   "UseNullableReferences": false,
+   "UsePrefixNavigationNaming": false,
+   "UseSchemaFolders": false,
+   "UseSchemaNamespaces": false,
+   "UseSpatial": false,
+   "UseT4": false,
+   "UseT4Split": false,
+   "UseTypedTvpParameters": true
+}

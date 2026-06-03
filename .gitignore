@@ -55,3 +55,24 @@ CodeCoverage/
 *.VisualState.xml
 TestResult.xml
 nunit-*.xml
+
+*.rsuser
+*.suo
+*.user
+*.useruser
+*.sqluser
+*.userosscache
+*.sln.docstates
+
+## Visual Studio 2015/2017/2019/2022 cache directory
+.vs/
+# Thêm dòng này để chặn triệt để các file metadata/cache hệ thống tự tạo
+[Vv]s[Cc]ache/
+
+## Build results trong các thư mục gốc
+[Bb]in/
+[Oo]bj/
+
+# Thêm cấu hình chặn file chạy debug và cấu hình local cá nhân
+Properties/launchSettings.json
+appsettings.Development.json
