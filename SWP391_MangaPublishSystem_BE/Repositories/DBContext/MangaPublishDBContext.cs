@@ -40,6 +40,8 @@ public partial class MangaPublishDBContext : DbContext
 
     public virtual DbSet<User> Users { get; set; }
 
+    public virtual DbSet<UserToken> UserTokens { get; set; }
+
     public virtual DbSet<WeeklyRanking> WeeklyRankings { get; set; }
 
     public static string GetConnectionString(string connectionStringName)
@@ -545,6 +547,33 @@ public partial class MangaPublishDBContext : DbContext
                 .HasForeignKey(d => d.Roleid)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("users_roleid_fkey");
+        });
+
+        modelBuilder.Entity<UserToken>(entity =>
+        {
+            entity.HasKey(e => e.Tokenid).HasName("user_tokens_pkey");
+
+            entity.ToTable("user_tokens");
+
+            entity.HasIndex(e => e.Token, "UQ__user_tok__CA90DA7A").IsUnique();
+
+            entity.Property(e => e.Tokenid).HasColumnName("tokenid");
+            entity.Property(e => e.Userid).HasColumnName("userid");
+            entity.Property(e => e.Token)
+                .IsRequired()
+                .HasMaxLength(500)
+                .HasColumnName("token");
+            entity.Property(e => e.Isrevoked)
+                .HasDefaultValue(false)
+                .HasColumnName("isrevoked");
+            entity.Property(e => e.Expiresat)
+                .HasColumnType("datetime")
+                .HasColumnName("expiresat");
+
+            entity.HasOne(d => d.User).WithMany(p => p.UserTokens)
+                .HasForeignKey(d => d.Userid)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("user_tokens_userid_fkey");
         });
 
         modelBuilder.Entity<WeeklyRanking>(entity =>

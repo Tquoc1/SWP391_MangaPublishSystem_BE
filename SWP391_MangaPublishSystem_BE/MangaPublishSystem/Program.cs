@@ -7,7 +7,8 @@ using Microsoft.OData.Edm;
 using Microsoft.OpenApi.Models;
 using Repositories.Repository;
 using Services.Interface;
-using Services.Service;
+using Services.Implement;
+using Services.Settings;
 using System.Text;
 using System.Text.Json.Serialization;
 
@@ -24,8 +25,18 @@ builder.Services.AddDbContext<MangaPublishDBContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 
-builder.Services.AddScoped<UserAccountRepository>();
-builder.Services.AddScoped<IUserAccountService, UserAccountService>();
+builder.Services.AddScoped<AuthRepository>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<UserRepository>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<SeriesRepository>();
+builder.Services.AddScoped<ISeriesService, SeriesService>();
+
+// Supabase storage for file uploads (e.g. Series proposal files).
+var supabaseSettings = builder.Configuration.GetSection("Supabase").Get<SupabaseSettings>()
+    ?? throw new InvalidOperationException("Missing 'Supabase' configuration section.");
+builder.Services.AddSingleton(supabaseSettings);
+builder.Services.AddHttpClient<IFileStorageService, SupabaseStorageService>();
 
 
 builder.Services.AddControllers().AddJsonOptions(options =>
@@ -91,6 +102,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseAuthentication();
 
 app.UseAuthorization();
 
