@@ -31,6 +31,8 @@ builder.Services.AddScoped<UserRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<SeriesRepository>();
 builder.Services.AddScoped<ISeriesService, SeriesService>();
+builder.Services.AddScoped<IChapterService, ChapterService>();
+builder.Services.AddScoped<ChapterRepository>();
 
 // Supabase storage for file uploads (e.g. Series proposal files).
 var supabaseSettings = builder.Configuration.GetSection("Supabase").Get<SupabaseSettings>()
