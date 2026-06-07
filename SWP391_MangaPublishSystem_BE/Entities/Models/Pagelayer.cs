@@ -27,8 +27,6 @@ public partial class Pagelayer
 
     public DateTime? Createdat { get; set; }
 
-    public virtual PageIssue Issue { get; set; }
-
     public virtual Page Page { get; set; }
 
     public virtual User Uploader { get; set; }

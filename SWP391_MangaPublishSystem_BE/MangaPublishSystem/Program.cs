@@ -33,6 +33,8 @@ builder.Services.AddScoped<SeriesRepository>();
 builder.Services.AddScoped<ISeriesService, SeriesService>();
 builder.Services.AddScoped<IChapterService, ChapterService>();
 builder.Services.AddScoped<ChapterRepository>();
+builder.Services.AddScoped<IPageService, PageService>();
+builder.Services.AddScoped<PageRepository>();
 
 // Supabase storage for file uploads (e.g. Series proposal files).
 var supabaseSettings = builder.Configuration.GetSection("Supabase").Get<SupabaseSettings>()
@@ -67,6 +69,8 @@ builder.Services.AddSwaggerGen(option =>
 {
     option.DescribeAllParametersInCamelCase();
     option.ResolveConflictingActions(conf => conf.First());
+    //option.SchemaFilter<Swashbuckle.AspNetCore.JsonMultipartFormDataSupport.JsonIgnoreFilter>();
+    option.IgnoreObsoleteProperties();
     option.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         In = ParameterLocation.Header,

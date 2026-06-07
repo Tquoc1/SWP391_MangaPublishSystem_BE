@@ -71,9 +71,9 @@ namespace Services.Implement
             return _seriesRepository.CreateAsync(series);
         }
 
-        public async Task<int> UpdateAsync(SeriesDto.Update seriesDto, string proposalFileUrl)
+        public async Task<int> UpdateAsync(int id, SeriesDto.Update seriesDto, string proposalFileUrl)
         {
-            var existing = await _seriesRepository.GetByIdAsync(seriesDto.Seriesid);
+            var existing = await _seriesRepository.GetByIdAsync(id);
             if (existing == null) return 0;
 
             existing.Title = seriesDto.Title;

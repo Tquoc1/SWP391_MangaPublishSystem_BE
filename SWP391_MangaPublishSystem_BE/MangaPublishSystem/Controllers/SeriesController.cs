@@ -69,10 +69,6 @@ namespace MangaPublishSystem.Controllers
         [Consumes("multipart/form-data")]
         public async Task<ActionResult> Update(int id, [FromForm] SeriesDto.Update seriesDto, IFormFile? proposalFile)
         {
-            if (id != seriesDto.Seriesid)
-            {
-                return BadRequest("ID route và ID trong dữ liệu không khớp.");
-            }
 
             var existing = await _seriesService.GetByIdAsync(id);
             if (existing == null)
@@ -90,7 +86,7 @@ namespace MangaPublishSystem.Controllers
                     stream, proposalFile.FileName, proposalFile.ContentType, "proposals");
             }
 
-            var result = await _seriesService.UpdateAsync(seriesDto, finalProposalUrl);
+            var result = await _seriesService.UpdateAsync(id, seriesDto, finalProposalUrl);
             if (result <= 0)
             {
                 return BadRequest("Cập nhật thất bại.");

@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using System;
 
 namespace Services.DTO
@@ -28,7 +29,8 @@ namespace Services.DTO
 
         public class Update
         {
-            public int Seriesid { get; set; }
+            //public int Seriesid { get; set; }
+
             public string Title { get; set; }
             public string Synopsis { get; set; }
             public string Publishformat { get; set; }

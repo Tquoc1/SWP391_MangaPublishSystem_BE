@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
+
 
 namespace Services.DTO
 {
@@ -27,7 +29,9 @@ namespace Services.DTO
 
         public class Update
         {
+            [System.Text.Json.Serialization.JsonIgnore]
             public int Chapterid { get; set; }
+
             public int Chapternumber { get; set; }
             public string Title { get; set; }
             public DateTime Deadline { get; set; }
