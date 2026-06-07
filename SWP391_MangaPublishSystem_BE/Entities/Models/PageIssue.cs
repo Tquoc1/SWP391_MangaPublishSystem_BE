@@ -47,5 +47,4 @@ public partial class PageIssue
 
     public virtual Page Page { get; set; }
 
-    public virtual ICollection<Pagelayer> Pagelayers { get; set; } = new List<Pagelayer>();
 }

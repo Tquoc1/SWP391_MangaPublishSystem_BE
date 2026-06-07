@@ -418,7 +418,6 @@ public partial class MangaPublishDBContext : DbContext
             entity.Property(e => e.Fileurl)
                 .IsRequired()
                 .HasColumnName("fileurl");
-            entity.Property(e => e.Issueid).HasColumnName("issueid");
             entity.Property(e => e.Isvisible)
                 .HasDefaultValue(true)
                 .HasColumnName("isvisible");
@@ -434,9 +433,6 @@ public partial class MangaPublishDBContext : DbContext
                 .HasDefaultValue(0)
                 .HasColumnName("zindex");
 
-            entity.HasOne(d => d.Issue).WithMany(p => p.Pagelayers)
-                .HasForeignKey(d => d.Issueid)
-                .HasConstraintName("pagelayers_issueid_fkey");
 
             entity.HasOne(d => d.Page).WithMany(p => p.Pagelayers)
                 .HasForeignKey(d => d.Pageid)

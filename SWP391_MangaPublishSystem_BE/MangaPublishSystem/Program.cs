@@ -35,6 +35,8 @@ builder.Services.AddScoped<IChapterService, ChapterService>();
 builder.Services.AddScoped<ChapterRepository>();
 builder.Services.AddScoped<IPageService, PageService>();
 builder.Services.AddScoped<PageRepository>();
+builder.Services.AddScoped<IPageLayerService, PageLayerService>();
+builder.Services.AddScoped<PageLayerRepository>();
 
 // Supabase storage for file uploads (e.g. Series proposal files).
 var supabaseSettings = builder.Configuration.GetSection("Supabase").Get<SupabaseSettings>()
