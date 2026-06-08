@@ -2,12 +2,13 @@ using Entities.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.OData;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OData.Edm;
 using Microsoft.OpenApi.Models;
 using Repositories.Repository;
-using Services.Interface;
 using Services.Implement;
+using Services.Interface;
 using Services.Settings;
 using System.Text;
 using System.Text.Json.Serialization;
@@ -37,8 +38,9 @@ builder.Services.AddScoped<IPageService, PageService>();
 builder.Services.AddScoped<PageRepository>();
 builder.Services.AddScoped<IPageLayerService, PageLayerService>();
 builder.Services.AddScoped<PageLayerRepository>();
+builder.Services.AddScoped<IPageIssueService, PageIssueService>();
+builder.Services.AddScoped<PageIssueRepository>();
 
-// Supabase storage for file uploads (e.g. Series proposal files).
 var supabaseSettings = builder.Configuration.GetSection("Supabase").Get<SupabaseSettings>()
     ?? throw new InvalidOperationException("Missing 'Supabase' configuration section.");
 builder.Services.AddSingleton(supabaseSettings);
@@ -73,6 +75,7 @@ builder.Services.AddSwaggerGen(option =>
     option.ResolveConflictingActions(conf => conf.First());
     //option.SchemaFilter<Swashbuckle.AspNetCore.JsonMultipartFormDataSupport.JsonIgnoreFilter>();
     option.IgnoreObsoleteProperties();
+    option.CustomSchemaIds(type => type.FullName.Replace("+", "."));
     option.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         In = ParameterLocation.Header,
