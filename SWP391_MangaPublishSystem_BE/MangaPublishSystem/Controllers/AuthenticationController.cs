@@ -220,6 +220,59 @@ namespace MangaPublishSystem.Controllers
             await _authService.CreateUserToken(tokenEntity);
             return refreshToken;
         }
+
+
+        [HttpPost("create-staff")]
+        [Authorize(Roles = "Admin")] 
+        public async Task<IActionResult> CreateStaff([FromBody] AuthDto.CreateStaffRequest request)
+        {
+            var existing = await _authService.GetUserByUsername(request.UserName);
+            if (existing != null)
+            {
+                return Conflict("Username already exists.");
+            }
+
+            if (request.RoleId == 4 || request.RoleId == 5)
+            {
+                return BadRequest("This API is only for creating staff accounts (Admin, Editor, Web Admin).");
+            }
+
+            if (string.IsNullOrWhiteSpace(request.FullName))
+            {
+                return BadRequest("Fullname is required.");
+            }
+
+ 
+            var user = new User
+            {
+                Username = request.UserName,
+                Passwordhash = BCrypt.Net.BCrypt.HashPassword(request.Password), 
+                Fullname = request.FullName,
+                Email = request.Email,
+                Roleid = request.RoleId,
+                Createdat = DateTime.Now,
+                Isdeleted = false
+            };
+
+            var result = await _authService.CreateUser(user);
+            if (result <= 0)
+            {
+                return BadRequest("Failed to create staff account.");
+            }
+
+            var token = GenerateJSONWebToken(user);
+            var refreshToken = await CreateRefreshToken(user);
+
+            return Ok(new
+            {
+                Message = "Staff account created successfully by Admin",
+                user.Userid,
+                user.Username,
+                user.Roleid,
+                token,
+                refreshToken
+            });
+        }
     }
 }
 

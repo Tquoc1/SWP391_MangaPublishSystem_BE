@@ -1,6 +1,7 @@
 using Entities.Models;
 using Repositories.Repository;
 using Services.Interface;
+using static Services.DTO.UserDto;
 
 namespace Services.Implement
 {
