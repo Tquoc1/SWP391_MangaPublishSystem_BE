@@ -12,6 +12,10 @@ using Services.Interface;
 using Services.Settings;
 using System.Text;
 using System.Text.Json.Serialization;
+using Services.Interface;
+using Services.Implement;
+using Repositories.Repository;
+using Repositories.Repository;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -40,6 +44,9 @@ builder.Services.AddScoped<IPageLayerService, PageLayerService>();
 builder.Services.AddScoped<PageLayerRepository>();
 builder.Services.AddScoped<IPageIssueService, PageIssueService>();
 builder.Services.AddScoped<PageIssueRepository>();
+builder.Services.AddScoped<IBoardEvaluationService, BoardEvaluationService>();
+builder.Services.AddScoped<BoardEvaluationRepository>();
+builder.Services.AddScoped<SeriesRepository>();
 
 var supabaseSettings = builder.Configuration.GetSection("Supabase").Get<SupabaseSettings>()
     ?? throw new InvalidOperationException("Missing 'Supabase' configuration section.");

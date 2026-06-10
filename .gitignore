@@ -76,3 +76,4 @@ nunit-*.xml
 # Thêm cấu hình chặn file chạy debug và cấu hình local cá nhân
 Properties/launchSettings.json
 appsettings.Development.json
+SWP391_MangaPublishSystem_BE/MangaPublishSystem/appsettings.json
