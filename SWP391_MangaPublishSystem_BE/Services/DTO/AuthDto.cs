@@ -10,7 +10,7 @@ namespace Services.DTO
             string FullName,
             string Email,
             int RoleId,
-            string PenName,
+            string? PenName,
             string? Bio,
             string? PhoneNumber,
             string? BankName,
