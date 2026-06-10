@@ -83,7 +83,7 @@ namespace Services.Implement
                 CharacterScore = dto.CharacterScore,
                 CommercialScore = dto.CommercialScore,
                 PacingScore = dto.PacingScore,
-                FinalDecision = isApproved ? "Approved" : "Rejected",
+                FinalDecision = isApproved ? "Approve" : "Reject",
                 ApprovedPublishFormat = isApproved ? "Weekly" : null,
                 Feedback = dto.Feedback,
                 Evaluatedat = DateTime.Now
@@ -94,7 +94,7 @@ namespace Services.Implement
             var series = await _seriesRepository.GetByIdAsync(dto.Seriesid);
             if (series != null)
             {
-                series.Status = isApproved ? "Approved" : "Rejected";
+                series.Status = isApproved ? "Approved" : "Reject";
                 series.Publishformat = isApproved ? "Weekly" : null;
                 series.Approvedat = isApproved ? DateTime.Now : null;
 
@@ -123,7 +123,7 @@ namespace Services.Implement
             evaluation.CharacterScore = dto.CharacterScore;
             evaluation.CommercialScore = dto.CommercialScore;
             evaluation.PacingScore = dto.PacingScore;
-            evaluation.FinalDecision = isApproved ? "Approved" : "Rejected";
+            evaluation.FinalDecision = isApproved ? "Approve" : "Reject";
             evaluation.ApprovedPublishFormat = isApproved ? "Weekly" : null;
             evaluation.Feedback = dto.Feedback;
             evaluation.Evaluatedat = DateTime.Now;
@@ -133,7 +133,7 @@ namespace Services.Implement
             var series = await _seriesRepository.GetByIdAsync(evaluation.Seriesid);
             if (series != null)
             {
-                series.Status = isApproved ? "Approved" : "Rejected";
+                series.Status = isApproved ? "Approved" : "Reject";
                 series.Publishformat = isApproved ? "Weekly" : null;
                 series.Approvedat = isApproved ? DateTime.Now : null;
 
