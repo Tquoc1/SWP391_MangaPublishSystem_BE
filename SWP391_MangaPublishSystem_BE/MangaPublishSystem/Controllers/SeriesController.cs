@@ -17,15 +17,14 @@ namespace MangaPublishSystem.Controllers
             _seriesService = seriesService;
             _fileStorage = fileStorage;
         }
-
-        [HttpGet]
+        [HttpGet(Order = 1)]
         public async Task<ActionResult<List<SeriesDto>>> GetAll()
         {
             var series = await _seriesService.GetAllAsync();
             return Ok(series);
         }
 
-        [HttpGet("{id:int}")]
+        [HttpGet("{id:int}" , Order = 2)]
         public async Task<ActionResult<SeriesDto>> GetById(int id)
         {
             var series = await _seriesService.GetByIdAsync(id);
@@ -37,7 +36,15 @@ namespace MangaPublishSystem.Controllers
             return Ok(series);
         }
 
-        [HttpPost]
+        [HttpGet("mangakaid/{mangakaId:int}", Order = 3)]
+        public async Task<ActionResult<List<SeriesDto>>> GetByMangakaId(int mangakaId)
+        {
+            var series = await _seriesService.GetByMangakaIdAsync(mangakaId);
+
+            return Ok(series);
+        }
+
+        [HttpPost(Order = 4)]
         [Consumes("multipart/form-data")]
         public async Task<ActionResult> Create([FromForm] SeriesDto.Create seriesDto, IFormFile proposalFile)
         {
@@ -65,7 +72,7 @@ namespace MangaPublishSystem.Controllers
             });
         }
 
-        [HttpPut("{id:int}")]
+        [HttpPut("{id:int}", Order = 5)]
         [Consumes("multipart/form-data")]
         public async Task<ActionResult> Update(int id, [FromForm] SeriesDto.Update seriesDto, IFormFile? proposalFile)
         {
@@ -87,7 +94,7 @@ namespace MangaPublishSystem.Controllers
             }
 
             var result = await _seriesService.UpdateAsync(id, seriesDto, finalProposalUrl);
-            if (result <= 0)
+            if (!result)
             {
                 return BadRequest("Cập nhật thất bại.");
             }
@@ -95,7 +102,44 @@ namespace MangaPublishSystem.Controllers
             return NoContent(); 
         }
 
-        [HttpDelete("{id:int}")]
+
+        [HttpPatch("{id:int}/status", Order = 6)]
+        public async Task<ActionResult> UpdateStatus(int id, [FromBody] SeriesDto.UpdateStatus statusDto)
+        {
+            var result = await _seriesService.UpdateStatusAsync(id, statusDto);
+            if (!result)
+            {
+                return NotFound("Không tìm thấy tác phẩm hoặc cập nhật trạng thái thất bại.");
+            }
+
+            return NoContent();
+        }
+
+        [HttpPatch("{id:int}/publish-format", Order = 7)]
+        public async Task<ActionResult> UpdatePublishFormat(int id, [FromBody] SeriesDto.UpdatePublishFormat formatDto)
+        {
+            var result = await _seriesService.UpdatePublishFormatAsync(id, formatDto);
+            if (!result)
+            {
+                return NotFound("Không tìm thấy tác phẩm hoặc cập nhật định dạng thất bại.");
+            }
+
+            return NoContent();
+        }
+
+        [HttpDelete("softdelete/{id:int}", Order = 8)]
+        public async Task<ActionResult> SoftDelete(int id)
+        {
+            var result = await _seriesService.SoftDeleteAsync(id);
+            if (!result)
+            {
+                return NotFound("Không tìm thấy tác phẩm cần xóa.");
+            }
+
+            return NoContent();
+        }
+
+        [HttpDelete("{id:int}", Order = 9)]
         public async Task<ActionResult> Delete(int id)
         {
             var result = await _seriesService.RemoveAsync(id);
