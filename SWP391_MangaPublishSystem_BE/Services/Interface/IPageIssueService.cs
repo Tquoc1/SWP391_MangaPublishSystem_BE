@@ -16,5 +16,6 @@ namespace Services.Interface
         Task<bool> UpdateStatusAsync(int id, string status);
         Task<bool> SoftDeleteAsync(int id);
         Task<bool> RemoveAsync(int id);
+        Task<bool> UpdateStatusAsync(int id, PageIssueDto.UpdateStatus dto);
     }
 }

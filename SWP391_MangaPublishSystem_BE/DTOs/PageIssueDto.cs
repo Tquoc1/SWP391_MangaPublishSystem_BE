@@ -53,5 +53,9 @@ namespace DTOs
             public DateTime? Deadline { get; set; }
             public DateTime? Completedat { get; set; }
         }
+        public class UpdateStatus
+        {
+            public string Status { get; set; } = string.Empty;
+        }
     }
 }
