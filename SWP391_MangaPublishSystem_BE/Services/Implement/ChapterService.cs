@@ -1,10 +1,10 @@
-﻿using Repositories.Repository;
+using Repositories.Repository;
 using DTOs;
 using Services.Interface;
+using Entities.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Services.Implement
@@ -20,39 +20,68 @@ namespace Services.Implement
 
         public async Task<List<ChapterDto>> GetAllAsync(int? seriesId = null)
         {
-            return await _chapterRepository.GetAllActiveAsync(seriesId);
+            var chapters = await _chapterRepository.GetChaptersAsync(seriesId);
+            return chapters.Select(MapToDto).ToList();
         }
 
         public async Task<ChapterDto> GetByIdAsync(int id)
         {
-            return await _chapterRepository.GetByIdActiveAsync(id);
+            var chapter = await _chapterRepository.GetChapterByIdAsync(id);
+            return chapter != null ? MapToDto(chapter) : null;
         }
 
         public async Task<int> CreateAsync(ChapterDto.Create chapterDto)
         {
-            return await _chapterRepository.CreateWithDefaultsAsync(
-                chapterDto.Seriesid,
-                chapterDto.Chapternumber,
-                chapterDto.Title,
-                chapterDto.Deadline
-            );
+            var chapter = new Chapter
+            {
+                Seriesid = chapterDto.Seriesid,
+                Chapternumber = chapterDto.Chapternumber,
+                Title = chapterDto.Title,
+                Deadline = chapterDto.Deadline,
+                Status = "Drafting",
+                Createdat = DateTime.UtcNow,
+                Isdeleted = false
+            };
+
+            await _chapterRepository.CreateAsync(chapter);
+            return chapter.Chapterid;
         }
 
         public async Task<int> UpdateAsync(ChapterDto.Update chapterDto)
         {
-            return await _chapterRepository.UpdateChapterAsync(
-                chapterDto.Chapterid,
-                chapterDto.Chapternumber,
-                chapterDto.Title,
-                chapterDto.Deadline
-                //chapterDto.Status,
-                //chapterDto.Isdeleted
-            );
+            var existing = await _chapterRepository.GetByIdAsync(chapterDto.Chapterid);
+            if (existing == null) return 0;
+
+            existing.Chapternumber = chapterDto.Chapternumber;
+            existing.Title = chapterDto.Title;
+            existing.Deadline = chapterDto.Deadline;
+
+            await _chapterRepository.UpdateAsync(existing);
+            return 1;
         }
 
         public async Task<bool> RemoveAsync(int id)
         {
-            return await _chapterRepository.DeleteAsync(id);
+            var existing = await _chapterRepository.GetByIdAsync(id);
+            if (existing == null) return false;
+
+            await _chapterRepository.RemoveAsync(existing);
+            return true;
+        }
+
+        private ChapterDto MapToDto(Chapter chapter)
+        {
+            return new ChapterDto
+            {
+                Chapterid = chapter.Chapterid,
+                Seriesid = chapter.Seriesid,
+                Chapternumber = chapter.Chapternumber,
+                Title = chapter.Title,
+                Deadline = chapter.Deadline,
+                Status = chapter.Status,
+                Createdat = chapter.Createdat,
+                Isdeleted = chapter.Isdeleted
+            };
         }
     }
 }

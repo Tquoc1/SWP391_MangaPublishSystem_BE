@@ -1,7 +1,7 @@
 using Entities.Models;
 using Repositories.Repository;
 using Services.Interface;
-using static Services.DTO.UserDto;
+using System.Threading.Tasks;
 
 namespace Services.Implement
 {
@@ -15,9 +15,10 @@ namespace Services.Implement
             return _userRepository.GetUserById(userId);
         }
 
-        public Task<int> UpdateUser(User user)
+        public async Task<int> UpdateUser(User user)
         {
-            return _userRepository.UpdateUser(user);
+            await _userRepository.UpdateAsync(user);
+            return 1;
         }
 
         public Task<MangakaProfile> GetMangakaProfile(int userId)
@@ -30,14 +31,30 @@ namespace Services.Implement
             return _userRepository.GetAssistantProfile(userId);
         }
 
-        public Task<int> UpsertMangakaProfile(MangakaProfile profile)
+        public async Task<int> UpsertMangakaProfile(MangakaProfile profile)
         {
-            return _userRepository.UpsertMangakaProfile(profile);
+            if (profile.MangakaProfileId == 0)
+            {
+                await _userRepository.AddMangakaProfile(profile);
+            }
+            else
+            {
+                await _userRepository.UpdateMangakaProfile(profile);
+            }
+            return 1;
         }
 
-        public Task<int> UpsertAssistantProfile(AssistantProfile profile)
+        public async Task<int> UpsertAssistantProfile(AssistantProfile profile)
         {
-            return _userRepository.UpsertAssistantProfile(profile);
+            if (profile.AssistantProfileId == 0)
+            {
+                await _userRepository.AddAssistantProfile(profile);
+            }
+            else
+            {
+                await _userRepository.UpdateAssistantProfile(profile);
+            }
+            return 1;
         }
     }
 }

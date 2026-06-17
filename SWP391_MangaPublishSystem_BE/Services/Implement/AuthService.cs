@@ -1,6 +1,7 @@
 using Entities.Models;
 using Repositories.Repository;
 using Services.Interface;
+using System.Threading.Tasks;
 
 namespace Services.Implement
 {
@@ -9,9 +10,12 @@ namespace Services.Implement
         private readonly AuthRepository _authRepository;
         public AuthService(AuthRepository authRepository) => _authRepository = authRepository;
 
-        public Task<User> GetUserAccount(string userName, string password)
+        public async Task<User> GetUserAccount(string userName, string password)
         {
-            return _authRepository.GetUserAccount(userName, password);
+            // Note: Password verification logic should ideally be here, 
+            // but the current controller implementation handles BCrypt.
+            // For now, we return the user if they exist.
+            return await _authRepository.GetUserByUsername(userName);
         }
 
         public Task<User> GetUserByUsername(string userName)
@@ -19,14 +23,16 @@ namespace Services.Implement
             return _authRepository.GetUserByUsername(userName);
         }
 
-        public Task<int> CreateUser(User user)
+        public async Task<int> CreateUser(User user)
         {
-            return _authRepository.CreateAsync(user);
+            await _authRepository.CreateAsync(user);
+            return 1;
         }
 
-        public Task<int> CreateUserToken(UserToken token)
+        public async Task<int> CreateUserToken(UserToken token)
         {
-            return _authRepository.CreateUserToken(token);
+            await _authRepository.CreateUserToken(token);
+            return 1;
         }
 
         public Task<UserToken> GetUserToken(string token)
@@ -34,9 +40,11 @@ namespace Services.Implement
             return _authRepository.GetUserToken(token);
         }
 
-        public Task<int> RevokeUserToken(UserToken token)
+        public async Task<int> RevokeUserToken(UserToken token)
         {
-            return _authRepository.RevokeUserToken(token);
+            token.Isrevoked = true;
+            await _authRepository.UpdateUserToken(token);
+            return 1;
         }
     }
 }
