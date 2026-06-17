@@ -14,7 +14,12 @@ namespace Repositories.Repository
         {
         }
         */
-
+        public async Task<List<BoardEvaluation>> GetBySeriesIdAsync(int seriesId)
+        {
+            return await _context.BoardEvaluations
+                .Where(x => x.Seriesid == seriesId)
+                .ToListAsync();
+        }
         public async Task<List<BoardEvaluation>> GetAllAsync()
         {
             return await _context.BoardEvaluations

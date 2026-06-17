@@ -49,6 +49,8 @@ builder.Services.AddScoped<BoardEvaluationRepository>();
 builder.Services.AddScoped<SeriesRepository>();
 builder.Services.AddScoped<GenreRepository>();
 builder.Services.AddScoped<TagRepository>();
+builder.Services.AddScoped<MangakaAssistantRepository>();
+builder.Services.AddScoped<IMangakaAssistantService, MangakaAssistantService>();
 
 
 var supabaseSettings = builder.Configuration.GetSection("Supabase").Get<SupabaseSettings>()
