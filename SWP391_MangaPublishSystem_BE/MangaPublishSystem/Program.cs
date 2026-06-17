@@ -15,16 +15,24 @@ using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowViteFrontend", policy =>
+    {
+        policy.WithOrigins("http://localhost:5173", "http://localhost:5174") 
+              .AllowAnyMethod()
+              .AllowAnyHeader()
+              .AllowCredentials(); 
+    });
+});
+
+
 builder.Services.AddDbContext<MangaPublishDBContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-
 
 builder.Services.AddScoped<AuthRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
@@ -45,7 +53,6 @@ var supabaseSettings = builder.Configuration.GetSection("Supabase").Get<Supabase
     ?? throw new InvalidOperationException("Missing 'Supabase' configuration section.");
 builder.Services.AddSingleton(supabaseSettings);
 builder.Services.AddHttpClient<IFileStorageService, SupabaseStorageService>();
-
 
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
@@ -101,8 +108,6 @@ builder.Services.AddSwaggerGen(option =>
     });
 });
 
-
-
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -114,8 +119,12 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseAuthentication();
+// ==================== KÍCH HOẠT CORS (THÊM MỚI Ở ĐÂY) ====================
+// Cực kỳ quan trọng: Phải đặt SAU UseHttpsRedirection và TRƯỚC UseAuthentication/UseAuthorization
+app.UseCors("AllowViteFrontend");
+// =======================================================================
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
