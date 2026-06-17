@@ -395,6 +395,53 @@ GO
 ALTER TABLE [dbo].[series] WITH CHECK ADD CHECK (([publishformat]='Pending' OR [publishformat]='Monthly' OR [publishformat]='Weekly'))
 GO
 
+	ALTER TABLE [dbo].[series]
+ADD 
+    [coverimageurl] [nvarchar](500) NULL,
+    [agerating] [nvarchar](10) NOT NULL DEFAULT 'G',
+    CONSTRAINT [chk_series_agerating] CHECK ([agerating] IN ('G', 'PG-13', 'R-16', 'R-18'))
+GO
+
+
+
+-- Tạo bảng danh mục Thể loại gốc
+CREATE TABLE [dbo].[genres](
+    [genreid] [int] IDENTITY(1,1) NOT NULL,
+    [genrename] [nvarchar](100) NOT NULL,
+    [description] [nvarchar](255) NULL,
+ CONSTRAINT [genres_pkey] PRIMARY KEY CLUSTERED ([genreid] ASC)
+) ON [PRIMARY]
+GO
+
+-- Tạo bảng trung gian kết nối Nhiều - Nhiều giữa Series và Genres
+CREATE TABLE [dbo].[series_genres](
+    [seriesid] [int] NOT NULL,
+    [genreid] [int] NOT NULL,
+ CONSTRAINT [series_genres_pkey] PRIMARY KEY CLUSTERED ([seriesid] ASC, [genreid] ASC),
+ CONSTRAINT [fk_sg_series] FOREIGN KEY ([seriesid]) REFERENCES [dbo].[series] ([seriesid]) ON DELETE CASCADE,
+ CONSTRAINT [fk_sg_genres] FOREIGN KEY ([genreid]) REFERENCES [dbo].[genres] ([genreid]) ON DELETE CASCADE
+) ON [PRIMARY]
+GO
+
+
+-- Tạo bảng danh mục Tags gốc
+CREATE TABLE [dbo].[tags](
+    [tagid] [int] IDENTITY(1,1) NOT NULL,
+    [tagname] [nvarchar](50) NOT NULL,
+ CONSTRAINT [tags_pkey] PRIMARY KEY CLUSTERED ([tagid] ASC)
+) ON [PRIMARY]
+GO
+
+-- Tạo bảng trung gian kết nối Nhiều - Nhiều giữa Series và Tags
+CREATE TABLE [dbo].[series_tags](
+    [seriesid] [int] NOT NULL,
+    [tagid] [int] NOT NULL,
+ CONSTRAINT [series_tags_pkey] PRIMARY KEY CLUSTERED ([seriesid] ASC, [tagid] ASC),
+ CONSTRAINT [fk_st_series] FOREIGN KEY ([seriesid]) REFERENCES [dbo].[series] ([seriesid]) ON DELETE CASCADE,
+ CONSTRAINT [fk_st_tags] FOREIGN KEY ([tagid]) REFERENCES [dbo].[tags] ([tagid]) ON DELETE CASCADE
+) ON [PRIMARY]
+GO
+	
 SET IDENTITY_INSERT [dbo].[roles] ON;
 GO
 
@@ -412,5 +459,34 @@ GO
 
 SET IDENTITY_INSERT [dbo].[roles] OFF;
 GO
+
+
+SET IDENTITY_INSERT [dbo].[genres] ON;
+
+INSERT INTO [dbo].[genres] ([genreid], [genrename], [description]) VALUES
+(1, N'Kinh dị (Horror)', N'Truyện có yếu tố đáng sợ, rùng rợn, siêu nhiên hoặc tâm lý ám ảnh.'),
+(2, N'Trinh thám (Mystery)', N'Tập trung vào quá trình điều tra, phá án, giải mã các bí ẩn và logic.'),
+(3, N'Hành động (Action)', N'Các trận chiến gay cấn, võ thuật, hoặc rượt đuổi kịch tính.'),
+(4, N'Hài hước (Comedy)', N'Nội dung vui vẻ, đem lại tiếng cười và sự giải trí cho độc giả.'),
+(5, N'Đời thường (Slice of Life)', N'Khắc họa cuộc sống bình dị hàng ngày của các nhân vật.'),
+(6, N'Viễn tưởng (Sci-Fi)', N'Thế giới công nghệ tương lai, vũ trụ hoặc khoa học giả tưởng.'),
+(7, N'Kịch tính (Drama)', N'Tập trung vào chiều sâu tâm lý, xung đột xã hội hoặc tình cảm phức tạp.');
+
+SET IDENTITY_INSERT [dbo].[genres] OFF;
+GO
+
+
+SET IDENTITY_INSERT [dbo].[tags] ON;
+
+INSERT INTO [dbo].[tags] ([tagid], [tagname]) VALUES
+(1, N'Nghẹt thở (Thrill)'),
+(2, N'Giải đố (Puzzle)'),
+(3, N'Siêu nhiên (Supernatural)'),
+(4, N'Học đường (School Life)'),
+(5, N'Hậu tận thế (Post-Apocalypse)'),
+(6, N'Trò chơi sinh tồn (Survival)'),
+(7, N'Cốt truyện lôi cuốn (Story-driven)');
+
+SET IDENTITY_INSERT [dbo].[tags] OFF;
 
 
