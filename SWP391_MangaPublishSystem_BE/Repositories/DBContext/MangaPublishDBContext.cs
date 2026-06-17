@@ -20,6 +20,8 @@ public partial class MangaPublishDBContext : DbContext
 
     public virtual DbSet<Chapter> Chapters { get; set; }
 
+    public virtual DbSet<Genre> Genres { get; set; }
+
     public virtual DbSet<IssueResource> IssueResources { get; set; }
 
     public virtual DbSet<MangakaAssistant> MangakaAssistants { get; set; }
@@ -37,6 +39,8 @@ public partial class MangaPublishDBContext : DbContext
     public virtual DbSet<Role> Roles { get; set; }
 
     public virtual DbSet<Series> Series { get; set; }
+
+    public virtual DbSet<Tag> Tags { get; set; }
 
     public virtual DbSet<User> Users { get; set; }
 
@@ -58,7 +62,6 @@ public partial class MangaPublishDBContext : DbContext
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
        => optionsBuilder.UseSqlServer(GetConnectionString("DefaultConnection")).UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
 
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<AssistantProfile>(entity =>
@@ -67,7 +70,7 @@ public partial class MangaPublishDBContext : DbContext
 
             entity.ToTable("assistant_profiles");
 
-            entity.HasIndex(e => e.Userid, "UQ__assistan__CBA1B25616D2E886").IsUnique();
+            entity.HasIndex(e => e.Userid, "UQ__assistan__CBA1B256DE4910DB").IsUnique();
 
             entity.Property(e => e.AssistantProfileId).HasColumnName("assistant_profile_id");
             entity.Property(e => e.AvatarUrl).HasColumnName("avatar_url");
@@ -184,6 +187,22 @@ public partial class MangaPublishDBContext : DbContext
                 .HasConstraintName("chapters_seriesid_fkey");
         });
 
+        modelBuilder.Entity<Genre>(entity =>
+        {
+            entity.HasKey(e => e.Genreid).HasName("genres_pkey");
+
+            entity.ToTable("genres");
+
+            entity.Property(e => e.Genreid).HasColumnName("genreid");
+            entity.Property(e => e.Description)
+                .HasMaxLength(255)
+                .HasColumnName("description");
+            entity.Property(e => e.Genrename)
+                .IsRequired()
+                .HasMaxLength(100)
+                .HasColumnName("genrename");
+        });
+
         modelBuilder.Entity<IssueResource>(entity =>
         {
             entity.HasKey(e => e.Resourceid).HasName("issue_resources_pkey");
@@ -257,7 +276,7 @@ public partial class MangaPublishDBContext : DbContext
 
             entity.ToTable("mangaka_profiles");
 
-            entity.HasIndex(e => e.Userid, "UQ__mangaka___CBA1B256F754B2FA").IsUnique();
+            entity.HasIndex(e => e.Userid, "UQ__mangaka___CBA1B256CA1FBED5").IsUnique();
 
             entity.Property(e => e.MangakaProfileId).HasColumnName("mangaka_profile_id");
             entity.Property(e => e.AvatarUrl).HasColumnName("avatar_url");
@@ -335,6 +354,10 @@ public partial class MangaPublishDBContext : DbContext
             entity.Property(e => e.Isdeleted)
                 .HasDefaultValue(false)
                 .HasColumnName("isdeleted");
+            entity.Property(e => e.Pageimageurl)
+                .HasMaxLength(500)
+                .IsUnicode(false)
+                .HasColumnName("pageimageurl");
             entity.Property(e => e.Pagenumber).HasColumnName("pagenumber");
             entity.Property(e => e.Status)
                 .HasMaxLength(50)
@@ -433,7 +456,6 @@ public partial class MangaPublishDBContext : DbContext
                 .HasDefaultValue(0)
                 .HasColumnName("zindex");
 
-
             entity.HasOne(d => d.Page).WithMany(p => p.Pagelayers)
                 .HasForeignKey(d => d.Pageid)
                 .OnDelete(DeleteBehavior.ClientSetNull)
@@ -451,7 +473,7 @@ public partial class MangaPublishDBContext : DbContext
 
             entity.ToTable("roles");
 
-            entity.HasIndex(e => e.Rolename, "UQ__roles__4685A06286BF263F").IsUnique();
+            entity.HasIndex(e => e.Rolename, "UQ__roles__4685A06214B93FA6").IsUnique();
 
             entity.Property(e => e.Roleid).HasColumnName("roleid");
             entity.Property(e => e.Description).HasColumnName("description");
@@ -468,9 +490,17 @@ public partial class MangaPublishDBContext : DbContext
             entity.ToTable("series");
 
             entity.Property(e => e.Seriesid).HasColumnName("seriesid");
+            entity.Property(e => e.Agerating)
+                .IsRequired()
+                .HasMaxLength(10)
+                .HasDefaultValue("G")
+                .HasColumnName("agerating");
             entity.Property(e => e.Approvedat)
                 .HasColumnType("datetime")
                 .HasColumnName("approvedat");
+            entity.Property(e => e.Coverimageurl)
+                .HasMaxLength(500)
+                .HasColumnName("coverimageurl");
             entity.Property(e => e.Createdat)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime")
@@ -502,6 +532,53 @@ public partial class MangaPublishDBContext : DbContext
                 .HasForeignKey(d => d.Tantoueditorid)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("series_tantoueditorid_fkey");
+
+            entity.HasMany(d => d.Genres).WithMany(p => p.Series)
+                .UsingEntity<Dictionary<string, object>>(
+                    "SeriesGenre",
+                    r => r.HasOne<Genre>().WithMany()
+                        .HasForeignKey("Genreid")
+                        .HasConstraintName("fk_sg_genres"),
+                    l => l.HasOne<Series>().WithMany()
+                        .HasForeignKey("Seriesid")
+                        .HasConstraintName("fk_sg_series"),
+                    j =>
+                    {
+                        j.HasKey("Seriesid", "Genreid").HasName("series_genres_pkey");
+                        j.ToTable("series_genres");
+                        j.IndexerProperty<int>("Seriesid").HasColumnName("seriesid");
+                        j.IndexerProperty<int>("Genreid").HasColumnName("genreid");
+                    });
+
+            entity.HasMany(d => d.Tags).WithMany(p => p.Series)
+                .UsingEntity<Dictionary<string, object>>(
+                    "SeriesTag",
+                    r => r.HasOne<Tag>().WithMany()
+                        .HasForeignKey("Tagid")
+                        .HasConstraintName("fk_st_tags"),
+                    l => l.HasOne<Series>().WithMany()
+                        .HasForeignKey("Seriesid")
+                        .HasConstraintName("fk_st_series"),
+                    j =>
+                    {
+                        j.HasKey("Seriesid", "Tagid").HasName("series_tags_pkey");
+                        j.ToTable("series_tags");
+                        j.IndexerProperty<int>("Seriesid").HasColumnName("seriesid");
+                        j.IndexerProperty<int>("Tagid").HasColumnName("tagid");
+                    });
+        });
+
+        modelBuilder.Entity<Tag>(entity =>
+        {
+            entity.HasKey(e => e.Tagid).HasName("tags_pkey");
+
+            entity.ToTable("tags");
+
+            entity.Property(e => e.Tagid).HasColumnName("tagid");
+            entity.Property(e => e.Tagname)
+                .IsRequired()
+                .HasMaxLength(50)
+                .HasColumnName("tagname");
         });
 
         modelBuilder.Entity<User>(entity =>
@@ -510,9 +587,9 @@ public partial class MangaPublishDBContext : DbContext
 
             entity.ToTable("users");
 
-            entity.HasIndex(e => e.Email, "UQ__users__AB6E61648AADEB9A").IsUnique();
+            entity.HasIndex(e => e.Email, "UQ__users__AB6E61646AEA9275").IsUnique();
 
-            entity.HasIndex(e => e.Username, "UQ__users__F3DBC572518A4805").IsUnique();
+            entity.HasIndex(e => e.Username, "UQ__users__F3DBC57236049A8F").IsUnique();
 
             entity.Property(e => e.Userid).HasColumnName("userid");
             entity.Property(e => e.Createdat)
@@ -547,29 +624,28 @@ public partial class MangaPublishDBContext : DbContext
 
         modelBuilder.Entity<UserToken>(entity =>
         {
-            entity.HasKey(e => e.Tokenid).HasName("user_tokens_pkey");
+            entity.HasKey(e => e.Tokenid).HasName("PK__user_tok__AC17DF2F17E93E88");
 
             entity.ToTable("user_tokens");
 
-            entity.HasIndex(e => e.Token, "UQ__user_tok__CA90DA7A").IsUnique();
+            entity.HasIndex(e => e.Token, "UQ__user_tok__CA90DA7A7B2803E3").IsUnique();
 
             entity.Property(e => e.Tokenid).HasColumnName("tokenid");
-            entity.Property(e => e.Userid).HasColumnName("userid");
+            entity.Property(e => e.Expiresat)
+                .HasColumnType("datetime")
+                .HasColumnName("expiresat");
+            entity.Property(e => e.Isrevoked)
+                .HasDefaultValue(false)
+                .HasColumnName("isrevoked");
             entity.Property(e => e.Token)
                 .IsRequired()
                 .HasMaxLength(500)
                 .HasColumnName("token");
-            entity.Property(e => e.Isrevoked)
-                .HasDefaultValue(false)
-                .HasColumnName("isrevoked");
-            entity.Property(e => e.Expiresat)
-                .HasColumnType("datetime")
-                .HasColumnName("expiresat");
+            entity.Property(e => e.Userid).HasColumnName("userid");
 
             entity.HasOne(d => d.User).WithMany(p => p.UserTokens)
                 .HasForeignKey(d => d.Userid)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("user_tokens_userid_fkey");
+                .HasConstraintName("FK__user_toke__useri__03F0984C");
         });
 
         modelBuilder.Entity<WeeklyRanking>(entity =>

@@ -13,7 +13,6 @@ public partial class Pagelayer
 
     public int Uploaderid { get; set; }
 
-
     public string Layername { get; set; }
 
     public string Fileurl { get; set; }

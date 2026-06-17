@@ -48,6 +48,8 @@ builder.Services.AddScoped<IPageLayerService, PageLayerService>();
 builder.Services.AddScoped<PageLayerRepository>();
 builder.Services.AddScoped<IPageIssueService, PageIssueService>();
 builder.Services.AddScoped<PageIssueRepository>();
+builder.Services.AddScoped<GenreRepository>(); 
+builder.Services.AddScoped<TagRepository>();
 
 var supabaseSettings = builder.Configuration.GetSection("Supabase").Get<SupabaseSettings>()
     ?? throw new InvalidOperationException("Missing 'Supabase' configuration section.");

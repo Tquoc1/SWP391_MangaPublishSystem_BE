@@ -12,16 +12,23 @@ namespace Services.Implement
     public class SeriesService : ISeriesService
     {
         private readonly SeriesRepository _seriesRepository;
+        private readonly GenreRepository _genreRepository;
+        private readonly TagRepository _tagRepository;
 
-        public SeriesService(SeriesRepository seriesRepository)
+        public SeriesService(
+            SeriesRepository seriesRepository,
+            GenreRepository genreRepository,
+            TagRepository tagRepository)
         {
             _seriesRepository = seriesRepository;
+            _genreRepository = genreRepository;
+            _tagRepository = tagRepository;
         }
-
 
         public async Task<List<SeriesDto>> GetAllAsync()
         {
             var series = await _seriesRepository.GetAllAsync();
+
             return series.Select(s => new SeriesDto
             {
                 Seriesid = s.Seriesid,
@@ -32,12 +39,25 @@ namespace Services.Implement
                 Publishformat = s.Publishformat,
                 Status = s.Status,
                 Proposalfileurl = s.Proposalfileurl,
+                Coverimageurl = s.Coverimageurl,
+                Agerating = s.Agerating,
                 Createdat = s.Createdat,
                 Approvedat = s.Approvedat,
-                Isdeleted = s.Isdeleted
+                Isdeleted = s.Isdeleted,
+                // EF Core map trực tiếp qua s.Genres
+                Genres = s.Genres?.Select(g => new SeriesDto.GenreSimpleDto
+                {
+                    GenreId = g.Genreid,
+                    GenreName = g.Genrename
+                }).ToList() ?? new List<SeriesDto.GenreSimpleDto>(),
+                // EF Core map trực tiếp qua s.Tags
+                Tags = s.Tags?.Select(t => new SeriesDto.TagSimpleDto
+                {
+                    TagId = t.Tagid,
+                    TagName = t.Tagname
+                }).ToList() ?? new List<SeriesDto.TagSimpleDto>()
             }).ToList();
         }
-
 
         public async Task<SeriesDto> GetByIdAsync(int id)
         {
@@ -54,9 +74,21 @@ namespace Services.Implement
                 Publishformat = s.Publishformat,
                 Status = s.Status,
                 Proposalfileurl = s.Proposalfileurl,
+                Coverimageurl = s.Coverimageurl,
+                Agerating = s.Agerating,
                 Createdat = s.Createdat,
                 Approvedat = s.Approvedat,
-                Isdeleted = s.Isdeleted
+                Isdeleted = s.Isdeleted,
+                Genres = s.Genres?.Select(g => new SeriesDto.GenreSimpleDto
+                {
+                    GenreId = g.Genreid,
+                    GenreName = g.Genrename
+                }).ToList() ?? new List<SeriesDto.GenreSimpleDto>(),
+                Tags = s.Tags?.Select(t => new SeriesDto.TagSimpleDto
+                {
+                    TagId = t.Tagid,
+                    TagName = t.Tagname
+                }).ToList() ?? new List<SeriesDto.TagSimpleDto>()
             };
         }
 
@@ -76,45 +108,92 @@ namespace Services.Implement
                     Publishformat = s.Publishformat,
                     Status = s.Status,
                     Proposalfileurl = s.Proposalfileurl,
+                    Coverimageurl = s.Coverimageurl,
+                    Agerating = s.Agerating,
                     Createdat = s.Createdat,
                     Approvedat = s.Approvedat,
-                    Isdeleted = s.Isdeleted
+                    Isdeleted = s.Isdeleted,
+                    Genres = s.Genres?.Select(g => new SeriesDto.GenreSimpleDto
+                    {
+                        GenreId = g.Genreid,
+                        GenreName = g.Genrename
+                    }).ToList() ?? new List<SeriesDto.GenreSimpleDto>(),
+                    Tags = s.Tags?.Select(t => new SeriesDto.TagSimpleDto
+                    {
+                        TagId = t.Tagid,
+                        TagName = t.Tagname
+                    }).ToList() ?? new List<SeriesDto.TagSimpleDto>()
                 }).ToList();
         }
 
-        public Task<int> CreateAsync(SeriesDto.Create seriesDto, string proposalFileUrl)
+        public async Task<int> CreateAsync(SeriesDto.Create seriesDto, string proposalFileUrl, string coverImageUrl)
         {
             var series = new Series
             {
                 Title = seriesDto.Title,
                 Synopsis = seriesDto.Synopsis,
                 Mangakaid = seriesDto.Mangakaid,
+                Agerating = seriesDto.Agerating ?? "G",
                 Tantoueditorid = seriesDto.Tantoueditorid,
+                Publishformat = "Pending",
                 Proposalfileurl = proposalFileUrl,
-                Status = "Pending", // Trạng thái mặc định khi tạo mới
+                Coverimageurl = coverImageUrl,
+                Status = "Pending",
                 Createdat = DateTime.UtcNow,
                 Isdeleted = false
             };
-            return _seriesRepository.CreateAsync(series);
+
+
+            if (seriesDto.GenreIds != null && seriesDto.GenreIds.Any())
+            {
+                series.Genres = seriesDto.GenreIds.Select(gid => new Genre { Genreid = gid }).ToList();
+            }
+
+            if (seriesDto.TagIds != null && seriesDto.TagIds.Any())
+            {
+                series.Tags = seriesDto.TagIds.Select(tid => new Tag { Tagid = tid }).ToList();
+            }
+
+            return await _seriesRepository.CreateAsync(series);
         }
 
-        public async Task<bool> UpdateAsync(int id, SeriesDto.Update seriesDto, string proposalFileUrl)
+        public async Task<bool> UpdateAsync(int id, SeriesDto.Update seriesDto, string proposalFileUrl, string coverImageUrl)
         {
             var existing = await _seriesRepository.GetByIdAsync(id);
             if (existing == null) return false;
 
-            existing.Title = seriesDto.Title;
-            existing.Synopsis = seriesDto.Synopsis;
+            if (!string.IsNullOrEmpty(seriesDto.Title)) existing.Title = seriesDto.Title;
+            if (!string.IsNullOrEmpty(seriesDto.Synopsis)) existing.Synopsis = seriesDto.Synopsis;
+            if (!string.IsNullOrEmpty(seriesDto.Agerating)) existing.Agerating = seriesDto.Agerating;
+            //if (!string.IsNullOrEmpty(seriesDto.Publishformat)) existing.Publishformat = seriesDto.Publishformat;
+            //if (!string.IsNullOrEmpty(seriesDto.Status)) existing.Status = seriesDto.Status;
+            //if (seriesDto.Isdeleted.HasValue) existing.Isdeleted = seriesDto.Isdeleted;
 
-            if (!string.IsNullOrEmpty(proposalFileUrl))
+            if (!string.IsNullOrEmpty(proposalFileUrl)) existing.Proposalfileurl = proposalFileUrl;
+            if (!string.IsNullOrEmpty(coverImageUrl)) existing.Coverimageurl = coverImageUrl;
+
+            if (seriesDto.GenreIds != null)
             {
-                existing.Proposalfileurl = proposalFileUrl;
+                existing.Genres.Clear(); 
+                foreach (var gid in seriesDto.GenreIds)
+                {
+                    
+                    existing.Genres.Add(new Genre { Genreid = gid });
+                }
+            }
+
+            if (seriesDto.TagIds != null)
+            {
+                existing.Tags.Clear();
+                foreach (var tid in seriesDto.TagIds)
+                {
+                    existing.Tags.Add(new Tag { Tagid = tid });
+                }
             }
 
             var result = await _seriesRepository.UpdateAsync(existing);
-            return result > 0; 
+            return result > 0;
         }
-
 
         public async Task<bool> UpdateStatusAsync(int id, SeriesDto.UpdateStatus seriesDto)
         {
@@ -143,13 +222,12 @@ namespace Services.Implement
             return result > 0;
         }
 
- 
         public async Task<bool> SoftDeleteAsync(int id)
         {
             var existing = await _seriesRepository.GetByIdAsync(id);
             if (existing == null) return false;
 
-            existing.Isdeleted = true; // Bật cờ xóa mềm
+            existing.Isdeleted = true;
 
             var result = await _seriesRepository.UpdateAsync(existing);
             return result > 0;

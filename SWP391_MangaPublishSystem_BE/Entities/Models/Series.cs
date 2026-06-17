@@ -29,6 +29,10 @@ public partial class Series
 
     public bool? Isdeleted { get; set; }
 
+    public string Coverimageurl { get; set; }
+
+    public string Agerating { get; set; }
+
     public virtual ICollection<BoardEvaluation> BoardEvaluations { get; set; } = new List<BoardEvaluation>();
 
     public virtual ICollection<Chapter> Chapters { get; set; } = new List<Chapter>();
@@ -40,4 +44,8 @@ public partial class Series
     public virtual User Tantoueditor { get; set; }
 
     public virtual ICollection<WeeklyRanking> WeeklyRankings { get; set; } = new List<WeeklyRanking>();
+
+    public virtual ICollection<Genre> Genres { get; set; } = new List<Genre>();
+
+    public virtual ICollection<Tag> Tags { get; set; } = new List<Tag>();
 }

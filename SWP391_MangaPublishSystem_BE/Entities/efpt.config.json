@@ -31,6 +31,10 @@
          "ObjectType": 0
       },
       {
+         "Name": "[dbo].[genres]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[dbo].[issue_resources]",
          "ObjectType": 0
       },
@@ -64,6 +68,22 @@
       },
       {
          "Name": "[dbo].[series]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[series_genres]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[series_tags]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tags]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[user_tokens]",
          "ObjectType": 0
       },
       {
