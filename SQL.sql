@@ -461,3 +461,32 @@ SET IDENTITY_INSERT [dbo].[roles] OFF;
 GO
 
 
+SET IDENTITY_INSERT [dbo].[genres] ON;
+
+INSERT INTO [dbo].[genres] ([genreid], [genrename], [description]) VALUES
+(1, N'Kinh dị (Horror)', N'Truyện có yếu tố đáng sợ, rùng rợn, siêu nhiên hoặc tâm lý ám ảnh.'),
+(2, N'Trinh thám (Mystery)', N'Tập trung vào quá trình điều tra, phá án, giải mã các bí ẩn và logic.'),
+(3, N'Hành động (Action)', N'Các trận chiến gay cấn, võ thuật, hoặc rượt đuổi kịch tính.'),
+(4, N'Hài hước (Comedy)', N'Nội dung vui vẻ, đem lại tiếng cười và sự giải trí cho độc giả.'),
+(5, N'Đời thường (Slice of Life)', N'Khắc họa cuộc sống bình dị hàng ngày của các nhân vật.'),
+(6, N'Viễn tưởng (Sci-Fi)', N'Thế giới công nghệ tương lai, vũ trụ hoặc khoa học giả tưởng.'),
+(7, N'Kịch tính (Drama)', N'Tập trung vào chiều sâu tâm lý, xung đột xã hội hoặc tình cảm phức tạp.');
+
+SET IDENTITY_INSERT [dbo].[genres] OFF;
+GO
+
+
+SET IDENTITY_INSERT [dbo].[tags] ON;
+
+INSERT INTO [dbo].[tags] ([tagid], [tagname]) VALUES
+(1, N'Nghẹt thở (Thrill)'),
+(2, N'Giải đố (Puzzle)'),
+(3, N'Siêu nhiên (Supernatural)'),
+(4, N'Học đường (School Life)'),
+(5, N'Hậu tận thế (Post-Apocalypse)'),
+(6, N'Trò chơi sinh tồn (Survival)'),
+(7, N'Cốt truyện lôi cuốn (Story-driven)');
+
+SET IDENTITY_INSERT [dbo].[tags] OFF;
+
+
