@@ -14,5 +14,7 @@ namespace Services.Interface
         Task<int> CreateAsync(PageDto.Create pageDto, string pageImageUrl);
         Task<int> UpdateAsync(int id,PageDto.Update pageDto, string pageImageUrl);
         Task<bool> RemoveAsync(int id);
+        Task<bool> UpdateStatusAsync(int id, PageDto.UpdateStatus dto);
+        Task<bool> UploadImageAsync(int id, string pageImageUrl);
     }
 }

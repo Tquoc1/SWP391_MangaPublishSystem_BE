@@ -56,6 +56,21 @@ namespace MangaPublishSystem.Controllers
                 Data = pageDto
             });
         }
+
+        [HttpPatch("{id}/status")]
+        public async Task<IActionResult> UpdateStatus(int id, PageIssueDto.UpdateStatus dto)
+        {
+            var result = await _pageIssueService.UpdateStatusAsync(id, dto);
+
+            if (!result)
+                return NotFound();
+
+            return Ok(new
+            {
+                message = "PageIssue status updated successfully"
+            });
+        }
+
         [HttpPut("{id:int}")]
         public async Task<ActionResult> Update(int id, [FromBody] PageIssueDto.Update pageDto)
         {

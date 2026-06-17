@@ -55,5 +55,9 @@ namespace DTOs
             public DateTime? Completedat { get; set; }
             public bool? Isdeleted { get; set; }
         }
+        public class UpdateStatus
+        {
+            public string Status { get; set; } = string.Empty;
+        }
     }
 }

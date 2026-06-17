@@ -90,6 +90,62 @@ namespace MangaPublishSystem.Controllers
             });
         }
 
+        [HttpPost("{id:int}/upload-cover")]
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> UploadCover(int id, IFormFile coverImage)
+        {
+            if (coverImage == null || coverImage.Length == 0)
+                return BadRequest("Vui lòng chọn ảnh bìa.");
+
+            await using var stream = coverImage.OpenReadStream();
+
+            var uploadedUrl = await _fileStorage.UploadAsync(
+                stream,
+                coverImage.FileName,
+                coverImage.ContentType,
+                "covers"
+            );
+
+            var result = await _seriesService.UploadCoverAsync(id, uploadedUrl);
+
+            if (!result)
+                return NotFound("Không tìm thấy series.");
+
+            return Ok(new
+            {
+                message = "Cover uploaded successfully",
+                coverImageUrl = uploadedUrl
+            });
+        }
+
+        [HttpPost("{id:int}/upload-proposal")]
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> UploadProposal(int id, IFormFile proposalFile)
+        {
+            if (proposalFile == null || proposalFile.Length == 0)
+                return BadRequest("Vui lòng chọn file proposal.");
+
+            await using var stream = proposalFile.OpenReadStream();
+
+            var uploadedUrl = await _fileStorage.UploadAsync(
+                stream,
+                proposalFile.FileName,
+                proposalFile.ContentType,
+                "proposals"
+            );
+
+            var result = await _seriesService.UploadProposalAsync(id, uploadedUrl);
+
+            if (!result)
+                return NotFound("Không tìm thấy series.");
+
+            return Ok(new
+            {
+                message = "Proposal uploaded successfully",
+                proposalFileUrl = uploadedUrl
+            });
+        }
+
         [HttpPut("{id:int}", Order = 5)]
         [Consumes("multipart/form-data")]
         public async Task<ActionResult> Update(int id, [FromForm] SeriesDto.Update seriesDto, IFormFile? proposalFile, IFormFile? coverImage)

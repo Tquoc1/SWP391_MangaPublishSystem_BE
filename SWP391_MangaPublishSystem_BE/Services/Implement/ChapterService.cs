@@ -63,9 +63,14 @@ namespace Services.Implement
         public async Task<bool> RemoveAsync(int id)
         {
             var existing = await _chapterRepository.GetByIdAsync(id);
-            if (existing == null) return false;
 
-            await _chapterRepository.RemoveAsync(existing);
+            if (existing == null || existing.Isdeleted == true)
+                return false;
+
+            existing.Isdeleted = true;
+
+            await _chapterRepository.UpdateAsync(existing);
+
             return true;
         }
 

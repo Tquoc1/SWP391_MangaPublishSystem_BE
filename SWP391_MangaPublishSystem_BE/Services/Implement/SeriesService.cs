@@ -124,6 +124,32 @@ namespace Services.Implement
             return true;
         }
 
+        public async Task<bool> UploadCoverAsync(int id, string coverImageUrl)
+        {
+            var existing = await _seriesRepository.GetByIdWithDetailsAsync(id);
+
+            if (existing == null || existing.Isdeleted == true)
+                return false;
+
+            existing.Coverimageurl = coverImageUrl;
+
+            await _seriesRepository.UpdateAsync(existing);
+            return true;
+        }
+
+        public async Task<bool> UploadProposalAsync(int id, string proposalFileUrl)
+        {
+            var existing = await _seriesRepository.GetByIdWithDetailsAsync(id);
+
+            if (existing == null || existing.Isdeleted == true)
+                return false;
+
+            existing.Proposalfileurl = proposalFileUrl;
+
+            await _seriesRepository.UpdateAsync(existing);
+            return true;
+        }
+
         public async Task<bool> SoftDeleteAsync(int id)
         {
             var existing = await _seriesRepository.GetByIdAsync(id);
@@ -136,11 +162,7 @@ namespace Services.Implement
 
         public async Task<bool> RemoveAsync(int id)
         {
-            var existing = await _seriesRepository.GetByIdAsync(id);
-            if (existing == null) return false;
-
-            await _seriesRepository.RemoveAsync(existing);
-            return true;
+            return await SoftDeleteAsync(id);
         }
 
         private SeriesDto MapToDto(Series series)

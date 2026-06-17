@@ -14,5 +14,7 @@ namespace Services.Interface
         Task<bool> UpdatePublishFormatAsync(int id, SeriesDto.UpdatePublishFormat seriesDto);
         Task<bool> SoftDeleteAsync(int id);
         Task<bool> RemoveAsync(int id);
+        Task<bool> UploadCoverAsync(int id, string coverImageUrl);
+        Task<bool> UploadProposalAsync(int id, string proposalFileUrl);
     }
 }

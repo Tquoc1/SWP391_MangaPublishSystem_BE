@@ -54,6 +54,19 @@ namespace Services.Implement
             return issue.Issueid;
         }
 
+        public async Task<bool> UpdateStatusAsync(int id, PageIssueDto.UpdateStatus dto)
+        {
+            var existing = await _pageIssueRepository.GetByIdAsync(id);
+
+            if (existing == null || existing.Isdeleted == true)
+                return false;
+
+            existing.Status = dto.Status;
+
+            await _pageIssueRepository.UpdateAsync(existing);
+
+            return true;
+        }
         public async Task<int> UpdateAsync(int id, PageIssueDto.Update dto)
         {
             var existing = await _pageIssueRepository.GetByIdAsync(id);
@@ -81,10 +94,14 @@ namespace Services.Implement
         public async Task<bool> RemoveAsync(int id)
         {
             var existing = await _pageIssueRepository.GetByIdAsync(id);
-            if (existing == null) return false;
+
+            if (existing == null || existing.Isdeleted == true)
+                return false;
 
             existing.Isdeleted = true;
+
             await _pageIssueRepository.UpdateAsync(existing);
+
             return true;
         }
 

@@ -20,8 +20,12 @@ namespace DTOs
         public class Update
         {
             public int Pagenumber { get; set; }
-            public string Status { get; set; }
-            public bool? Isdeleted { get; set; }
+            //public string Status { get; set; }
+            //public bool? Isdeleted { get; set; }
+        }
+        public class UpdateStatus
+        {
+            public string Status { get; set; } = null!;
         }
     }
 }
