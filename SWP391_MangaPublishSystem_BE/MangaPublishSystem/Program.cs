@@ -47,6 +47,9 @@ builder.Services.AddScoped<PageIssueRepository>();
 builder.Services.AddScoped<IBoardEvaluationService, BoardEvaluationService>();
 builder.Services.AddScoped<BoardEvaluationRepository>();
 builder.Services.AddScoped<SeriesRepository>();
+builder.Services.AddScoped<GenreRepository>();
+builder.Services.AddScoped<TagRepository>();
+
 
 var supabaseSettings = builder.Configuration.GetSection("Supabase").Get<SupabaseSettings>()
     ?? throw new InvalidOperationException("Missing 'Supabase' configuration section.");
