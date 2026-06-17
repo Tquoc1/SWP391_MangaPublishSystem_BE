@@ -1,4 +1,5 @@
 using Entities.Models;
+using Services.DTO;
 
 namespace Services.Interface
 {
@@ -8,7 +9,10 @@ namespace Services.Interface
         Task<int> UpdateUser(User user);
         Task<MangakaProfile> GetMangakaProfile(int userId);
         Task<AssistantProfile> GetAssistantProfile(int userId);
-        Task<int> UpsertMangakaProfile(MangakaProfile profile);
-        Task<int> UpsertAssistantProfile(AssistantProfile profile);
+        Task<int> AddMangakaProfile(MangakaProfile profile);
+        Task<int> AddAssistantProfile(AssistantProfile profile);
+        Task<int> UpdateMangakaProfile(int userId, UserDto.UpdateMangakaProfile profile);
+        Task<int> UpdateAssistantProfile(int userId, UserDto.UpdateAssistantProfile profile);
+
     }
 }
