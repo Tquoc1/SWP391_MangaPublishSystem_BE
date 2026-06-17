@@ -51,16 +51,30 @@ namespace Services.Implement
             if (existing == null) return 0;
 
             existing.Pagenumber = pageDto.Pagenumber;
-            existing.Status = pageDto.Status;
             existing.Pageimageurl = pageImageUrl;
-
-            if (pageDto.Isdeleted.HasValue)
-            {
-                existing.Isdeleted = pageDto.Isdeleted;
-            }
 
             await _pageRepository.UpdateAsync(existing);
             return 1;
+        }
+
+        public async Task<bool> UpdateStatusAsync(int id, string status)
+        {
+            var existing = await _pageRepository.GetByIdAsync(id);
+            if (existing == null) return false;
+
+            existing.Status = status;
+            await _pageRepository.UpdateAsync(existing);
+            return true;
+        }
+
+        public async Task<bool> SoftDeleteAsync(int id)
+        {
+            var existing = await _pageRepository.GetByIdAsync(id);
+            if (existing == null) return false;
+
+            existing.Isdeleted = true;
+            await _pageRepository.UpdateAsync(existing);
+            return true;
         }
 
         public async Task<bool> RemoveAsync(int id)

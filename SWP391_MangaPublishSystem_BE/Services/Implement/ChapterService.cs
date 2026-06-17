@@ -60,6 +60,26 @@ namespace Services.Implement
             return 1;
         }
 
+        public async Task<bool> UpdateStatusAsync(int id, string status)
+        {
+            var existing = await _chapterRepository.GetByIdAsync(id);
+            if (existing == null) return false;
+
+            existing.Status = status;
+            await _chapterRepository.UpdateAsync(existing);
+            return true;
+        }
+
+        public async Task<bool> SoftDeleteAsync(int id)
+        {
+            var existing = await _chapterRepository.GetByIdAsync(id);
+            if (existing == null) return false;
+
+            existing.Isdeleted = true;
+            await _chapterRepository.UpdateAsync(existing);
+            return true;
+        }
+
         public async Task<bool> RemoveAsync(int id)
         {
             var existing = await _chapterRepository.GetByIdAsync(id);

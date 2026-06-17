@@ -60,7 +60,6 @@ namespace Services.Implement
             if (existing == null) return 0;
 
             existing.AssignedToId = dto.AssignedToId;
-            existing.Status = dto.Status;
             existing.Description = dto.Description;
             existing.BoxX = dto.BoxX;
             existing.BoxY = dto.BoxY;
@@ -69,13 +68,28 @@ namespace Services.Implement
             existing.Deadline = dto.Deadline;
             existing.Completedat = dto.Completedat;
 
-            if (dto.Isdeleted.HasValue)
-            {
-                existing.Isdeleted = dto.Isdeleted.Value;
-            }
-
             await _pageIssueRepository.UpdateAsync(existing);
             return 1;
+        }
+
+        public async Task<bool> UpdateStatusAsync(int id, string status)
+        {
+            var existing = await _pageIssueRepository.GetByIdAsync(id);
+            if (existing == null) return false;
+
+            existing.Status = status;
+            await _pageIssueRepository.UpdateAsync(existing);
+            return true;
+        }
+
+        public async Task<bool> SoftDeleteAsync(int id)
+        {
+            var existing = await _pageIssueRepository.GetByIdAsync(id);
+            if (existing == null) return false;
+
+            existing.Isdeleted = true;
+            await _pageIssueRepository.UpdateAsync(existing);
+            return true;
         }
 
         public async Task<bool> RemoveAsync(int id)

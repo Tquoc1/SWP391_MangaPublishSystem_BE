@@ -13,6 +13,8 @@ namespace Services.Interface
         Task<PageDto> GetByIdAsync(int id);
         Task<int> CreateAsync(PageDto.Create pageDto, string pageImageUrl);
         Task<int> UpdateAsync(int id,PageDto.Update pageDto, string pageImageUrl);
+        Task<bool> UpdateStatusAsync(int id, string status);
+        Task<bool> SoftDeleteAsync(int id);
         Task<bool> RemoveAsync(int id);
     }
 }

@@ -80,6 +80,28 @@ namespace MangaPublishSystem.Controllers
             return NoContent(); 
         }
 
+        [HttpPatch("{id:int}/status")]
+        public async Task<IActionResult> UpdateStatus(int id, [FromBody] string status)
+        {
+            var success = await _chapterService.UpdateStatusAsync(id, status);
+            if (!success)
+            {
+                return NotFound(new { Message = "Không tìm thấy chương truyện để cập nhật trạng thái." });
+            }
+            return Ok(new { Message = "Status updated successfully" });
+        }
+
+        [HttpDelete("{id:int}/soft")]
+        public async Task<IActionResult> SoftDelete(int id)
+        {
+            var success = await _chapterService.SoftDeleteAsync(id);
+            if (!success)
+            {
+                return NotFound(new { Message = "Không tìm thấy chương truyện để xóa tạm." });
+            }
+            return Ok(new { Message = "Soft deleted successfully" });
+        }
+
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {
