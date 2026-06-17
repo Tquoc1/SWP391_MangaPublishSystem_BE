@@ -1,5 +1,5 @@
 using Entities.Models;
-using Services.DTO;
+using DTOs;
 
 namespace Services.Interface
 {

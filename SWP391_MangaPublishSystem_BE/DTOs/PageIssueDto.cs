@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System;
 
-namespace Services.DTO
+namespace DTOs
 {
     public class PageIssueDto
     {
@@ -14,7 +10,6 @@ namespace Services.DTO
         public int? AssignedToId { get; set; }
         public string IssueType { get; set; }
         public string WorkCategory { get; set; }
-
 
         public int BoxX { get; set; }
         public int BoxY { get; set; }

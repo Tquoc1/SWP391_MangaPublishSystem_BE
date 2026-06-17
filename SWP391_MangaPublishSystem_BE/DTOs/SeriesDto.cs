@@ -1,18 +1,16 @@
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
-namespace Services.DTO
+namespace DTOs
 {
     public class SeriesDto
     {
-
         public int Seriesid { get; set; }
         public string Title { get; set; }
         public string Synopsis { get; set; }
         public string Coverimageurl { get; set; } 
-        public string Agerating { get; set; }     //  ("G", "PG-13", "R-16", "R-18")
+        public string Agerating { get; set; }
         public int Mangakaid { get; set; }
         public int? Tantoueditorid { get; set; }
         public string Publishformat { get; set; }
@@ -24,7 +22,6 @@ namespace Services.DTO
 
         public List<GenreSimpleDto> Genres { get; set; } = new List<GenreSimpleDto>();
         public List<TagSimpleDto> Tags { get; set; } = new List<TagSimpleDto>();
-
 
         public class Create
         {
@@ -52,15 +49,10 @@ namespace Services.DTO
             public string Title { get; set; }
             public string Synopsis { get; set; }
             public string Agerating { get; set; }
-            //public string Publishformat { get; set; }
-            //public string Status { get; set; }
-            //public bool? Isdeleted { get; set; }
 
             public List<int> GenreIds { get; set; } = new List<int>();
             public List<int> TagIds { get; set; } = new List<int>();
         }
-
-
 
         public class UpdateStatus
         {
@@ -71,8 +63,6 @@ namespace Services.DTO
         {
             public string Publishformat { get; set; }
         }
-
-
 
         public class GenreSimpleDto
         {

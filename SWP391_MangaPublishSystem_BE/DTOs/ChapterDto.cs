@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.Serialization;
-using System.Text;
-using System.Threading.Tasks;
+using System;
 
-
-namespace Services.DTO
+namespace DTOs
 {
     public class ChapterDto
     {
@@ -35,8 +29,8 @@ namespace Services.DTO
             public int Chapternumber { get; set; }
             public string Title { get; set; }
             public DateTime Deadline { get; set; }
-            public string Status { get; set; }
-            public bool? Isdeleted { get; set; }
+            //public string Status { get; set; }
+            //public bool? Isdeleted { get; set; }
         }
     }
 }

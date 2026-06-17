@@ -1,5 +1,4 @@
-﻿
-using Entities.Models;
+﻿using Entities.Models;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -18,7 +17,7 @@ namespace Membership.Repositories.QuocDT.Base
             _context ??= new MangaPublishDBContext(new DbContextOptions<MangaPublishDBContext>());
         }
 
-        public GenericRepository(MangaPublishDBContext  context)
+        public GenericRepository(MangaPublishDBContext context)
         {
             _context = context;
         }
