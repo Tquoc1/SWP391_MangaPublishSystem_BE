@@ -9,17 +9,17 @@ namespace Services.DTO
             string Password,
             string FullName,
             string Email,
-            int RoleId,
-            string? PenName,
-            string? Bio,
-            string? PhoneNumber,
-            string? BankName,
-            string? BankAccountNumber,
-            string? BankAccountName,
-            string? PortfolioUrl,
-            bool? IsAvailable,
-            string? Skills,
-            string? SoftwareUsed
+            int RoleId
+            //string PenName,
+            //string? Bio,
+            //string? PhoneNumber,
+            //string? BankName,
+            //string? BankAccountNumber,
+            //string? BankAccountName,
+            //string? PortfolioUrl,
+            //bool? IsAvailable,
+            //string? Skills,
+            //string? SoftwareUsed
         );
 
         public sealed record RefreshToken(string Token);

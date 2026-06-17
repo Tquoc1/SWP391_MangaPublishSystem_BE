@@ -1,13 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Services.DTO
+namespace DTOs
 {
-    // 1. DTO dùng cho hàm GET (Trả dữ liệu về)
     public class PageLayerDto
     {
         public int Layerid { get; set; }

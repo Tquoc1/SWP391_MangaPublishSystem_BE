@@ -1,4 +1,5 @@
 <Solution>
+  <Project Path="DTOs/DTOs.csproj" />
   <Project Path="Entities/Entities.csproj" />
   <Project Path="MangaPublishSystem/MangaPublishSystem.csproj" Id="fa2d38ba-9c4b-4547-b00c-3d429e1fc30c" />
   <Project Path="Repositories/Repositories.csproj" />

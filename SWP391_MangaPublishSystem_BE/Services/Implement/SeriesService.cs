@@ -1,7 +1,10 @@
-using Entities.Models;
-using Services.DTO;
 using Repositories.Repository;
+using DTOs;
 using Services.Interface;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Services.Implement
 {
@@ -16,86 +19,52 @@ namespace Services.Implement
 
         public async Task<List<SeriesDto>> GetAllAsync()
         {
-            var series = await _seriesRepository.GetAllAsync();
-            return series.Select(s => new SeriesDto
-            {
-                Seriesid = s.Seriesid,
-                Title = s.Title,
-                Synopsis = s.Synopsis,
-                Mangakaid = s.Mangakaid,
-                Tantoueditorid = s.Tantoueditorid,
-                Publishformat = s.Publishformat,
-                Status = s.Status,
-                Proposalfileurl = s.Proposalfileurl,
-                Createdat = s.Createdat,
-                Approvedat = s.Approvedat,
-                Isdeleted = s.Isdeleted
-            }).ToList();
+            return await _seriesRepository.GetAllAsync();
         }
 
         public async Task<SeriesDto> GetByIdAsync(int id)
         {
-            var s = await _seriesRepository.GetByIdAsync(id);
-            if (s == null) return null;
-
-            return new SeriesDto
-            {
-                Seriesid = s.Seriesid,
-                Title = s.Title,
-                Synopsis = s.Synopsis,
-                Mangakaid = s.Mangakaid,
-                Tantoueditorid = s.Tantoueditorid,
-                Publishformat = s.Publishformat,
-                Status = s.Status,
-                Proposalfileurl = s.Proposalfileurl,
-                Createdat = s.Createdat,
-                Approvedat = s.Approvedat,
-                Isdeleted = s.Isdeleted
-            };
+            return await _seriesRepository.GetByIdAsync(id);
         }
 
-        public Task<int> CreateAsync(SeriesDto.Create seriesDto, string proposalFileUrl)
+        public async Task<List<SeriesDto>> GetByMangakaIdAsync(int mangakaId)
         {
-            var series = new Series
-            {
-                Title = seriesDto.Title,
-                Synopsis = seriesDto.Synopsis,
-                Mangakaid = seriesDto.Mangakaid,
-                Tantoueditorid = seriesDto.Tantoueditorid,
-                //Publishformat = seriesDto.Publishformat,
-                Proposalfileurl = proposalFileUrl,
-                Status = "Pending", // Default value
-                Createdat = DateTime.UtcNow,
-                Isdeleted = false
-            };
-            return _seriesRepository.CreateAsync(series);
+            return await _seriesRepository.GetByMangakaIdAsync(mangakaId);
         }
 
-        public async Task<int> UpdateAsync(int id, SeriesDto.Update seriesDto, string proposalFileUrl)
+        public async Task<int> CreateAsync(SeriesDto.Create seriesDto, string proposalFileUrl, string coverImageUrl)
         {
-            var existing = await _seriesRepository.GetByIdAsync(id);
-            if (existing == null) return 0;
+            return await _seriesRepository.CreateWithDetailsAsync(seriesDto, proposalFileUrl, coverImageUrl);
+        }
 
-            existing.Title = seriesDto.Title;
-            existing.Synopsis = seriesDto.Synopsis;
-            existing.Publishformat = seriesDto.Publishformat;
-            existing.Status = seriesDto.Status;
-            //existing.Proposalfileurl = seriesDto.Proposalfileurl;
+        public async Task<bool> UpdateAsync(int id, SeriesDto.Update seriesDto, string proposalFileUrl, string coverImageUrl)
+        {
+            var result = await _seriesRepository.UpdateSeriesAsync(id, seriesDto, proposalFileUrl, coverImageUrl);
+            return result > 0;
+        }
 
-            if (seriesDto.Isdeleted.HasValue)
-            {
-                existing.Isdeleted = seriesDto.Isdeleted;
-            }
+        public async Task<bool> UpdateStatusAsync(int id, SeriesDto.UpdateStatus seriesDto)
+        {
+            var result = await _seriesRepository.UpdateStatusAsync(id, seriesDto.Status);
+            return result > 0;
+        }
 
-            return await _seriesRepository.UpdateAsync(existing);
+        public async Task<bool> UpdatePublishFormatAsync(int id, SeriesDto.UpdatePublishFormat seriesDto)
+        {
+            var result = await _seriesRepository.UpdatePublishFormatAsync(id, seriesDto.Publishformat);
+            return result > 0;
+        }
+
+        public async Task<bool> SoftDeleteAsync(int id)
+        {
+            var result = await _seriesRepository.SoftDeleteAsync(id);
+            return result > 0;
         }
 
         public async Task<bool> RemoveAsync(int id)
         {
-            var existing = await _seriesRepository.GetByIdAsync(id);
-            if (existing == null) return false;
-
-            return await _seriesRepository.RemoveAsync(existing);
+            return await _seriesRepository.DeleteAsync(id);
         }
     }
+
 }
