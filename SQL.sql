@@ -489,4 +489,15 @@ INSERT INTO [dbo].[tags] ([tagid], [tagname]) VALUES
 
 SET IDENTITY_INSERT [dbo].[tags] OFF;
 
+ALTER TABLE [dbo].[pagelayers]
+ADD [opacity] DECIMAL(3,2) NULL,
+    [isdeleted] BIT NULL;
+GO
+
+ALTER TABLE [dbo].[pagelayers] ALTER COLUMN [opacity] DECIMAL(3,2) NOT NULL;
+ALTER TABLE [dbo].[pagelayers] ALTER COLUMN [isdeleted] BIT NOT NULL;
+
+ALTER TABLE [dbo].[pagelayers] ADD CONSTRAINT [chk_pagelayers_opacity] CHECK ([opacity] >= 0.0 AND [opacity] <= 1.0);
+GO
+
 
