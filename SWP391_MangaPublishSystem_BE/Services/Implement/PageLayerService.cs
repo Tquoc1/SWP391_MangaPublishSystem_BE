@@ -39,8 +39,10 @@ namespace Services.Implement
                 Layername = dto.Layername,
                 Fileurl = fileStorageUrl,
                 Zindex = dto.Zindex ?? 0,
+                Opacity = dto.Opacity ?? 1.0m,
                 Versionnumber = 1,
                 Isvisible = true,
+                Isdeleted = false,
                 Createdat = DateTime.UtcNow
             };
 
@@ -55,12 +57,33 @@ namespace Services.Implement
 
             existing.Layername = dto.Layername;
             existing.Zindex = dto.Zindex;
+            existing.Opacity = dto.Opacity ?? existing.Opacity;
             existing.Versionnumber = dto.Versionnumber;
-            existing.Isvisible = dto.Isvisible;
             existing.Fileurl = fileUrl;
 
             await _pageLayerRepository.UpdateAsync(existing);
             return 1;
+        }
+
+        public async Task<bool> ToggleVisibilityAsync(int id)
+        {
+            var existing = await _pageLayerRepository.GetByIdAsync(id);
+            if (existing == null) return false;
+
+            existing.Isvisible = !existing.Isvisible;
+
+            await _pageLayerRepository.UpdateAsync(existing);
+            return true;
+        }
+
+        public async Task<bool> SoftDeleteAsync(int id)
+        {
+            var existing = await _pageLayerRepository.GetByIdAsync(id);
+            if (existing == null) return false;
+
+            existing.Isdeleted = true;
+            await _pageLayerRepository.UpdateAsync(existing);
+            return true;
         }
 
         public async Task<bool> RemoveAsync(int id)
@@ -82,8 +105,10 @@ namespace Services.Implement
                 Layername = layer.Layername,
                 Fileurl = layer.Fileurl,
                 Zindex = layer.Zindex,
+                Opacity = layer.Opacity,
                 Versionnumber = layer.Versionnumber,
                 Isvisible = layer.Isvisible,
+                Isdeleted = layer.Isdeleted,
                 Createdat = layer.Createdat
             };
         }

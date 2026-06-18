@@ -12,9 +12,14 @@ namespace Repositories.Repository
         public PageLayerRepository() { }
         public PageLayerRepository(MangaPublishDBContext context) : base(context) => _context = context;
 
-        public async Task<List<Pagelayer>> GetLayersAsync(int? pageId = null)
+        public async Task<List<Pagelayer>> GetLayersAsync(int? pageId = null, bool includeDeleted = false)
         {
             var query = _context.Pagelayers.AsQueryable();
+
+            if (!includeDeleted)
+            {
+                query = query.Where(l => l.Isdeleted == false);
+            }
 
             if (pageId.HasValue)
             {
@@ -24,14 +29,24 @@ namespace Repositories.Repository
             return await query.OrderBy(l => l.Zindex).ToListAsync();
         }
 
-        public async Task<Pagelayer> GetLayerByIdAsync(int id)
+        public async Task<Pagelayer> GetLayerByIdAsync(int id, bool includeDeleted = false)
         {
-            return await _context.Pagelayers.FirstOrDefaultAsync(l => l.Layerid == id);
+            var query = _context.Pagelayers.AsQueryable();
+            if (!includeDeleted)
+            {
+                query = query.Where(l => l.Isdeleted == false);
+            }
+            return await query.FirstOrDefaultAsync(l => l.Layerid == id);
         }
 
-        public async Task<List<Pagelayer>> GetByPageIdAsync(int pageId)
+        public async Task<List<Pagelayer>> GetByPageIdAsync(int pageId, bool includeDeleted = false)
         {
-            return await _context.Pagelayers
+            var query = _context.Pagelayers.AsQueryable();
+            if (!includeDeleted)
+            {
+                query = query.Where(l => l.Isdeleted == false);
+            }
+            return await query
                 .Where(l => l.Pageid == pageId)
                 .OrderBy(l => l.Zindex)
                 .ToListAsync();

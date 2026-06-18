@@ -456,6 +456,15 @@ public partial class MangaPublishDBContext : DbContext
                 .HasDefaultValue(0)
                 .HasColumnName("zindex");
 
+            entity.Property(e => e.Opacity)
+                .HasColumnType("decimal(3, 2)")
+                .HasDefaultValue(1.0m)
+                .HasColumnName("opacity");
+
+            entity.Property(e => e.Isdeleted)
+                .HasDefaultValue(false)
+                .HasColumnName("isdeleted");
+
             entity.HasOne(d => d.Page).WithMany(p => p.Pagelayers)
                 .HasForeignKey(d => d.Pageid)
                 .OnDelete(DeleteBehavior.ClientSetNull)
