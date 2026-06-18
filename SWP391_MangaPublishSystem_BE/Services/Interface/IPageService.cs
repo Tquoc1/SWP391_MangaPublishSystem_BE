@@ -16,7 +16,7 @@ namespace Services.Interface
         Task<bool> UpdateStatusAsync(int id, string status);
         Task<bool> SoftDeleteAsync(int id);
         Task<bool> RemoveAsync(int id);
-        Task<bool> UpdateStatusAsync(int id, PageDto.UpdateStatus dto);
-        Task<bool> UploadImageAsync(int id, string pageImageUrl);
+        //Task<bool> UpdateStatusAsync(int id, PageDto.Update dto);
+        //Task<bool> UploadImageAsync(int id, string pageImageUrl);
     }
 }
