@@ -64,7 +64,24 @@ public partial class MangaPublishDBContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<AssistantProfile>(entity =>
+        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+        {
+            // Tìm khóa chính của từng bảng
+            var primaryKey = entityType.FindPrimaryKey();
+            if (primaryKey != null)
+            {
+                foreach (var property in primaryKey.Properties)
+                {
+                    // Nếu khóa chính là kiểu số (int, long)
+                    if (property.ClrType == typeof(int) || property.ClrType == typeof(long))
+                    {
+                        // Ép EF Core coi nó là cột tự tăng do DB quản lý
+                        property.ValueGenerated = Microsoft.EntityFrameworkCore.Metadata.ValueGenerated.OnAdd;
+                    }
+                }
+            }
+        }
+            modelBuilder.Entity<AssistantProfile>(entity =>
         {
             entity.HasKey(e => e.AssistantProfileId).HasName("assistant_profiles_pkey");
 
@@ -600,7 +617,7 @@ public partial class MangaPublishDBContext : DbContext
 
             entity.HasIndex(e => e.Username, "UQ__users__F3DBC57236049A8F").IsUnique();
 
-            entity.Property(e => e.Userid).HasColumnName("userid");
+            entity.Property(e => e.Userid).HasColumnName("userid").ValueGeneratedOnAdd().UseIdentityColumn();
             entity.Property(e => e.Createdat)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime")

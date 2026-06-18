@@ -92,14 +92,14 @@ namespace MangaPublishSystem.Controllers
                 return BadRequest();
             }
 
-            if (user.Roleid == 4)
-            {
-                await _userService.AddMangakaProfile(new MangakaProfile { Userid = user.Userid });
-            }
-            else if (user.Roleid == 5)
-            {
-                await _userService.AddAssistantProfile(new AssistantProfile { Userid = user.Userid });
-            }
+            //if (user.Roleid == 4)
+            //{
+            //    await _userService.AddMangakaProfile(new MangakaProfile { Userid = user.Userid });
+            //}
+            //else if (user.Roleid == 5)
+            //{
+            //    await _userService.AddAssistantProfile(new AssistantProfile { Userid = user.Userid });
+            //}
 
             var token = GenerateJSONWebToken(user);
             var refreshToken = await CreateRefreshToken(user);
