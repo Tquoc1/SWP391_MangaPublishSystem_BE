@@ -110,16 +110,16 @@ namespace MangaPublishSystem.Controllers
             return Ok(new { Message = "Soft deleted successfully" });
         }
 
-        [HttpDelete("{id:int}")]
-        public async Task<ActionResult> Delete(int id)
-        {
-            var result = await _pageIssueService.RemoveAsync(id);
-            if (!result)
-            {
-                return NotFound("Sự cố không tồn tại hoặc đã bị xóa trước đó.");
-            }
+        //[HttpDelete("{id:int}")]
+        //public async Task<ActionResult> Delete(int id)
+        //{
+        //    var result = await _pageIssueService.RemoveAsync(id);
+        //    if (!result)
+        //    {
+        //        return NotFound("Sự cố không tồn tại hoặc đã bị xóa trước đó.");
+        //    }
 
-            return NoContent();
-        }
+        //    return NoContent();
+        //}
     }
 }

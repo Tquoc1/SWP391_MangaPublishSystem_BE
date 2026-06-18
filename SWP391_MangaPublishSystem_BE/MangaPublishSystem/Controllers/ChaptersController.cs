@@ -102,22 +102,22 @@ namespace MangaPublishSystem.Controllers
             return Ok(new { Message = "Soft deleted successfully" });
         }
 
-        [HttpDelete("{id:int}")]
-        public async Task<IActionResult> Delete(int id)
-        {
-            var existing = await _chapterService.GetByIdAsync(id);
-            if (existing == null)
-            {
-                return NotFound(new { Message = "Không tìm thấy chương truyện để xóa." });
-            }
+        //[HttpDelete("{id:int}")]
+        //public async Task<IActionResult> Delete(int id)
+        //{
+        //    var existing = await _chapterService.GetByIdAsync(id);
+        //    if (existing == null)
+        //    {
+        //        return NotFound(new { Message = "Không tìm thấy chương truyện để xóa." });
+        //    }
 
-            var success = await _chapterService.RemoveAsync(id);
-            if (!success)
-            {
-                return BadRequest(new { Message = "Xóa thất bại." });
-            }
+        //    var success = await _chapterService.RemoveAsync(id);
+        //    if (!success)
+        //    {
+        //        return BadRequest(new { Message = "Xóa thất bại." });
+        //    }
 
-            return Ok(new { Message = "Deleted successfully" });
-        }
+        //    return Ok(new { Message = "Deleted successfully" });
+        //}
     }
 }

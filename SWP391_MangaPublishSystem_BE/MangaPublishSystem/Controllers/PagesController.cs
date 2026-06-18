@@ -118,16 +118,16 @@ namespace MangaPublishSystem.Controllers
             return Ok(new { Message = "Soft deleted successfully" });
         }
 
-        [HttpDelete("{id:int}")]
-        public async Task<ActionResult> Delete(int id)
-        {
-            var result = await _pageService.RemoveAsync(id);
-            if (!result)
-            {
-                return NotFound();
-            }
+        //[HttpDelete("{id:int}")]
+        //public async Task<ActionResult> Delete(int id)
+        //{
+        //    var result = await _pageService.RemoveAsync(id);
+        //    if (!result)
+        //    {
+        //        return NotFound();
+        //    }
 
-            return NoContent();
-        }
+        //    return NoContent();
+        //}
     }
 }
