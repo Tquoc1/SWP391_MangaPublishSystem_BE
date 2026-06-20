@@ -58,7 +58,9 @@ builder.Services.AddScoped<IBoardEvaluationService, BoardEvaluationService>();
 builder.Services.AddScoped<BoardEvaluationRepository>();
 builder.Services.AddScoped<SeriesRepository>();
 builder.Services.AddScoped<GenreRepository>();
+builder.Services.AddScoped<IGenreService, GenreService>();
 builder.Services.AddScoped<TagRepository>();
+builder.Services.AddScoped<ITagService, TagService>();
 builder.Services.AddScoped<MangakaAssistantRepository>();
 builder.Services.AddScoped<IMangakaAssistantService, MangakaAssistantService>();
 
