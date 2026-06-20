@@ -63,7 +63,9 @@ builder.Services.AddScoped<TagRepository>();
 builder.Services.AddScoped<ITagService, TagService>();
 builder.Services.AddScoped<MangakaAssistantRepository>();
 builder.Services.AddScoped<IMangakaAssistantService, MangakaAssistantService>();
-
+builder.Services.AddScoped<IDashboardService, DashboardService>();
+builder.Services.AddScoped<NotificationRepository>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
 
 var supabaseSettings = builder.Configuration.GetSection("Supabase").Get<SupabaseSettings>()
     ?? throw new InvalidOperationException("Missing 'Supabase' configuration section.");

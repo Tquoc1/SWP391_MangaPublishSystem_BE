@@ -101,14 +101,18 @@ namespace MangaPublishSystem.Controllers
                 return BadRequest();
             }
 
-            //if (user.Roleid == 4)
-            //{
-            //    await _userService.AddMangakaProfile(new MangakaProfile { Userid = user.Userid });
-            //}
-            //else if (user.Roleid == 5)
-            //{
-            //    await _userService.AddAssistantProfile(new AssistantProfile { Userid = user.Userid });
-            //}
+            if (user.Roleid == 4)
+            {
+                await _userService.AddMangakaProfile(new MangakaProfile
+                {
+                    Userid = user.Userid,
+                    PenName = request.FullName // Lấy FullName làm Bút danh mặc định
+                });
+            }
+            else if (user.Roleid == 5)
+            {
+                await _userService.AddAssistantProfile(new AssistantProfile { Userid = user.Userid });
+            }
 
             var token = GenerateJSONWebToken(user);
             var refreshToken = await CreateRefreshToken(user);
@@ -195,7 +199,7 @@ namespace MangaPublishSystem.Controllers
 
 
         [HttpPost("create-staff")]
-        [Authorize(Roles = "Admin")] 
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> CreateStaff([FromBody] AuthDto.CreateStaffRequest request)
         {
             var existing = await _authService.GetUserByUsername(request.UserName);
@@ -214,11 +218,11 @@ namespace MangaPublishSystem.Controllers
                 return BadRequest("Fullname is required.");
             }
 
- 
+
             var user = new User
             {
                 Username = request.UserName,
-                Passwordhash = BCrypt.Net.BCrypt.HashPassword(request.Password), 
+                Passwordhash = BCrypt.Net.BCrypt.HashPassword(request.Password),
                 Fullname = request.FullName,
                 Email = request.Email,
                 Roleid = request.RoleId,

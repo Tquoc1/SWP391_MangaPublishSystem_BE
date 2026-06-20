@@ -13,10 +13,14 @@ namespace Services.Implement
     public class SeriesService : ISeriesService
     {
         private readonly SeriesRepository _seriesRepository;
+        private readonly INotificationService _notificationService;
+        private readonly UserRepository _userRepository;
 
-        public SeriesService(SeriesRepository seriesRepository)
+        public SeriesService(SeriesRepository seriesRepository, INotificationService notificationService, UserRepository userRepository)
         {
             _seriesRepository = seriesRepository;
+            _notificationService = notificationService;
+            _userRepository = userRepository;
         }
 
         public async Task<List<SeriesDto>> GetAllAsync()
@@ -67,6 +71,18 @@ namespace Services.Implement
             }
 
             await _seriesRepository.CreateAsync(series);
+
+            var admins = await _userRepository.GetAdminsAsync();
+            foreach (var admin in admins)
+            {
+                await _notificationService.CreateNotificationAsync(
+                    admin.Userid,
+                    "Tác phẩm mới chờ duyệt",
+                    $"Tác phẩm '{series.Title}' vừa được gửi lên hệ thống và đang chờ phê duyệt.",
+                    series.Seriesid
+                );
+            }
+
             return series.Seriesid;
         }
 
@@ -97,6 +113,18 @@ namespace Services.Implement
             }
 
             await _seriesRepository.UpdateAsync(existing);
+            
+            if (existing.Mangakaid > 0)
+            {
+                string statusVn = existing.Status == "Approved" ? "Đã duyệt" : (existing.Status == "Rejected" ? "Từ chối" : existing.Status);
+                await _notificationService.CreateNotificationAsync(
+                    existing.Mangakaid,
+                    "Cập nhật trạng thái Tác phẩm",
+                    $"Tác phẩm '{existing.Title}' của bạn đã được chuyển sang trạng thái: {statusVn}.",
+                    existing.Seriesid
+                );
+            }
+            
             return true;
         }
 

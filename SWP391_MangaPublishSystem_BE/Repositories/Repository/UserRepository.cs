@@ -47,5 +47,18 @@ namespace Repositories.Repository
             _context.AssistantProfiles.Update(profile);
             await _context.SaveChangesAsync();
         }
+
+        public async Task<int> UpdateAsync(User entity)
+        {
+            _context.Users.Update(entity);
+            return await _context.SaveChangesAsync();
+        }
+
+        public async Task<List<User>> GetAdminsAsync()
+        {
+            return await _context.Users
+                .Where(u => u.Roleid == 1 || u.Roleid == 2 || u.Roleid == 3)
+                .ToListAsync();
+        }
     }
 }
