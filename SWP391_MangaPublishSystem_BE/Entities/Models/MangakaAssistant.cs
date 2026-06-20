@@ -30,4 +30,5 @@ public partial class MangakaAssistant
     public virtual User Assistant { get; set; }
 
     public virtual User Mangaka { get; set; }
+    public bool? Isdeleted { get; set; }
 }

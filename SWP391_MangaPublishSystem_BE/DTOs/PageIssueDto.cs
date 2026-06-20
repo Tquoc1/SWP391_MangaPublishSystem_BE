@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System;
 
-namespace Services.DTO
+namespace DTOs
 {
     public class PageIssueDto
     {
@@ -14,7 +10,6 @@ namespace Services.DTO
         public int? AssignedToId { get; set; }
         public string IssueType { get; set; }
         public string WorkCategory { get; set; }
-
 
         public int BoxX { get; set; }
         public int BoxY { get; set; }
@@ -48,7 +43,6 @@ namespace Services.DTO
         public class Update
         {
             public int? AssignedToId { get; set; }
-            public string Status { get; set; }
             public string Description { get; set; }
 
             public int BoxX { get; set; }
@@ -58,7 +52,10 @@ namespace Services.DTO
 
             public DateTime? Deadline { get; set; }
             public DateTime? Completedat { get; set; }
-            public bool? Isdeleted { get; set; }
+        }
+        public class UpdateStatus
+        {
+            public string Status { get; set; } = string.Empty;
         }
     }
 }

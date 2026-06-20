@@ -46,5 +46,4 @@ public partial class PageIssue
     public virtual ICollection<IssueResource> IssueResources { get; set; } = new List<IssueResource>();
 
     public virtual Page Page { get; set; }
-
 }

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+using DTOs;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Services.DTO;
 using Services.Interface;
@@ -38,19 +39,9 @@ namespace MangaPublishSystem.Controllers
         }
 
         [HttpPost]
-        [Consumes("multipart/form-data")]
-        public async Task<ActionResult> Create([FromForm] PageDto.Create pageDto, IFormFile pageFile)
+        public async Task<ActionResult> Create([FromBody] PageDto.Create pageDto)
         {
-            if (pageFile == null || pageFile.Length == 0)
-            {
-                return BadRequest("Vui lòng tải lên hình ảnh cho trang truyện.");
-            }
-
-            await using var stream = pageFile.OpenReadStream();
-            string uploadedUrl = await _fileStorage.UploadAsync(
-                stream, pageFile.FileName, pageFile.ContentType, "manga-pages");
-
-            var result = await _pageService.CreateAsync(pageDto, uploadedUrl);
+            var result = await _pageService.CreateAsync(pageDto);
 
             if (result <= 0)
             {
@@ -61,32 +52,20 @@ namespace MangaPublishSystem.Controllers
             {
                 Message = "Created successfully",
                 Id = result,
-                Data = pageDto,
-                Pageimageurl = uploadedUrl
+                Data = pageDto
             });
         }
 
         [HttpPut("{id:int}")]
-        [Consumes("multipart/form-data")]
-        public async Task<ActionResult> Update(int id, [FromForm] PageDto.Update pageUpdateDto, IFormFile? pageFile)
+        public async Task<ActionResult> Update(int id, [FromBody] PageDto.Update pageUpdateDto)
         {
-
             var existing = await _pageService.GetByIdAsync(id);
             if (existing == null)
             {
                 return NotFound("Không tìm thấy trang truyện cần cập nhật.");
             }
 
-            string finalImageUrl = existing.Pageimageurl;
-
-            if (pageFile != null && pageFile.Length > 0)
-            {
-                await using var stream = pageFile.OpenReadStream();
-                finalImageUrl = await _fileStorage.UploadAsync(
-                    stream, pageFile.FileName, pageFile.ContentType, "manga-pages");
-            }
-
-            var result = await _pageService.UpdateAsync(id, pageUpdateDto, finalImageUrl);
+            var result = await _pageService.UpdateAsync(id, pageUpdateDto);
             if (result <= 0)
             {
                 return BadRequest("Cập nhật thất bại.");
@@ -95,16 +74,50 @@ namespace MangaPublishSystem.Controllers
             return NoContent();
         }
 
-        [HttpDelete("{id:int}")]
-        public async Task<ActionResult> Delete(int id)
+        [HttpPost("{id:int}/composite")]
+        public async Task<ActionResult> CompositeImage(int id)
         {
-            var result = await _pageService.RemoveAsync(id);
-            if (!result)
+            var result = await _pageService.CompositeAndSaveImageAsync(id);
+            if (result == null)
             {
-                return NotFound();
+                return BadRequest(new { Message = "Không thể ghép ảnh hoặc không có layer hợp lệ." });
             }
 
-            return NoContent();
+            return Ok(new { Message = "Composite successfully", Pageimageurl = result });
         }
+
+        [HttpPatch("{id:int}/status")]
+        public async Task<ActionResult> UpdateStatus(int id, [FromBody] string status)
+        {
+            var success = await _pageService.UpdateStatusAsync(id, status);
+            if (!success)
+            {
+                return NotFound("Không tìm thấy trang truyện để cập nhật trạng thái.");
+            }
+            return Ok(new { Message = "Status updated successfully" });
+        }
+
+        [HttpDelete("{id:int}/soft")]
+        public async Task<ActionResult> SoftDelete(int id)
+        {
+            var success = await _pageService.SoftDeleteAsync(id);
+            if (!success)
+            {
+                return NotFound("Không tìm thấy trang truyện để xóa tạm.");
+            }
+            return Ok(new { Message = "Soft deleted successfully" });
+        }
+
+        //[HttpDelete("{id:int}")]
+        //public async Task<ActionResult> Delete(int id)
+        //{
+        //    var result = await _pageService.RemoveAsync(id);
+        //    if (!result)
+        //    {
+        //        return NotFound();
+        //    }
+
+        //    return NoContent();
+        //}
     }
 }

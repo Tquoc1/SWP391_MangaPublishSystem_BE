@@ -13,11 +13,11 @@ public partial class Page
 
     public int Pagenumber { get; set; }
 
-    public string Pageimageurl { get; set; }
-
     public string Status { get; set; }
 
     public bool? Isdeleted { get; set; }
+
+    public string Pageimageurl { get; set; }
 
     public virtual Chapter Chapter { get; set; }
 

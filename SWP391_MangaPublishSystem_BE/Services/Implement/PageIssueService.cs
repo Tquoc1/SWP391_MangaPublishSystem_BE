@@ -1,11 +1,10 @@
-﻿using Entities.Models;
 using Repositories.Repository;
-using Services.DTO;
+using DTOs;
 using Services.Interface;
+using Entities.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Services.Implement
@@ -13,130 +12,134 @@ namespace Services.Implement
     public class PageIssueService : IPageIssueService
     {
         private readonly PageIssueRepository _pageIssueRepository;
-        private readonly PageRepository _pageRepository; 
 
-        public PageIssueService(PageIssueRepository pageIssueRepository, PageRepository pageRepository)
+        public PageIssueService(PageIssueRepository pageIssueRepository)
         {
             _pageIssueRepository = pageIssueRepository;
-            _pageRepository = pageRepository;
         }
 
         public async Task<List<PageIssueDto>> GetAllAsync(int? chapterId)
         {
-            var issues = await _pageIssueRepository.GetAllAsync();
-
-            var query = issues.Where(i => i.Isdeleted == false || i.Isdeleted == null);
-            if (chapterId.HasValue)
-            {
-                var pagesInChapter = await _pageRepository.GetAllAsync();
-
-                var pageIds = pagesInChapter
-                    .Where(p => p.Chapterid == chapterId.Value)
-                    .Select(p => p.Pageid)
-                    .ToList();
-                query = query.Where(i => pageIds.Contains(i.Pageid));
-            }
-
-            return query.Select(i => new PageIssueDto
-            {
-                Issueid = i.Issueid,
-                Pageid = i.Pageid,
-                CreatedById = i.CreatedById,
-                AssignedToId = i.AssignedToId,
-                IssueType = i.IssueType,
-                WorkCategory = i.WorkCategory,
-                BoxX = i.BoxX,
-                BoxY = i.BoxY,
-                BoxWidth = i.BoxWidth,
-                BoxHeight = i.BoxHeight,
-                Description = i.Description,
-                Status = i.Status,
-                Deadline = i.Deadline,
-                Createdat = i.Createdat,
-                Completedat = i.Completedat,
-                Isdeleted = i.Isdeleted
-            }).ToList();
+            var issues = await _pageIssueRepository.GetIssuesAsync(chapterId);
+            return issues.Select(MapToDto).ToList();
         }
 
         public async Task<PageIssueDto> GetByIdAsync(int id)
         {
-            var i = await _pageIssueRepository.GetByIdAsync(id);
-            if (i == null || i.Isdeleted == true) return null;
-
-            return new PageIssueDto
-            {
-                Issueid = i.Issueid,
-                Pageid = i.Pageid,
-                CreatedById = i.CreatedById,
-                AssignedToId = i.AssignedToId,
-                IssueType = i.IssueType,
-                WorkCategory = i.WorkCategory,
-                BoxX = i.BoxX,
-                BoxY = i.BoxY,
-                BoxWidth = i.BoxWidth,
-                BoxHeight = i.BoxHeight,
-                Description = i.Description,
-                Status = i.Status,
-                Deadline = i.Deadline,
-                Createdat = i.Createdat,
-                Completedat = i.Completedat,
-                Isdeleted = i.Isdeleted
-            };
+            var issue = await _pageIssueRepository.GetIssueByIdAsync(id);
+            return issue != null ? MapToDto(issue) : null;
         }
 
-        public Task<int> CreateAsync(PageIssueDto.Create pageDto)
+        public async Task<int> CreateAsync(PageIssueDto.Create dto)
         {
             var issue = new PageIssue
             {
-                Pageid = pageDto.Pageid,
-                CreatedById = pageDto.CreatedById,
-                AssignedToId = pageDto.AssignedToId,
-                IssueType = pageDto.IssueType,
-                WorkCategory = pageDto.WorkCategory,
-                BoxX = pageDto.BoxX,
-                BoxY = pageDto.BoxY,
-                BoxWidth = pageDto.BoxWidth,
-                BoxHeight = pageDto.BoxHeight,
-                Description = pageDto.Description,
-                Status = "Pending", 
-                Deadline = pageDto.Deadline,
+                Pageid = dto.Pageid,
+                CreatedById = dto.CreatedById,
+                AssignedToId = dto.AssignedToId,
+                IssueType = dto.IssueType,
+                WorkCategory = dto.WorkCategory,
+                BoxX = dto.BoxX,
+                BoxY = dto.BoxY,
+                BoxWidth = dto.BoxWidth,
+                BoxHeight = dto.BoxHeight,
+                Description = dto.Description,
+                Status = "Pending",
+                Deadline = dto.Deadline,
                 Createdat = DateTime.UtcNow,
                 Isdeleted = false
             };
-            return _pageIssueRepository.CreateAsync(issue);
+
+            await _pageIssueRepository.CreateAsync(issue);
+            return issue.Issueid;
         }
 
-        public async Task<int> UpdateAsync(int id, PageIssueDto.Update pageDto)
+        public async Task<bool> UpdateStatusAsync(int id, PageIssueDto.UpdateStatus dto)
+        {
+            var existing = await _pageIssueRepository.GetByIdAsync(id);
+
+            if (existing == null || existing.Isdeleted == true)
+                return false;
+
+            existing.Status = dto.Status;
+
+            await _pageIssueRepository.UpdateAsync(existing);
+
+            return true;
+        }
+        public async Task<int> UpdateAsync(int id, PageIssueDto.Update dto)
         {
             var existing = await _pageIssueRepository.GetByIdAsync(id);
             if (existing == null) return 0;
 
-            existing.AssignedToId = pageDto.AssignedToId;
-            existing.Status = pageDto.Status;
-            existing.Description = pageDto.Description;
-            existing.BoxX = pageDto.BoxX;
-            existing.BoxY = pageDto.BoxY;
-            existing.BoxWidth = pageDto.BoxWidth;
-            existing.BoxHeight = pageDto.BoxHeight;
-            existing.Deadline = pageDto.Deadline;
-            existing.Completedat = pageDto.Completedat;
+            existing.AssignedToId = dto.AssignedToId;
+            existing.Description = dto.Description;
+            existing.BoxX = dto.BoxX;
+            existing.BoxY = dto.BoxY;
+            existing.BoxWidth = dto.BoxWidth;
+            existing.BoxHeight = dto.BoxHeight;
+            existing.Deadline = dto.Deadline;
+            existing.Completedat = dto.Completedat;
 
-            if (pageDto.Isdeleted.HasValue)
-            {
-                existing.Isdeleted = pageDto.Isdeleted.Value;
-            }
+            await _pageIssueRepository.UpdateAsync(existing);
+            return 1;
+        }
 
-            return await _pageIssueRepository.UpdateAsync(existing);
+        public async Task<bool> UpdateStatusAsync(int id, string status)
+        {
+            var existing = await _pageIssueRepository.GetByIdAsync(id);
+            if (existing == null) return false;
+
+            existing.Status = status;
+            await _pageIssueRepository.UpdateAsync(existing);
+            return true;
+        }
+
+        public async Task<bool> SoftDeleteAsync(int id)
+        {
+            var existing = await _pageIssueRepository.GetByIdAsync(id);
+            if (existing == null) return false;
+
+            existing.Isdeleted = true;
+            await _pageIssueRepository.UpdateAsync(existing);
+            return true;
         }
 
         public async Task<bool> RemoveAsync(int id)
         {
             var existing = await _pageIssueRepository.GetByIdAsync(id);
-            if (existing == null) return false;
 
-            existing.Isdeleted = true; 
-            var result = await _pageIssueRepository.UpdateAsync(existing);
-            return result > 0;
+            if (existing == null || existing.Isdeleted == true)
+                return false;
+
+            existing.Isdeleted = true;
+
+            await _pageIssueRepository.UpdateAsync(existing);
+
+            return true;
+        }
+
+        private PageIssueDto MapToDto(PageIssue issue)
+        {
+            return new PageIssueDto
+            {
+                Issueid = issue.Issueid,
+                Pageid = issue.Pageid,
+                CreatedById = issue.CreatedById,
+                AssignedToId = issue.AssignedToId,
+                IssueType = issue.IssueType,
+                WorkCategory = issue.WorkCategory,
+                BoxX = issue.BoxX,
+                BoxY = issue.BoxY,
+                BoxWidth = issue.BoxWidth,
+                BoxHeight = issue.BoxHeight,
+                Description = issue.Description,
+                Status = issue.Status,
+                Deadline = issue.Deadline,
+                Createdat = issue.Createdat,
+                Completedat = issue.Completedat,
+                Isdeleted = issue.Isdeleted
+            };
         }
     }
 }

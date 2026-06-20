@@ -53,7 +53,16 @@ namespace MangaPublishSystem.Controllers
             var token = GenerateJSONWebToken(user);
             var refreshToken = await CreateRefreshToken(user);
 
-            return Ok(new { token, refreshToken });
+            return Ok(new
+            {
+                userid = user.Userid,
+                username = user.Username,
+                fullname = user.Fullname,
+                email = user.Email,
+                roleid = user.Roleid,
+                token,
+                refreshToken
+            });
         }
 
         [HttpPost("register")]
@@ -92,51 +101,14 @@ namespace MangaPublishSystem.Controllers
                 return BadRequest();
             }
 
-            if (request.RoleId == 4)
-            {
-                if (string.IsNullOrWhiteSpace(request.PenName))
-                {
-                    return BadRequest("PenName is required.");
-                }
-
-                var profile = new MangakaProfile
-                {
-                    Userid = user.Userid,
-                    PenName = request.PenName,
-                    Bio = request.Bio,
-                    PhoneNumber = request.PhoneNumber,
-                    BankName = request.BankName,
-                    BankAccountNumber = request.BankAccountNumber,
-                    BankAccountName = request.BankAccountName
-                };
-                await _userService.UpsertMangakaProfile(profile);
-            }
-            else if (request.RoleId == 5)
-            {
-                if (string.IsNullOrWhiteSpace(request.Skills) || string.IsNullOrWhiteSpace(request.SoftwareUsed))
-                {
-                    return BadRequest("Skills and SoftwareUsed are required.");
-                }
-
-                if (!request.IsAvailable.HasValue)
-                {
-                    return BadRequest("IsAvailable is required.");
-                }
-
-                var profile = new AssistantProfile
-                {
-                    Userid = user.Userid,
-                    PortfolioUrl = request.PortfolioUrl,
-                    PhoneNumber = request.PhoneNumber,
-                    IsAvailable = request.IsAvailable,
-                    Skills = request.Skills,
-                    SoftwareUsed = request.SoftwareUsed,
-                    BankName = request.BankName,
-                    BankAccountNumber = request.BankAccountNumber,
-                    BankAccountName = request.BankAccountName
-                };
-                await _userService.UpsertAssistantProfile(profile);
-            }
+            //if (user.Roleid == 4)
+            //{
+            //    await _userService.AddMangakaProfile(new MangakaProfile { Userid = user.Userid });
+            //}
+            //else if (user.Roleid == 5)
+            //{
+            //    await _userService.AddAssistantProfile(new AssistantProfile { Userid = user.Userid });
+            //}
 
             var token = GenerateJSONWebToken(user);
             var refreshToken = await CreateRefreshToken(user);

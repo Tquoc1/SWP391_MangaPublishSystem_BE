@@ -12,6 +12,10 @@ using Services.Interface;
 using Services.Settings;
 using System.Text;
 using System.Text.Json.Serialization;
+using Services.Interface;
+using Services.Implement;
+using Repositories.Repository;
+using Repositories.Repository;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,6 +25,16 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowViteFrontend", policy =>
+    {
+        policy.WithOrigins("http://localhost:5173", "http://localhost:5174")
+              .AllowAnyMethod()
+              .AllowAnyHeader()
+              .AllowCredentials();
+    });
+});
 
 builder.Services.AddDbContext<MangaPublishDBContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -40,6 +54,16 @@ builder.Services.AddScoped<IPageLayerService, PageLayerService>();
 builder.Services.AddScoped<PageLayerRepository>();
 builder.Services.AddScoped<IPageIssueService, PageIssueService>();
 builder.Services.AddScoped<PageIssueRepository>();
+builder.Services.AddScoped<IBoardEvaluationService, BoardEvaluationService>();
+builder.Services.AddScoped<BoardEvaluationRepository>();
+builder.Services.AddScoped<SeriesRepository>();
+builder.Services.AddScoped<GenreRepository>();
+builder.Services.AddScoped<IGenreService, GenreService>();
+builder.Services.AddScoped<TagRepository>();
+builder.Services.AddScoped<ITagService, TagService>();
+builder.Services.AddScoped<MangakaAssistantRepository>();
+builder.Services.AddScoped<IMangakaAssistantService, MangakaAssistantService>();
+
 
 var supabaseSettings = builder.Configuration.GetSection("Supabase").Get<SupabaseSettings>()
     ?? throw new InvalidOperationException("Missing 'Supabase' configuration section.");

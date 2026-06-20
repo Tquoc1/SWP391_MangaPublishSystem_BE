@@ -1,12 +1,6 @@
-﻿
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Services.DTO
+namespace DTOs
 {
     public class PageDto
     {
@@ -25,13 +19,7 @@ namespace Services.DTO
 
         public class Update
         {
-            //public int Pageid { get; set; }
-
             public int Pagenumber { get; set; }
-            public string Status { get; set; }
-            public bool? Isdeleted { get; set; }
         }
     }
-
-    
 }

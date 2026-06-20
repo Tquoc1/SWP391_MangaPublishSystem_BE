@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using DTOs;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Services.DTO;
 using Services.Interface;
@@ -55,6 +56,21 @@ namespace MangaPublishSystem.Controllers
                 Data = pageDto
             });
         }
+
+        [HttpPatch("{id}/status")]
+        public async Task<IActionResult> UpdateStatus(int id, PageIssueDto.UpdateStatus dto)
+        {
+            var result = await _pageIssueService.UpdateStatusAsync(id, dto);
+
+            if (!result)
+                return NotFound();
+
+            return Ok(new
+            {
+                message = "PageIssue status updated successfully"
+            });
+        }
+
         [HttpPut("{id:int}")]
         public async Task<ActionResult> Update(int id, [FromBody] PageIssueDto.Update pageDto)
         {
@@ -72,16 +88,38 @@ namespace MangaPublishSystem.Controllers
             return NoContent();
         }
 
-        [HttpDelete("{id:int}")]
-        public async Task<ActionResult> Delete(int id)
+        [HttpPatch("{id:int}/status")]
+        public async Task<ActionResult> UpdateStatus(int id, [FromBody] string status)
         {
-            var result = await _pageIssueService.RemoveAsync(id);
-            if (!result)
+            var success = await _pageIssueService.UpdateStatusAsync(id, status);
+            if (!success)
             {
-                return NotFound("Sự cố không tồn tại hoặc đã bị xóa trước đó.");
+                return NotFound("Không tìm thấy sự cố để cập nhật trạng thái.");
             }
-
-            return NoContent();
+            return Ok(new { Message = "Status updated successfully" });
         }
+
+        [HttpDelete("{id:int}/soft")]
+        public async Task<ActionResult> SoftDelete(int id)
+        {
+            var success = await _pageIssueService.SoftDeleteAsync(id);
+            if (!success)
+            {
+                return NotFound("Không tìm thấy sự cố để xóa tạm.");
+            }
+            return Ok(new { Message = "Soft deleted successfully" });
+        }
+
+        //[HttpDelete("{id:int}")]
+        //public async Task<ActionResult> Delete(int id)
+        //{
+        //    var result = await _pageIssueService.RemoveAsync(id);
+        //    if (!result)
+        //    {
+        //        return NotFound("Sự cố không tồn tại hoặc đã bị xóa trước đó.");
+        //    }
+
+        //    return NoContent();
+        //}
     }
 }

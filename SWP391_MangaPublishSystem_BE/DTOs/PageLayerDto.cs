@@ -1,13 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Services.DTO
+namespace DTOs
 {
-    // 1. DTO dùng cho hàm GET (Trả dữ liệu về)
     public class PageLayerDto
     {
         public int Layerid { get; set; }
@@ -16,8 +10,10 @@ namespace Services.DTO
         public string Layername { get; set; }
         public string Fileurl { get; set; }
         public int? Zindex { get; set; }
+        public decimal Opacity { get; set; }
         public int? Versionnumber { get; set; }
         public bool? Isvisible { get; set; }
+        public bool Isdeleted { get; set; }
         public DateTime? Createdat { get; set; }
 
         public class Create
@@ -26,14 +22,15 @@ namespace Services.DTO
             public int Uploaderid { get; set; }
             public string Layername { get; set; }
             public int? Zindex { get; set; }
+            public decimal? Opacity { get; set; }
         }
 
         public class Update
         {
             public string Layername { get; set; }
             public int? Zindex { get; set; }
+            public decimal? Opacity { get; set; }
             public int? Versionnumber { get; set; }
-            public bool? Isvisible { get; set; }
         }
     }
 }

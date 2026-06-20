@@ -1,11 +1,10 @@
-﻿using Entities.Models;
 using Repositories.Repository;
-using Services.DTO;
+using DTOs;
 using Services.Interface;
+using Entities.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Services.Implement
@@ -21,77 +20,70 @@ namespace Services.Implement
 
         public async Task<List<PageLayerDto>> GetAllAsync(int? pageId)
         {
-            var layers = await _pageLayerRepository.GetAllAsync();
-
-            var query = layers.AsQueryable();
-
-            if (pageId.HasValue)
-            {
-                query = query.Where(l => l.Pageid == pageId.Value);
-            }
-            return query
-                .OrderBy(l => l.Zindex)
-                .Select(l => new PageLayerDto
-                {
-                    Layerid = l.Layerid,
-                    Pageid = l.Pageid,
-                    Uploaderid = l.Uploaderid,
-                    Layername = l.Layername,
-                    Fileurl = l.Fileurl,
-                    Zindex = l.Zindex,
-                    Versionnumber = l.Versionnumber,
-                    Isvisible = l.Isvisible,
-                    Createdat = l.Createdat
-                }).ToList();
+            var layers = await _pageLayerRepository.GetLayersAsync(pageId);
+            return layers.Select(MapToDto).ToList();
         }
 
         public async Task<PageLayerDto> GetByIdAsync(int id)
         {
-            var l = await _pageLayerRepository.GetByIdAsync(id);
-            if (l == null) return null;
-
-            return new PageLayerDto
-            {
-                Layerid = l.Layerid,
-                Pageid = l.Pageid,
-                Uploaderid = l.Uploaderid,
-                Layername = l.Layername,
-                Fileurl = l.Fileurl,
-                Zindex = l.Zindex,
-                Versionnumber = l.Versionnumber,
-                Isvisible = l.Isvisible,
-                Createdat = l.Createdat
-            };
+            var layer = await _pageLayerRepository.GetLayerByIdAsync(id);
+            return layer != null ? MapToDto(layer) : null;
         }
 
-        public Task<int> CreateAsync(PageLayerDto.Create dto, string fileStorageUrl)
+        public async Task<int> CreateAsync(PageLayerDto.Create dto, string fileStorageUrl)
         {
             var layer = new Pagelayer
             {
                 Pageid = dto.Pageid,
                 Uploaderid = dto.Uploaderid,
                 Layername = dto.Layername,
-                Fileurl = fileStorageUrl, 
+                Fileurl = fileStorageUrl,
                 Zindex = dto.Zindex ?? 0,
-                Versionnumber = 1,        
+                Opacity = dto.Opacity ?? 1.0m,
+                Versionnumber = 1,
                 Isvisible = true,
+                Isdeleted = false,
                 Createdat = DateTime.UtcNow
             };
-            return _pageLayerRepository.CreateAsync(layer);
+
+            await _pageLayerRepository.CreateAsync(layer);
+            return layer.Layerid;
         }
-        public async Task<int> UpdateAsync(int id, PageLayerDto.Update pageLayerDto, string fileUrl)
+
+        public async Task<int> UpdateAsync(int id, PageLayerDto.Update dto, string fileUrl)
         {
             var existing = await _pageLayerRepository.GetByIdAsync(id);
             if (existing == null) return 0;
 
-            existing.Layername = pageLayerDto.Layername;
-            existing.Zindex = pageLayerDto.Zindex;
-            existing.Versionnumber = pageLayerDto.Versionnumber;
-            existing.Isvisible = pageLayerDto.Isvisible;
-
+            existing.Layername = dto.Layername;
+            existing.Zindex = dto.Zindex;
+            existing.Opacity = dto.Opacity ?? existing.Opacity;
+            existing.Versionnumber = dto.Versionnumber;
             existing.Fileurl = fileUrl;
 
-            return await _pageLayerRepository.UpdateAsync(existing);
+            await _pageLayerRepository.UpdateAsync(existing);
+            return 1;
+        }
+
+        public async Task<bool> ToggleVisibilityAsync(int id)
+        {
+            var existing = await _pageLayerRepository.GetByIdAsync(id);
+            if (existing == null) return false;
+
+            existing.Isvisible = !existing.Isvisible;
+
+            await _pageLayerRepository.UpdateAsync(existing);
+            return true;
+        }
+
+        public async Task<bool> SoftDeleteAsync(int id)
+        {
+            var existing = await _pageLayerRepository.GetByIdAsync(id);
+            if (existing == null) return false;
+
+            existing.Isdeleted = true;
+            await _pageLayerRepository.UpdateAsync(existing);
+            return true;
         }
 
         public async Task<bool> RemoveAsync(int id)
@@ -99,7 +91,26 @@ namespace Services.Implement
             var existing = await _pageLayerRepository.GetByIdAsync(id);
             if (existing == null) return false;
 
-            return await _pageLayerRepository.RemoveAsync(existing);
+            await _pageLayerRepository.RemoveAsync(existing);
+            return true;
+        }
+
+        private PageLayerDto MapToDto(Pagelayer layer)
+        {
+            return new PageLayerDto
+            {
+                Layerid = layer.Layerid,
+                Pageid = layer.Pageid,
+                Uploaderid = layer.Uploaderid,
+                Layername = layer.Layername,
+                Fileurl = layer.Fileurl,
+                Zindex = layer.Zindex,
+                Opacity = layer.Opacity,
+                Versionnumber = layer.Versionnumber,
+                Isvisible = layer.Isvisible,
+                Isdeleted = layer.Isdeleted,
+                Createdat = layer.Createdat
+            };
         }
     }
 }

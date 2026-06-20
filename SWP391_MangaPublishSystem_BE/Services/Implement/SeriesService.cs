@@ -1,7 +1,12 @@
-using Entities.Models;
-using Services.DTO;
 using Repositories.Repository;
+using DTOs;
 using Services.Interface;
+using Entities.Models;
+using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Services.Implement
 {
@@ -16,86 +21,164 @@ namespace Services.Implement
 
         public async Task<List<SeriesDto>> GetAllAsync()
         {
-            var series = await _seriesRepository.GetAllAsync();
-            return series.Select(s => new SeriesDto
-            {
-                Seriesid = s.Seriesid,
-                Title = s.Title,
-                Synopsis = s.Synopsis,
-                Mangakaid = s.Mangakaid,
-                Tantoueditorid = s.Tantoueditorid,
-                Publishformat = s.Publishformat,
-                Status = s.Status,
-                Proposalfileurl = s.Proposalfileurl,
-                Createdat = s.Createdat,
-                Approvedat = s.Approvedat,
-                Isdeleted = s.Isdeleted
-            }).ToList();
+            var seriesList = await _seriesRepository.GetAllWithDetailsAsync();
+            return seriesList.Select(MapToDto).ToList();
         }
 
         public async Task<SeriesDto> GetByIdAsync(int id)
         {
-            var s = await _seriesRepository.GetByIdAsync(id);
-            if (s == null) return null;
-
-            return new SeriesDto
-            {
-                Seriesid = s.Seriesid,
-                Title = s.Title,
-                Synopsis = s.Synopsis,
-                Mangakaid = s.Mangakaid,
-                Tantoueditorid = s.Tantoueditorid,
-                Publishformat = s.Publishformat,
-                Status = s.Status,
-                Proposalfileurl = s.Proposalfileurl,
-                Createdat = s.Createdat,
-                Approvedat = s.Approvedat,
-                Isdeleted = s.Isdeleted
-            };
+            var series = await _seriesRepository.GetByIdWithDetailsAsync(id);
+            return series != null ? MapToDto(series) : null;
         }
 
-        public Task<int> CreateAsync(SeriesDto.Create seriesDto, string proposalFileUrl)
+        public async Task<List<SeriesDto>> GetByMangakaIdAsync(int mangakaId)
+        {
+            var seriesList = await _seriesRepository.GetByMangakaIdAsync(mangakaId);
+            return seriesList.Select(MapToDto).ToList();
+        }
+
+        public async Task<int> CreateAsync(SeriesDto.Create seriesDto, string proposalFileUrl, string coverImageUrl)
         {
             var series = new Series
             {
                 Title = seriesDto.Title,
                 Synopsis = seriesDto.Synopsis,
                 Mangakaid = seriesDto.Mangakaid,
+                Agerating = seriesDto.Agerating ?? "G",
                 Tantoueditorid = seriesDto.Tantoueditorid,
-                //Publishformat = seriesDto.Publishformat,
+                Publishformat = "Pending",
                 Proposalfileurl = proposalFileUrl,
-                Status = "Pending", // Default value
+                Coverimageurl = coverImageUrl,
+                Status = "Pending",
                 Createdat = DateTime.UtcNow,
                 Isdeleted = false
             };
-            return _seriesRepository.CreateAsync(series);
-        }
 
-        public async Task<int> UpdateAsync(int id, SeriesDto.Update seriesDto, string proposalFileUrl)
-        {
-            var existing = await _seriesRepository.GetByIdAsync(id);
-            if (existing == null) return 0;
-
-            existing.Title = seriesDto.Title;
-            existing.Synopsis = seriesDto.Synopsis;
-            existing.Publishformat = seriesDto.Publishformat;
-            existing.Status = seriesDto.Status;
-            //existing.Proposalfileurl = seriesDto.Proposalfileurl;
-
-            if (seriesDto.Isdeleted.HasValue)
+            if (seriesDto.GenreIds != null && seriesDto.GenreIds.Any())
             {
-                existing.Isdeleted = seriesDto.Isdeleted;
+                var genres = await _seriesRepository.GetGenresByIdsAsync(seriesDto.GenreIds);
+                series.Genres = genres;
             }
 
-            return await _seriesRepository.UpdateAsync(existing);
+            if (seriesDto.TagIds != null && seriesDto.TagIds.Any())
+            {
+                var tags = await _seriesRepository.GetTagsByIdsAsync(seriesDto.TagIds);
+                series.Tags = tags;
+            }
+
+            await _seriesRepository.CreateAsync(series);
+            return series.Seriesid;
         }
 
-        public async Task<bool> RemoveAsync(int id)
+        public async Task<bool> UpdateAsync(int id, SeriesDto.Update seriesDto, string proposalFileUrl, string coverImageUrl)
+        {
+            var existing = new Series
+            {
+                Seriesid = id,
+                Title = seriesDto.Title,
+                Synopsis = seriesDto.Synopsis,
+                Agerating = seriesDto.Agerating,
+                Proposalfileurl = proposalFileUrl,
+                Coverimageurl = coverImageUrl
+            };
+
+            return await _seriesRepository.UpdateWithDetailsAsync(existing, seriesDto.GenreIds, seriesDto.TagIds);
+        }
+
+        public async Task<bool> UpdateStatusAsync(int id, SeriesDto.UpdateStatus seriesDto)
         {
             var existing = await _seriesRepository.GetByIdAsync(id);
             if (existing == null) return false;
 
-            return await _seriesRepository.RemoveAsync(existing);
+            existing.Status = seriesDto.Status;
+            if (seriesDto.Status.Equals("Approved", StringComparison.OrdinalIgnoreCase))
+            {
+                existing.Approvedat = DateTime.UtcNow;
+            }
+
+            await _seriesRepository.UpdateAsync(existing);
+            return true;
+        }
+
+        public async Task<bool> UpdatePublishFormatAsync(int id, SeriesDto.UpdatePublishFormat seriesDto)
+        {
+            var existing = await _seriesRepository.GetByIdAsync(id);
+            if (existing == null) return false;
+
+            existing.Publishformat = seriesDto.Publishformat;
+            await _seriesRepository.UpdateAsync(existing);
+            return true;
+        }
+
+        public async Task<bool> UploadCoverAsync(int id, string coverImageUrl)
+        {
+            var existing = await _seriesRepository.GetByIdWithDetailsAsync(id);
+
+            if (existing == null || existing.Isdeleted == true)
+                return false;
+
+            existing.Coverimageurl = coverImageUrl;
+
+            await _seriesRepository.UpdateAsync(existing);
+            return true;
+        }
+
+        public async Task<bool> UploadProposalAsync(int id, string proposalFileUrl)
+        {
+            var existing = await _seriesRepository.GetByIdWithDetailsAsync(id);
+
+            if (existing == null || existing.Isdeleted == true)
+                return false;
+
+            existing.Proposalfileurl = proposalFileUrl;
+
+            await _seriesRepository.UpdateAsync(existing);
+            return true;
+        }
+
+        public async Task<bool> SoftDeleteAsync(int id)
+        {
+            var existing = await _seriesRepository.GetByIdAsync(id);
+            if (existing == null) return false;
+
+            existing.Isdeleted = true;
+            await _seriesRepository.UpdateAsync(existing);
+            return true;
+        }
+
+        public async Task<bool> RemoveAsync(int id)
+        {
+            return await SoftDeleteAsync(id);
+        }
+
+        private SeriesDto MapToDto(Series series)
+        {
+            return new SeriesDto
+            {
+                Seriesid = series.Seriesid,
+                Title = series.Title,
+                Synopsis = series.Synopsis,
+                Mangakaid = series.Mangakaid,
+                Tantoueditorid = series.Tantoueditorid,
+                Publishformat = series.Publishformat,
+                Status = series.Status,
+                Proposalfileurl = series.Proposalfileurl,
+                Coverimageurl = series.Coverimageurl,
+                Agerating = series.Agerating,
+                Createdat = series.Createdat,
+                Approvedat = series.Approvedat,
+                Isdeleted = series.Isdeleted,
+                Genres = series.Genres?.Select(g => new SeriesDto.GenreSimpleDto
+                {
+                    GenreId = g.Genreid,
+                    GenreName = g.Genrename
+                }).ToList() ?? new List<SeriesDto.GenreSimpleDto>(),
+                Tags = series.Tags?.Select(t => new SeriesDto.TagSimpleDto
+                {
+                    TagId = t.Tagid,
+                    TagName = t.Tagname
+                }).ToList() ?? new List<SeriesDto.TagSimpleDto>()
+            };
         }
     }
 }

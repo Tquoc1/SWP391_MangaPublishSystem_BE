@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+using DTOs;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Services.DTO;
 using Services.Interface;
@@ -91,6 +92,25 @@ namespace MangaPublishSystem.Controllers
             }
 
             return NoContent();
+        }
+
+        [HttpPatch("{id:int}/visibility")]
+        public async Task<IActionResult> ToggleVisibility(int id)
+        {
+            var result = await _pageLayerService.ToggleVisibilityAsync(id);
+            if (!result) return NotFound("Không tìm thấy lớp nhân vật hoặc trang truyện.");
+            return NoContent();
+        }
+
+        [HttpDelete("{id:int}/soft")]
+        public async Task<ActionResult> SoftDelete(int id)
+        {
+            var success = await _pageLayerService.SoftDeleteAsync(id);
+            if (!success)
+            {
+                return NotFound("Không tìm thấy lớp vẽ để xóa tạm.");
+            }
+            return Ok(new { Message = "Soft deleted successfully" });
         }
 
         [HttpDelete("{id:int}")]
