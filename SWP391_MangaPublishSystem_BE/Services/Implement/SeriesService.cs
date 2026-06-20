@@ -72,31 +72,17 @@ namespace Services.Implement
 
         public async Task<bool> UpdateAsync(int id, SeriesDto.Update seriesDto, string proposalFileUrl, string coverImageUrl)
         {
-            var existing = await _seriesRepository.GetByIdWithDetailsAsync(id);
-            if (existing == null) return false;
-
-            if (!string.IsNullOrEmpty(seriesDto.Title)) existing.Title = seriesDto.Title;
-            if (!string.IsNullOrEmpty(seriesDto.Synopsis)) existing.Synopsis = seriesDto.Synopsis;
-            if (!string.IsNullOrEmpty(seriesDto.Agerating)) existing.Agerating = seriesDto.Agerating;
-            if (!string.IsNullOrEmpty(proposalFileUrl)) existing.Proposalfileurl = proposalFileUrl;
-            if (!string.IsNullOrEmpty(coverImageUrl)) existing.Coverimageurl = coverImageUrl;
-
-            if (seriesDto.GenreIds != null)
+            var existing = new Series
             {
-                existing.Genres.Clear();
-                var genres = await _seriesRepository.GetGenresByIdsAsync(seriesDto.GenreIds);
-                foreach (var genre in genres) existing.Genres.Add(genre);
-            }
+                Seriesid = id,
+                Title = seriesDto.Title,
+                Synopsis = seriesDto.Synopsis,
+                Agerating = seriesDto.Agerating,
+                Proposalfileurl = proposalFileUrl,
+                Coverimageurl = coverImageUrl
+            };
 
-            if (seriesDto.TagIds != null)
-            {
-                existing.Tags.Clear();
-                var tags = await _seriesRepository.GetTagsByIdsAsync(seriesDto.TagIds);
-                foreach (var tag in tags) existing.Tags.Add(tag);
-            }
-
-            await _seriesRepository.UpdateAsync(existing);
-            return true;
+            return await _seriesRepository.UpdateWithDetailsAsync(existing, seriesDto.GenreIds, seriesDto.TagIds);
         }
 
         public async Task<bool> UpdateStatusAsync(int id, SeriesDto.UpdateStatus seriesDto)

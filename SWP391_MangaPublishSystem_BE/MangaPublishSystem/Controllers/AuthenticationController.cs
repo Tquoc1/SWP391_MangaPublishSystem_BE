@@ -53,7 +53,16 @@ namespace MangaPublishSystem.Controllers
             var token = GenerateJSONWebToken(user);
             var refreshToken = await CreateRefreshToken(user);
 
-            return Ok(new { token, refreshToken });
+            return Ok(new
+            {
+                userid = user.Userid,
+                username = user.Username,
+                fullname = user.Fullname,
+                email = user.Email,
+                roleid = user.Roleid,
+                token,
+                refreshToken
+            });
         }
 
         [HttpPost("register")]
