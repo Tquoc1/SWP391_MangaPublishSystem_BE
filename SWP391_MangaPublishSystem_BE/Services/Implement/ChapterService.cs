@@ -24,6 +24,12 @@ namespace Services.Implement
             return chapters.Select(MapToDto).ToList();
         }
 
+        public async Task<List<ChapterDto>> GetByAssistantIdAsync(int assistantId)
+        {
+            var chapters = await _chapterRepository.GetChaptersByAssistantIdAsync(assistantId);
+            return chapters.Select(MapToDto).ToList();
+        }
+
         public async Task<ChapterDto> GetByIdAsync(int id)
         {
             var chapter = await _chapterRepository.GetChapterByIdAsync(id);
@@ -58,6 +64,26 @@ namespace Services.Implement
 
             await _chapterRepository.UpdateAsync(existing);
             return 1;
+        }
+
+        public async Task<bool> UpdateStatusAsync(int id, string status)
+        {
+            var existing = await _chapterRepository.GetByIdAsync(id);
+            if (existing == null) return false;
+
+            existing.Status = status;
+            await _chapterRepository.UpdateAsync(existing);
+            return true;
+        }
+
+        public async Task<bool> SoftDeleteAsync(int id)
+        {
+            var existing = await _chapterRepository.GetByIdAsync(id);
+            if (existing == null) return false;
+
+            existing.Isdeleted = true;
+            await _chapterRepository.UpdateAsync(existing);
+            return true;
         }
 
         public async Task<bool> RemoveAsync(int id)

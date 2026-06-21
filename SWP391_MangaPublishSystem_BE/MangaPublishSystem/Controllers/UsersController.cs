@@ -1,4 +1,4 @@
-﻿using System.Security.Claims;
+using System.Security.Claims;
 using Entities.Models;
 using Services.DTO;
 using Microsoft.AspNetCore.Authorization;
@@ -13,10 +13,12 @@ namespace MangaPublishSystem.Controllers
     public class UsersController : ControllerBase
     {
         private readonly IUserService _userService;
+        private readonly IFileStorageService _fileStorage;
 
-        public UsersController(IUserService userService)
+        public UsersController(IUserService userService, IFileStorageService fileStorage)
         {
             _userService = userService;
+            _fileStorage = fileStorage;
         }
 
         [HttpGet("profile")]
@@ -49,6 +51,7 @@ namespace MangaPublishSystem.Controllers
                     user.Fullname,
                     user.Email,
                     PenName = profile.PenName,
+                    AvatarUrl = profile.AvatarUrl,
                     Bio = profile.Bio,
                     PhoneNumber = profile.PhoneNumber,
                     BankName = profile.BankName,
@@ -71,6 +74,7 @@ namespace MangaPublishSystem.Controllers
                     user.Username,
                     user.Fullname,
                     user.Email,
+                    AvatarUrl = profile.AvatarUrl,
                     PortfolioUrl = profile.PortfolioUrl,
                     PhoneNumber = profile.PhoneNumber,
                     IsAvailable = profile.IsAvailable,
@@ -85,8 +89,9 @@ namespace MangaPublishSystem.Controllers
             return BadRequest("Unsupported role for profile.");
         }
 
-        [HttpPut("profile")]
-        public async Task<IActionResult> UpdateProfile([FromBody] UserDto.UpdateProfile request)
+        [HttpPut("profile/mangaka")]
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> UpdateMangakaProfile([FromForm] UserDto.UpdateMangakaProfile request, IFormFile? avatarFile)
         {
             var userIdClaim = User.FindFirst("userid")?.Value;
             if (!int.TryParse(userIdClaim, out var userId))
@@ -95,65 +100,66 @@ namespace MangaPublishSystem.Controllers
             }
 
             var user = await _userService.GetUserById(userId);
-            if (user == null)
+            if (user == null || user.Roleid != 4)
             {
-                return NotFound();
+                return BadRequest("User not found or is not a Mangaka.");
             }
 
-            if (string.IsNullOrWhiteSpace(request.FullName))
+            string? finalAvatarUrl = null;
+            if (avatarFile != null && avatarFile.Length > 0)
             {
-                return BadRequest("Fullname is required.");
+                await using var stream = avatarFile.OpenReadStream();
+                finalAvatarUrl = await _fileStorage.UploadAsync(
+                    stream, avatarFile.FileName, avatarFile.ContentType, "avatars");
             }
 
-            user.Fullname = request.FullName;
-            await _userService.UpdateUser(user);
-
-            if (user.Roleid == 4)
+            var result = await _userService.UpdateMangakaProfile(userId, request, finalAvatarUrl);
+            if (result <= 0)
             {
-                if (string.IsNullOrWhiteSpace(request.PenName))
-                {
-                    return BadRequest("PenName is required.");
-                }
-
-                var profile = await _userService.GetMangakaProfile(userId) ?? new MangakaProfile { Userid = userId };
-                profile.PenName = request.PenName;
-                profile.Bio = request.Bio;
-                profile.PhoneNumber = request.PhoneNumber;
-                profile.BankName = request.BankName;
-                profile.BankAccountNumber = request.BankAccountNumber;
-                profile.BankAccountName = request.BankAccountName;
-
-                await _userService.UpsertMangakaProfile(profile);
-                return NoContent();
+                return BadRequest("Failed to update Mangaka profile.");
             }
 
-            if (user.Roleid == 5)
+            return NoContent();
+        }
+
+        [HttpPut("profile/assistant")]
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> UpdateAssistantProfile([FromForm] UserDto.UpdateAssistantProfile request, IFormFile? avatarFile)
+        {
+            var userIdClaim = User.FindFirst("userid")?.Value;
+            if (!int.TryParse(userIdClaim, out var userId))
             {
-                if (string.IsNullOrWhiteSpace(request.Skills) || string.IsNullOrWhiteSpace(request.SoftwareUsed))
-                {
-                    return BadRequest("Skills and SoftwareUsed are required.");
-                }
-
-                if (!request.IsAvailable.HasValue)
-                {
-                    return BadRequest("IsAvailable is required.");
-                }
-
-                var profile = await _userService.GetAssistantProfile(userId) ?? new AssistantProfile { Userid = userId };
-                profile.PortfolioUrl = request.PortfolioUrl;
-                profile.PhoneNumber = request.PhoneNumber;
-                profile.IsAvailable = request.IsAvailable;
-                profile.Skills = request.Skills;
-                profile.SoftwareUsed = request.SoftwareUsed;
-                profile.BankName = request.BankName;
-                profile.BankAccountNumber = request.BankAccountNumber;
-                profile.BankAccountName = request.BankAccountName;
-
-                await _userService.UpsertAssistantProfile(profile);
-                return NoContent();
+                return Unauthorized();
             }
 
-            return BadRequest("Unsupported role for profile.");
+            var user = await _userService.GetUserById(userId);
+            if (user == null || user.Roleid != 5)
+            {
+                return BadRequest("User not found or is not an Assistant.");
+            }
+
+            string? finalAvatarUrl = null;
+            if (avatarFile != null && avatarFile.Length > 0)
+            {
+                await using var stream = avatarFile.OpenReadStream();
+                finalAvatarUrl = await _fileStorage.UploadAsync(
+                    stream, avatarFile.FileName, avatarFile.ContentType, "avatars");
+            }
+
+            var result = await _userService.UpdateAssistantProfile(userId, request, finalAvatarUrl);
+            if (result <= 0)
+            {
+                return BadRequest("Failed to update Assistant profile.");
+            }
+
+            return NoContent();
+        }
+
+        [HttpGet("available-assistants")]
+        public async Task<IActionResult> GetAvailableAssistants()
+        {
+            var assistants = await _userService.GetAvailableAssistants();
+            return Ok(assistants);
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using DTOs;
+using DTOs;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Services.DTO;
@@ -21,6 +21,13 @@ namespace MangaPublishSystem.Controllers
         public async Task<IActionResult> GetAll([FromQuery] int? seriesId)
         {
             var result = await _chapterService.GetAllAsync(seriesId);
+            return Ok(result);
+        }
+
+        [HttpGet("assistant/{assistantId:int}")]
+        public async Task<IActionResult> GetByAssistantId(int assistantId)
+        {
+            var result = await _chapterService.GetByAssistantIdAsync(assistantId);
             return Ok(result);
         }
 
@@ -80,22 +87,44 @@ namespace MangaPublishSystem.Controllers
             return NoContent(); 
         }
 
-        [HttpDelete("{id:int}")]
-        public async Task<IActionResult> Delete(int id)
+        [HttpPatch("{id:int}/status")]
+        public async Task<IActionResult> UpdateStatus(int id, [FromBody] string status)
         {
-            var existing = await _chapterService.GetByIdAsync(id);
-            if (existing == null)
-            {
-                return NotFound(new { Message = "Không tìm thấy chương truyện để xóa." });
-            }
-
-            var success = await _chapterService.RemoveAsync(id);
+            var success = await _chapterService.UpdateStatusAsync(id, status);
             if (!success)
             {
-                return BadRequest(new { Message = "Xóa thất bại." });
+                return NotFound(new { Message = "Không tìm thấy chương truyện để cập nhật trạng thái." });
             }
-
-            return Ok(new { Message = "Deleted successfully" });
+            return Ok(new { Message = "Status updated successfully" });
         }
+
+        [HttpDelete("{id:int}/soft")]
+        public async Task<IActionResult> SoftDelete(int id)
+        {
+            var success = await _chapterService.SoftDeleteAsync(id);
+            if (!success)
+            {
+                return NotFound(new { Message = "Không tìm thấy chương truyện để xóa tạm." });
+            }
+            return Ok(new { Message = "Soft deleted successfully" });
+        }
+
+        //[HttpDelete("{id:int}")]
+        //public async Task<IActionResult> Delete(int id)
+        //{
+        //    var existing = await _chapterService.GetByIdAsync(id);
+        //    if (existing == null)
+        //    {
+        //        return NotFound(new { Message = "Không tìm thấy chương truyện để xóa." });
+        //    }
+
+        //    var success = await _chapterService.RemoveAsync(id);
+        //    if (!success)
+        //    {
+        //        return BadRequest(new { Message = "Xóa thất bại." });
+        //    }
+
+        //    return Ok(new { Message = "Deleted successfully" });
+        //}
     }
 }

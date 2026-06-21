@@ -12,10 +12,12 @@ namespace Services.Implement
     public class PageIssueService : IPageIssueService
     {
         private readonly PageIssueRepository _pageIssueRepository;
+        private readonly INotificationService _notificationService;
 
-        public PageIssueService(PageIssueRepository pageIssueRepository)
+        public PageIssueService(PageIssueRepository pageIssueRepository, INotificationService notificationService)
         {
             _pageIssueRepository = pageIssueRepository;
+            _notificationService = notificationService;
         }
 
         public async Task<List<PageIssueDto>> GetAllAsync(int? chapterId)
@@ -51,6 +53,16 @@ namespace Services.Implement
             };
 
             await _pageIssueRepository.CreateAsync(issue);
+            
+            if (dto.AssignedToId.HasValue)
+            {
+                await _notificationService.CreateNotificationAsync(
+                    dto.AssignedToId.Value,
+                    "Công việc mới được giao",
+                    $"Bạn vừa được giao một công việc mới ở trang {dto.Pageid}."
+                );
+            }
+            
             return issue.Issueid;
         }
 
@@ -64,6 +76,15 @@ namespace Services.Implement
             existing.Status = dto.Status;
 
             await _pageIssueRepository.UpdateAsync(existing);
+            
+            if (dto.Status == "Resolved" && existing.CreatedById > 0)
+            {
+                await _notificationService.CreateNotificationAsync(
+                    existing.CreatedById,
+                    "Công việc đã hoàn thành",
+                    $"Assistant đã hoàn thành công việc ở trang {existing.Pageid}."
+                );
+            }
 
             return true;
         }
@@ -73,7 +94,6 @@ namespace Services.Implement
             if (existing == null) return 0;
 
             existing.AssignedToId = dto.AssignedToId;
-            existing.Status = dto.Status;
             existing.Description = dto.Description;
             existing.BoxX = dto.BoxX;
             existing.BoxY = dto.BoxY;
@@ -82,13 +102,38 @@ namespace Services.Implement
             existing.Deadline = dto.Deadline;
             existing.Completedat = dto.Completedat;
 
-            if (dto.Isdeleted.HasValue)
-            {
-                existing.Isdeleted = dto.Isdeleted.Value;
-            }
-
             await _pageIssueRepository.UpdateAsync(existing);
             return 1;
+        }
+
+        public async Task<bool> UpdateStatusAsync(int id, string status)
+        {
+            var existing = await _pageIssueRepository.GetByIdAsync(id);
+            if (existing == null) return false;
+
+            existing.Status = status;
+            await _pageIssueRepository.UpdateAsync(existing);
+            
+            if (status == "Resolved" && existing.CreatedById > 0)
+            {
+                await _notificationService.CreateNotificationAsync(
+                    existing.CreatedById,
+                    "Công việc đã hoàn thành",
+                    $"Assistant đã hoàn thành công việc ở trang {existing.Pageid}."
+                );
+            }
+            
+            return true;
+        }
+
+        public async Task<bool> SoftDeleteAsync(int id)
+        {
+            var existing = await _pageIssueRepository.GetByIdAsync(id);
+            if (existing == null) return false;
+
+            existing.Isdeleted = true;
+            await _pageIssueRepository.UpdateAsync(existing);
+            return true;
         }
 
         public async Task<bool> RemoveAsync(int id)

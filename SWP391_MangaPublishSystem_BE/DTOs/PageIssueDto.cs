@@ -43,7 +43,6 @@ namespace DTOs
         public class Update
         {
             public int? AssignedToId { get; set; }
-            public string Status { get; set; }
             public string Description { get; set; }
 
             public int BoxX { get; set; }
@@ -53,7 +52,6 @@ namespace DTOs
 
             public DateTime? Deadline { get; set; }
             public DateTime? Completedat { get; set; }
-            public bool? Isdeleted { get; set; }
         }
         public class UpdateStatus
         {

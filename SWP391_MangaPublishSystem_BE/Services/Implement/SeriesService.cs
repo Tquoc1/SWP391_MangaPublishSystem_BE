@@ -13,10 +13,14 @@ namespace Services.Implement
     public class SeriesService : ISeriesService
     {
         private readonly SeriesRepository _seriesRepository;
+        private readonly INotificationService _notificationService;
+        private readonly UserRepository _userRepository;
 
-        public SeriesService(SeriesRepository seriesRepository)
+        public SeriesService(SeriesRepository seriesRepository, INotificationService notificationService, UserRepository userRepository)
         {
             _seriesRepository = seriesRepository;
+            _notificationService = notificationService;
+            _userRepository = userRepository;
         }
 
         public async Task<List<SeriesDto>> GetAllAsync()
@@ -67,36 +71,34 @@ namespace Services.Implement
             }
 
             await _seriesRepository.CreateAsync(series);
+
+            var admins = await _userRepository.GetAdminsAsync();
+            foreach (var admin in admins)
+            {
+                await _notificationService.CreateNotificationAsync(
+                    admin.Userid,
+                    "Tác phẩm mới chờ duyệt",
+                    $"Tác phẩm '{series.Title}' vừa được gửi lên hệ thống và đang chờ phê duyệt.",
+                    series.Seriesid
+                );
+            }
+
             return series.Seriesid;
         }
 
         public async Task<bool> UpdateAsync(int id, SeriesDto.Update seriesDto, string proposalFileUrl, string coverImageUrl)
         {
-            var existing = await _seriesRepository.GetByIdWithDetailsAsync(id);
-            if (existing == null) return false;
-
-            if (!string.IsNullOrEmpty(seriesDto.Title)) existing.Title = seriesDto.Title;
-            if (!string.IsNullOrEmpty(seriesDto.Synopsis)) existing.Synopsis = seriesDto.Synopsis;
-            if (!string.IsNullOrEmpty(seriesDto.Agerating)) existing.Agerating = seriesDto.Agerating;
-            if (!string.IsNullOrEmpty(proposalFileUrl)) existing.Proposalfileurl = proposalFileUrl;
-            if (!string.IsNullOrEmpty(coverImageUrl)) existing.Coverimageurl = coverImageUrl;
-
-            if (seriesDto.GenreIds != null)
+            var existing = new Series
             {
-                existing.Genres.Clear();
-                var genres = await _seriesRepository.GetGenresByIdsAsync(seriesDto.GenreIds);
-                foreach (var genre in genres) existing.Genres.Add(genre);
-            }
+                Seriesid = id,
+                Title = seriesDto.Title,
+                Synopsis = seriesDto.Synopsis,
+                Agerating = seriesDto.Agerating,
+                Proposalfileurl = proposalFileUrl,
+                Coverimageurl = coverImageUrl
+            };
 
-            if (seriesDto.TagIds != null)
-            {
-                existing.Tags.Clear();
-                var tags = await _seriesRepository.GetTagsByIdsAsync(seriesDto.TagIds);
-                foreach (var tag in tags) existing.Tags.Add(tag);
-            }
-
-            await _seriesRepository.UpdateAsync(existing);
-            return true;
+            return await _seriesRepository.UpdateWithDetailsAsync(existing, seriesDto.GenreIds, seriesDto.TagIds);
         }
 
         public async Task<bool> UpdateStatusAsync(int id, SeriesDto.UpdateStatus seriesDto)
@@ -111,6 +113,18 @@ namespace Services.Implement
             }
 
             await _seriesRepository.UpdateAsync(existing);
+            
+            if (existing.Mangakaid > 0)
+            {
+                string statusVn = existing.Status == "Approved" ? "Đã duyệt" : (existing.Status == "Rejected" ? "Từ chối" : existing.Status);
+                await _notificationService.CreateNotificationAsync(
+                    existing.Mangakaid,
+                    "Cập nhật trạng thái Tác phẩm",
+                    $"Tác phẩm '{existing.Title}' của bạn đã được chuyển sang trạng thái: {statusVn}.",
+                    existing.Seriesid
+                );
+            }
+            
             return true;
         }
 

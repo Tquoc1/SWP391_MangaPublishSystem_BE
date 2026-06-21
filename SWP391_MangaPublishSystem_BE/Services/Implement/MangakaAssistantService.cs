@@ -1,4 +1,4 @@
-﻿using DTOs;
+using DTOs;
 using Entities.Models;
 using Repositories.Repository;
 using Services.Interface;
@@ -8,10 +8,12 @@ namespace Services.Implement
     public class MangakaAssistantService : IMangakaAssistantService
     {
         private readonly MangakaAssistantRepository _repository;
+        private readonly INotificationService _notificationService;
 
-        public MangakaAssistantService(MangakaAssistantRepository repository)
+        public MangakaAssistantService(MangakaAssistantRepository repository, INotificationService notificationService)
         {
             _repository = repository;
+            _notificationService = notificationService;
         }
 
         public async Task<List<MangakaAssistantDto>> GetAllAsync(int? mangakaId, int? assistantId)
@@ -67,7 +69,16 @@ namespace Services.Implement
                 Isdeleted = false
             };
 
-            return await _repository.AddAsync(entity);
+            var result = await _repository.AddAsync(entity);
+            if (result > 0)
+            {
+                await _notificationService.CreateNotificationAsync(
+                    dto.AssistantId,
+                    "Lời mời hợp tác mới",
+                    $"Một Mangaka vừa gửi cho bạn một lời mời hợp tác."
+                );
+            }
+            return result;
         }
 
         public async Task<int> UpdateAsync(int id, MangakaAssistantDto.Update dto)
@@ -99,7 +110,17 @@ namespace Services.Implement
 
             entity.Status = status;
 
-            return await _repository.UpdateAsync(entity);
+            var result = await _repository.UpdateAsync(entity);
+            if (result > 0)
+            {
+                string action = status == "Accepted" ? "chấp nhận" : (status == "Rejected" ? "từ chối" : "cập nhật");
+                await _notificationService.CreateNotificationAsync(
+                    entity.MangakaId,
+                    "Phản hồi lời mời hợp tác",
+                    $"Một Assistant đã {action} lời mời của bạn."
+                );
+            }
+            return result;
         }
 
         public async Task<bool> RemoveAsync(int id)

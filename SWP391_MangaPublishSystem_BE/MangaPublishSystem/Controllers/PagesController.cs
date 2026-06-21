@@ -1,4 +1,4 @@
-﻿using DTOs;
+using DTOs;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Services.DTO;
@@ -11,12 +11,23 @@ namespace MangaPublishSystem.Controllers
     public class PagesController : ControllerBase
     {
         private readonly IPageService _pageService;
+        private readonly IPageLayerService _pageLayerService;
         private readonly IFileStorageService _fileStorage;
+        private readonly IChapterService _chapterService;
+        private readonly ISeriesService _seriesService;
 
-        public PagesController(IPageService pageService, IFileStorageService fileStorage)
+        public PagesController(
+            IPageService pageService, 
+            IPageLayerService pageLayerService, 
+            IFileStorageService fileStorage,
+            IChapterService chapterService,
+            ISeriesService seriesService)
         {
             _pageService = pageService;
+            _pageLayerService = pageLayerService;
             _fileStorage = fileStorage;
+            _chapterService = chapterService;
+            _seriesService = seriesService;
         }
 
         [HttpGet]
@@ -51,12 +62,42 @@ namespace MangaPublishSystem.Controllers
             string uploadedUrl = await _fileStorage.UploadAsync(
                 stream, pageFile.FileName, pageFile.ContentType, "manga-pages");
 
-            var result = await _pageService.CreateAsync(pageDto, uploadedUrl);
+            var result = await _pageService.CreateAsync(pageDto);
 
             if (result <= 0)
             {
                 return BadRequest();
             }
+
+            int uploaderId = 0;
+            if (User.HasClaim(c => c.Type == "userid"))
+            {
+                int.TryParse(User.FindFirst("userid")?.Value, out uploaderId);
+            }
+
+            // Nếu người dùng không đăng nhập (uploaderId = 0), lấy Mangakaid làm uploaderId mặc định
+            if (uploaderId == 0)
+            {
+                var chapter = await _chapterService.GetByIdAsync(pageDto.Chapterid);
+                if (chapter != null)
+                {
+                    var series = await _seriesService.GetByIdAsync(chapter.Seriesid);
+                    if (series != null)
+                    {
+                        uploaderId = series.Mangakaid;
+                    }
+                }
+            }
+
+            var layerDto = new PageLayerDto.Create
+            {
+                Pageid = result,
+                Uploaderid = uploaderId,
+                Layername = "Default",
+                Zindex = 1
+            };
+            
+            await _pageLayerService.CreateAsync(layerDto, uploadedUrl);
 
             return Ok(new
             {
@@ -68,26 +109,15 @@ namespace MangaPublishSystem.Controllers
         }
 
         [HttpPut("{id:int}")]
-        [Consumes("multipart/form-data")]
-        public async Task<ActionResult> Update(int id, [FromForm] PageDto.Update pageUpdateDto, IFormFile? pageFile)
+        public async Task<ActionResult> Update(int id, [FromBody] PageDto.Update pageUpdateDto)
         {
-
             var existing = await _pageService.GetByIdAsync(id);
             if (existing == null)
             {
                 return NotFound("Không tìm thấy trang truyện cần cập nhật.");
             }
 
-            string finalImageUrl = existing.Pageimageurl;
-
-            if (pageFile != null && pageFile.Length > 0)
-            {
-                await using var stream = pageFile.OpenReadStream();
-                finalImageUrl = await _fileStorage.UploadAsync(
-                    stream, pageFile.FileName, pageFile.ContentType, "manga-pages");
-            }
-
-            var result = await _pageService.UpdateAsync(id, pageUpdateDto, finalImageUrl);
+            var result = await _pageService.UpdateAsync(id, pageUpdateDto);
             if (result <= 0)
             {
                 return BadRequest("Cập nhật thất bại.");
@@ -96,58 +126,50 @@ namespace MangaPublishSystem.Controllers
             return NoContent();
         }
 
-        [HttpPost("{id:int}/upload-image")]
-        [Consumes("multipart/form-data")]
-        public async Task<IActionResult> UploadImage(int id, IFormFile pageFile)
+        [HttpPost("{id:int}/composite")]
+        public async Task<ActionResult> CompositeImage(int id)
         {
-            if (pageFile == null || pageFile.Length == 0)
-                return BadRequest("Vui lòng chọn hình ảnh trang truyện.");
-
-            await using var stream = pageFile.OpenReadStream();
-
-            var uploadedUrl = await _fileStorage.UploadAsync(
-                stream,
-                pageFile.FileName,
-                pageFile.ContentType,
-                "manga-pages"
-            );
-
-            var result = await _pageService.UploadImageAsync(id, uploadedUrl);
-
-            if (!result)
-                return NotFound("Không tìm thấy page.");
-
-            return Ok(new
+            var result = await _pageService.CompositeAndSaveImageAsync(id);
+            if (result == null)
             {
-                message = "Page image uploaded successfully",
-                pageImageUrl = uploadedUrl
-            });
-        }
-
-        [HttpPatch("{id}/status")]
-        public async Task<IActionResult> UpdateStatus(int id, PageDto.UpdateStatus dto)
-        {
-            var result = await _pageService.UpdateStatusAsync(id, dto);
-
-            if (!result)
-                return NotFound();
-
-            return Ok(new
-            {
-                message = "Page status updated successfully"
-            });
-        }
-
-        [HttpDelete("{id:int}")]
-        public async Task<ActionResult> Delete(int id)
-        {
-            var result = await _pageService.RemoveAsync(id);
-            if (!result)
-            {
-                return NotFound();
+                return BadRequest(new { Message = "Không thể ghép ảnh hoặc không có layer hợp lệ." });
             }
 
-            return NoContent();
+            return Ok(new { Message = "Composite successfully", Pageimageurl = result });
         }
+
+        [HttpPatch("{id:int}/status")]
+        public async Task<ActionResult> UpdateStatus(int id, [FromBody] string status)
+        {
+            var success = await _pageService.UpdateStatusAsync(id, status);
+            if (!success)
+            {
+                return NotFound("Không tìm thấy trang truyện để cập nhật trạng thái.");
+            }
+            return Ok(new { Message = "Status updated successfully" });
+        }
+
+        [HttpDelete("{id:int}/soft")]
+        public async Task<ActionResult> SoftDelete(int id)
+        {
+            var success = await _pageService.SoftDeleteAsync(id);
+            if (!success)
+            {
+                return NotFound("Không tìm thấy trang truyện để xóa tạm.");
+            }
+            return Ok(new { Message = "Soft deleted successfully" });
+        }
+
+        //[HttpDelete("{id:int}")]
+        //public async Task<ActionResult> Delete(int id)
+        //{
+        //    var result = await _pageService.RemoveAsync(id);
+        //    if (!result)
+        //    {
+        //        return NotFound();
+        //    }
+
+        //    return NoContent();
+        //}
     }
 }

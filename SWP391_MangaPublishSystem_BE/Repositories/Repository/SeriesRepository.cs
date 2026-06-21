@@ -50,5 +50,65 @@ namespace Repositories.Repository
         {
             return await _context.Tags.Where(t => tagIds.Contains(t.Tagid)).ToListAsync();
         }
+
+        public new async Task<int> CreateAsync(Series entity)
+        {
+            if (entity.Genres != null && entity.Genres.Any())
+            {
+                foreach (var g in entity.Genres)
+                {
+                    _context.Attach(g);
+                }
+            }
+            if (entity.Tags != null && entity.Tags.Any())
+            {
+                foreach (var t in entity.Tags)
+                {
+                    _context.Attach(t);
+                }
+            }
+            _context.Series.Add(entity);
+            return await _context.SaveChangesAsync();
+        }
+
+        public async Task<bool> UpdateWithDetailsAsync(Series entity, List<int> genreIds, List<int> tagIds)
+        {
+            var existing = await _context.Series
+                .AsTracking()
+                .Include(s => s.Genres)
+                .Include(s => s.Tags)
+                .FirstOrDefaultAsync(s => s.Seriesid == entity.Seriesid);
+
+            if (existing == null) return false;
+
+            existing.Title = entity.Title;
+            existing.Synopsis = entity.Synopsis;
+            existing.Agerating = entity.Agerating;
+            if (!string.IsNullOrEmpty(entity.Proposalfileurl)) existing.Proposalfileurl = entity.Proposalfileurl;
+            if (!string.IsNullOrEmpty(entity.Coverimageurl)) existing.Coverimageurl = entity.Coverimageurl;
+
+            if (genreIds != null)
+            {
+                existing.Genres.Clear();
+                if (genreIds.Any())
+                {
+                    var genres = await _context.Genres.Where(g => genreIds.Contains(g.Genreid)).ToListAsync();
+                    foreach (var g in genres) existing.Genres.Add(g);
+                }
+            }
+
+            if (tagIds != null)
+            {
+                existing.Tags.Clear();
+                if (tagIds.Any())
+                {
+                    var tags = await _context.Tags.Where(t => tagIds.Contains(t.Tagid)).ToListAsync();
+                    foreach (var t in tags) existing.Tags.Add(t);
+                }
+            }
+
+            await _context.SaveChangesAsync();
+            return true;
+        }
     }
 }

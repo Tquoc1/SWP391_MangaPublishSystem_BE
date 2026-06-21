@@ -90,61 +90,61 @@ namespace MangaPublishSystem.Controllers
             });
         }
 
-        [HttpPost("{id:int}/upload-cover")]
-        [Consumes("multipart/form-data")]
-        public async Task<IActionResult> UploadCover(int id, IFormFile coverImage)
-        {
-            if (coverImage == null || coverImage.Length == 0)
-                return BadRequest("Vui lòng chọn ảnh bìa.");
+        //[HttpPost("{id:int}/upload-cover")]
+        //[Consumes("multipart/form-data")]
+        //public async Task<IActionResult> UploadCover(int id, IFormFile coverImage)
+        //{
+        //    if (coverImage == null || coverImage.Length == 0)
+        //        return BadRequest("Vui lòng chọn ảnh bìa.");
 
-            await using var stream = coverImage.OpenReadStream();
+        //    await using var stream = coverImage.OpenReadStream();
 
-            var uploadedUrl = await _fileStorage.UploadAsync(
-                stream,
-                coverImage.FileName,
-                coverImage.ContentType,
-                "covers"
-            );
+        //    var uploadedUrl = await _fileStorage.UploadAsync(
+        //        stream,
+        //        coverImage.FileName,
+        //        coverImage.ContentType,
+        //        "covers"
+        //    );
 
-            var result = await _seriesService.UploadCoverAsync(id, uploadedUrl);
+        //    var result = await _seriesService.UploadCoverAsync(id, uploadedUrl);
 
-            if (!result)
-                return NotFound("Không tìm thấy series.");
+        //    if (!result)
+        //        return NotFound("Không tìm thấy series.");
 
-            return Ok(new
-            {
-                message = "Cover uploaded successfully",
-                coverImageUrl = uploadedUrl
-            });
-        }
+        //    return Ok(new
+        //    {
+        //        message = "Cover uploaded successfully",
+        //        coverImageUrl = uploadedUrl
+        //    });
+        //}
 
-        [HttpPost("{id:int}/upload-proposal")]
-        [Consumes("multipart/form-data")]
-        public async Task<IActionResult> UploadProposal(int id, IFormFile proposalFile)
-        {
-            if (proposalFile == null || proposalFile.Length == 0)
-                return BadRequest("Vui lòng chọn file proposal.");
+        //[HttpPost("{id:int}/upload-proposal")]
+        //[Consumes("multipart/form-data")]
+        //public async Task<IActionResult> UploadProposal(int id, IFormFile proposalFile)
+        //{
+        //    if (proposalFile == null || proposalFile.Length == 0)
+        //        return BadRequest("Vui lòng chọn file proposal.");
 
-            await using var stream = proposalFile.OpenReadStream();
+        //    await using var stream = proposalFile.OpenReadStream();
 
-            var uploadedUrl = await _fileStorage.UploadAsync(
-                stream,
-                proposalFile.FileName,
-                proposalFile.ContentType,
-                "proposals"
-            );
+        //    var uploadedUrl = await _fileStorage.UploadAsync(
+        //        stream,
+        //        proposalFile.FileName,
+        //        proposalFile.ContentType,
+        //        "proposals"
+        //    );
 
-            var result = await _seriesService.UploadProposalAsync(id, uploadedUrl);
+        //    var result = await _seriesService.UploadProposalAsync(id, uploadedUrl);
 
-            if (!result)
-                return NotFound("Không tìm thấy series.");
+        //    if (!result)
+        //        return NotFound("Không tìm thấy series.");
 
-            return Ok(new
-            {
-                message = "Proposal uploaded successfully",
-                proposalFileUrl = uploadedUrl
-            });
-        }
+        //    return Ok(new
+        //    {
+        //        message = "Proposal uploaded successfully",
+        //        proposalFileUrl = uploadedUrl
+        //    });
+        //}
 
         [HttpPut("{id:int}", Order = 5)]
         [Consumes("multipart/form-data")]
@@ -218,16 +218,16 @@ namespace MangaPublishSystem.Controllers
             return NoContent();
         }
 
-        [HttpDelete("{id:int}", Order = 9)]
-        public async Task<ActionResult> Delete(int id)
-        {
-            var result = await _seriesService.RemoveAsync(id);
-            if (!result)
-            {
-                return NotFound("Không tìm thấy tác phẩm cần xóa cứng khỏi hệ thống.");
-            }
+        //[HttpDelete("{id:int}", Order = 9)]
+        //public async Task<ActionResult> Delete(int id)
+        //{
+        //    var result = await _seriesService.RemoveAsync(id);
+        //    if (!result)
+        //    {
+        //        return NotFound("Không tìm thấy tác phẩm cần xóa cứng khỏi hệ thống.");
+        //    }
 
-            return NoContent();
-        }
+        //    return NoContent();
+        //}
     }
 }

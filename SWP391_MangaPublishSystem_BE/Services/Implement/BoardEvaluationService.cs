@@ -1,4 +1,4 @@
-﻿using DTOs;
+using DTOs;
 using Entities.Models;
 using Microsoft.EntityFrameworkCore;
 using Repositories.Repository;
@@ -11,13 +11,16 @@ namespace Services.Implement
     {
         private readonly BoardEvaluationRepository _repository;
         private readonly SeriesRepository _seriesRepository;
+        private readonly INotificationService _notificationService;
 
         public BoardEvaluationService(
             BoardEvaluationRepository repository,
-            SeriesRepository seriesRepository)
+            SeriesRepository seriesRepository,
+            INotificationService notificationService)
         {
             _repository = repository;
             _seriesRepository = seriesRepository;
+            _notificationService = notificationService;
         }
 
         public async Task<List<BoardEvaluationDto.Response>> GetAllAsync()
@@ -136,6 +139,16 @@ namespace Services.Implement
             await _repository.CreateAsync(evaluation);
 
             await RecalculateSeriesEvaluationAsync(dto.Seriesid);
+            
+            if (series.Mangakaid > 0)
+            {
+                await _notificationService.CreateNotificationAsync(
+                    series.Mangakaid,
+                    "Có đánh giá mới từ Hội đồng",
+                    $"Tác phẩm '{series.Title}' của bạn vừa nhận được một đánh giá mới.",
+                    series.Seriesid
+                );
+            }
 
             return evaluation.Evaluationid;
         }

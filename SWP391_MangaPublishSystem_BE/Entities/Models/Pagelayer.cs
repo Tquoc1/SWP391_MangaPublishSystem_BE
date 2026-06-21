@@ -24,6 +24,8 @@ public partial class Pagelayer
     public bool? Isvisible { get; set; }
 
     public DateTime? Createdat { get; set; }
+    public decimal Opacity { get; set; }
+    public bool Isdeleted { get; set; }
 
     public virtual Page Page { get; set; }
 
