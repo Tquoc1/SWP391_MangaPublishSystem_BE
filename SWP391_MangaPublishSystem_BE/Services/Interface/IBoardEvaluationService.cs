@@ -15,5 +15,7 @@ namespace Services.Interface
         Task<int> CreateAsync(BoardEvaluationDto.Create dto);
         Task<bool> UpdateAsync(int id, BoardEvaluationDto.Update dto);
         Task<bool> DeleteAsync(int id);
+        Task<int> CreateBatchAsync(BoardEvaluationDto.CreateBatch dto);
+        Task<BoardEvaluationDto.BatchSummary?> GetBatchSummaryAsync(int evaluationId);
     }
 }

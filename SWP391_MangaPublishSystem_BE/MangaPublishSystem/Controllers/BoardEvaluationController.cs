@@ -67,5 +67,38 @@ namespace MangaPublishSystem.Controllers
                 message = "EB evaluation deleted successfully"
             });
         }
+        [HttpPost("batch")]
+        public async Task<IActionResult> CreateBatch([FromBody] BoardEvaluationDto.CreateBatch dto)
+        {
+            try
+            {
+                var id = await _service.CreateBatchAsync(dto);
+
+                return Ok(new
+                {
+                    message = "Board evaluation batch created successfully.",
+                    evaluationId = id
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    message = ex.Message,
+                    inner = ex.InnerException?.Message
+                });
+            }
+        }
+
+        [HttpGet("{evaluationId:int}/summary")]
+        public async Task<IActionResult> GetBatchSummary(int evaluationId)
+        {
+            var result = await _service.GetBatchSummaryAsync(evaluationId);
+
+            if (result == null)
+                return NotFound("Evaluation not found.");
+
+            return Ok(result);
+        }
     }
 }
