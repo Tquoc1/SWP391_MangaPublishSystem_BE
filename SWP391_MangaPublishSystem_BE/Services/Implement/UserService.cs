@@ -104,5 +104,20 @@ namespace Services.Implement
             await _userRepository.UpdateAssistantProfile(profile);
             return 1;
         }
+
+        public async Task<List<DTO.UserDto.AvailableAssistant>> GetAvailableAssistants()
+        {
+            var profiles = await _userRepository.GetAvailableAssistantsAsync();
+            return profiles.Select(p => new DTO.UserDto.AvailableAssistant(
+                p.Userid,
+                p.User?.Username ?? string.Empty,
+                p.User?.Fullname ?? string.Empty,
+                p.User?.Email ?? string.Empty,
+                p.AvatarUrl,
+                p.PortfolioUrl,
+                p.Skills,
+                p.SoftwareUsed
+            )).ToList();
+        }
     }
 }

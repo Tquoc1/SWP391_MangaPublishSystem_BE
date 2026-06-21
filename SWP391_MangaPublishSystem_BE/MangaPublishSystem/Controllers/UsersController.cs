@@ -154,6 +154,13 @@ namespace MangaPublishSystem.Controllers
 
             return NoContent();
         }
+
+        [HttpGet("available-assistants")]
+        public async Task<IActionResult> GetAvailableAssistants()
+        {
+            var assistants = await _userService.GetAvailableAssistants();
+            return Ok(assistants);
+        }
     }
 }
 

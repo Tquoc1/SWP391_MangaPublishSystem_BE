@@ -23,5 +23,16 @@ namespace Services.DTO
             string? BankAccountNumber,
             string? BankAccountName
         );
+
+        public sealed record AvailableAssistant(
+            int UserId,
+            string Username,
+            string FullName,
+            string Email,
+            string? AvatarUrl,
+            string? PortfolioUrl,
+            string? Skills,
+            string? SoftwareUsed
+        );
     }
 }

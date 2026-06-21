@@ -13,6 +13,7 @@ namespace Services.Interface
         Task<int> AddAssistantProfile(AssistantProfile profile);
         Task<int> UpdateMangakaProfile(int userId, UserDto.UpdateMangakaProfile profile, string? avatarUrl);
         Task<int> UpdateAssistantProfile(int userId, UserDto.UpdateAssistantProfile profile, string? avatarUrl);
+        Task<List<UserDto.AvailableAssistant>> GetAvailableAssistants();
 
     }
 }

@@ -60,5 +60,13 @@ namespace Repositories.Repository
                 .Where(u => u.Roleid == 1 || u.Roleid == 2 || u.Roleid == 3)
                 .ToListAsync();
         }
+
+        public async Task<List<AssistantProfile>> GetAvailableAssistantsAsync()
+        {
+            return await _context.AssistantProfiles
+                .Include(a => a.User)
+                .Where(a => a.IsAvailable == true)
+                .ToListAsync();
+        }
     }
 }
