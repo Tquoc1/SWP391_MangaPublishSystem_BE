@@ -1,4 +1,4 @@
-﻿using DTOs;
+using DTOs;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Services.DTO;
@@ -21,6 +21,13 @@ namespace MangaPublishSystem.Controllers
         public async Task<IActionResult> GetAll([FromQuery] int? seriesId)
         {
             var result = await _chapterService.GetAllAsync(seriesId);
+            return Ok(result);
+        }
+
+        [HttpGet("assistant/{assistantId:int}")]
+        public async Task<IActionResult> GetByAssistantId(int assistantId)
+        {
+            var result = await _chapterService.GetByAssistantIdAsync(assistantId);
             return Ok(result);
         }
 

@@ -13,12 +13,21 @@ namespace MangaPublishSystem.Controllers
         private readonly IPageService _pageService;
         private readonly IPageLayerService _pageLayerService;
         private readonly IFileStorageService _fileStorage;
+        private readonly IChapterService _chapterService;
+        private readonly ISeriesService _seriesService;
 
-        public PagesController(IPageService pageService, IPageLayerService pageLayerService, IFileStorageService fileStorage)
+        public PagesController(
+            IPageService pageService, 
+            IPageLayerService pageLayerService, 
+            IFileStorageService fileStorage,
+            IChapterService chapterService,
+            ISeriesService seriesService)
         {
             _pageService = pageService;
             _pageLayerService = pageLayerService;
             _fileStorage = fileStorage;
+            _chapterService = chapterService;
+            _seriesService = seriesService;
         }
 
         [HttpGet]
@@ -41,8 +50,18 @@ namespace MangaPublishSystem.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult> Create([FromBody] PageDto.Create pageDto)
+        [Consumes("multipart/form-data")]
+        public async Task<ActionResult> Create([FromForm] PageDto.Create pageDto, IFormFile pageFile)
         {
+            if (pageFile == null || pageFile.Length == 0)
+            {
+                return BadRequest("Vui lòng tải lên hình ảnh cho trang truyện.");
+            }
+
+            await using var stream = pageFile.OpenReadStream();
+            string uploadedUrl = await _fileStorage.UploadAsync(
+                stream, pageFile.FileName, pageFile.ContentType, "manga-pages");
+
             var result = await _pageService.CreateAsync(pageDto);
 
             if (result <= 0)
@@ -50,10 +69,30 @@ namespace MangaPublishSystem.Controllers
                 return BadRequest();
             }
 
+            int uploaderId = 0;
+            if (User.HasClaim(c => c.Type == "userid"))
+            {
+                int.TryParse(User.FindFirst("userid")?.Value, out uploaderId);
+            }
+
+            // Nếu người dùng không đăng nhập (uploaderId = 0), lấy Mangakaid làm uploaderId mặc định
+            if (uploaderId == 0)
+            {
+                var chapter = await _chapterService.GetByIdAsync(pageDto.Chapterid);
+                if (chapter != null)
+                {
+                    var series = await _seriesService.GetByIdAsync(chapter.Seriesid);
+                    if (series != null)
+                    {
+                        uploaderId = series.Mangakaid;
+                    }
+                }
+            }
+
             var layerDto = new PageLayerDto.Create
             {
                 Pageid = result,
-                Uploaderid = pageDto.Uploaderid,
+                Uploaderid = uploaderId,
                 Layername = "Default",
                 Zindex = 1
             };
@@ -64,7 +103,8 @@ namespace MangaPublishSystem.Controllers
             {
                 Message = "Created successfully",
                 Id = result,
-                Data = pageDto
+                Data = pageDto,
+                Pageimageurl = uploadedUrl
             });
         }
 

@@ -29,6 +29,26 @@ namespace Repositories.Repository
             return await query.ToListAsync();
         }
 
+        public async Task<List<Chapter>> GetChaptersByAssistantIdAsync(int assistantId, bool includeDeleted = false)
+        {
+            var mangakaIds = await _context.MangakaAssistants
+                .Where(ma => ma.AssistantId == assistantId && (ma.Isdeleted == false || ma.Isdeleted == null))
+                .Select(ma => ma.MangakaId)
+                .Distinct()
+                .ToListAsync();
+
+            var query = _context.Chapters.AsQueryable();
+
+            if (!includeDeleted)
+            {
+                query = query.Where(c => c.Isdeleted == false);
+            }
+
+            query = query.Where(c => mangakaIds.Contains(c.Series.Mangakaid));
+
+            return await query.ToListAsync();
+        }
+
         public async Task<Chapter> GetChapterByIdAsync(int id, bool includeDeleted = false)
         {
             var query = _context.Chapters.AsQueryable();

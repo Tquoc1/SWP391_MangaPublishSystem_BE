@@ -24,6 +24,12 @@ namespace Services.Implement
             return chapters.Select(MapToDto).ToList();
         }
 
+        public async Task<List<ChapterDto>> GetByAssistantIdAsync(int assistantId)
+        {
+            var chapters = await _chapterRepository.GetChaptersByAssistantIdAsync(assistantId);
+            return chapters.Select(MapToDto).ToList();
+        }
+
         public async Task<ChapterDto> GetByIdAsync(int id)
         {
             var chapter = await _chapterRepository.GetChapterByIdAsync(id);

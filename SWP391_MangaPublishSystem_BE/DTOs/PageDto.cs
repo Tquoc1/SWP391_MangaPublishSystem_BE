@@ -15,7 +15,6 @@ namespace DTOs
         {
             public int Chapterid { get; set; }
             public int Pagenumber { get; set; }
-            public int Uploaderid { get; set; }
         }
 
         public class Update
