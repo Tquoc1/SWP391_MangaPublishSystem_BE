@@ -1,4 +1,4 @@
-﻿using System.Security.Claims;
+using System.Security.Claims;
 using Entities.Models;
 using Services.DTO;
 using Microsoft.AspNetCore.Authorization;
@@ -13,10 +13,12 @@ namespace MangaPublishSystem.Controllers
     public class UsersController : ControllerBase
     {
         private readonly IUserService _userService;
+        private readonly IFileStorageService _fileStorage;
 
-        public UsersController(IUserService userService)
+        public UsersController(IUserService userService, IFileStorageService fileStorage)
         {
             _userService = userService;
+            _fileStorage = fileStorage;
         }
 
         [HttpGet("profile")]
@@ -88,7 +90,8 @@ namespace MangaPublishSystem.Controllers
         }
 
         [HttpPut("profile/mangaka")]
-        public async Task<IActionResult> UpdateMangakaProfile([FromBody] UserDto.UpdateMangakaProfile request)
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> UpdateMangakaProfile([FromForm] UserDto.UpdateMangakaProfile request, IFormFile? avatarFile)
         {
             var userIdClaim = User.FindFirst("userid")?.Value;
             if (!int.TryParse(userIdClaim, out var userId))
@@ -102,7 +105,15 @@ namespace MangaPublishSystem.Controllers
                 return BadRequest("User not found or is not a Mangaka.");
             }
 
-            var result = await _userService.UpdateMangakaProfile(userId, request);
+            string? finalAvatarUrl = null;
+            if (avatarFile != null && avatarFile.Length > 0)
+            {
+                await using var stream = avatarFile.OpenReadStream();
+                finalAvatarUrl = await _fileStorage.UploadAsync(
+                    stream, avatarFile.FileName, avatarFile.ContentType, "avatars");
+            }
+
+            var result = await _userService.UpdateMangakaProfile(userId, request, finalAvatarUrl);
             if (result <= 0)
             {
                 return BadRequest("Failed to update Mangaka profile.");
@@ -112,7 +123,8 @@ namespace MangaPublishSystem.Controllers
         }
 
         [HttpPut("profile/assistant")]
-        public async Task<IActionResult> UpdateAssistantProfile([FromBody] UserDto.UpdateAssistantProfile request)
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> UpdateAssistantProfile([FromForm] UserDto.UpdateAssistantProfile request, IFormFile? avatarFile)
         {
             var userIdClaim = User.FindFirst("userid")?.Value;
             if (!int.TryParse(userIdClaim, out var userId))
@@ -126,7 +138,15 @@ namespace MangaPublishSystem.Controllers
                 return BadRequest("User not found or is not an Assistant.");
             }
 
-            var result = await _userService.UpdateAssistantProfile(userId, request);
+            string? finalAvatarUrl = null;
+            if (avatarFile != null && avatarFile.Length > 0)
+            {
+                await using var stream = avatarFile.OpenReadStream();
+                finalAvatarUrl = await _fileStorage.UploadAsync(
+                    stream, avatarFile.FileName, avatarFile.ContentType, "avatars");
+            }
+
+            var result = await _userService.UpdateAssistantProfile(userId, request, finalAvatarUrl);
             if (result <= 0)
             {
                 return BadRequest("Failed to update Assistant profile.");

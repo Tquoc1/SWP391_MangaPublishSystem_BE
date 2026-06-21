@@ -9,13 +9,11 @@ namespace Services.DTO
             string? PhoneNumber,
             string? BankName,
             string? BankAccountNumber,
-            string? BankAccountName,
-            string? AvatarUrl
+            string? BankAccountName
         );
 
         public sealed record UpdateAssistantProfile(
             string FullName,
-            string? AvatarUrl,
             string? PortfolioUrl,
             string? PhoneNumber,
             bool? IsAvailable,

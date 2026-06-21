@@ -11,8 +11,8 @@ namespace Services.Interface
         Task<AssistantProfile> GetAssistantProfile(int userId);
         Task<int> AddMangakaProfile(MangakaProfile profile);
         Task<int> AddAssistantProfile(AssistantProfile profile);
-        Task<int> UpdateMangakaProfile(int userId, UserDto.UpdateMangakaProfile profile);
-        Task<int> UpdateAssistantProfile(int userId, UserDto.UpdateAssistantProfile profile);
+        Task<int> UpdateMangakaProfile(int userId, UserDto.UpdateMangakaProfile profile, string? avatarUrl);
+        Task<int> UpdateAssistantProfile(int userId, UserDto.UpdateAssistantProfile profile, string? avatarUrl);
 
     }
 }

@@ -43,7 +43,7 @@ namespace Services.Implement
             return 1;
         }
 
-        public async Task<int> UpdateMangakaProfile(int userId, DTO.UserDto.UpdateMangakaProfile dto)
+        public async Task<int> UpdateMangakaProfile(int userId, DTO.UserDto.UpdateMangakaProfile dto, string? avatarUrl)
         {
             var user = await _userRepository.GetUserById(userId);
             if (user == null) return 0;
@@ -63,14 +63,17 @@ namespace Services.Implement
             profile.BankName = dto.BankName;
             profile.BankAccountNumber = dto.BankAccountNumber;
             profile.BankAccountName = dto.BankAccountName;
-            profile.AvatarUrl = dto.AvatarUrl;
+            if (!string.IsNullOrEmpty(avatarUrl))
+            {
+                profile.AvatarUrl = avatarUrl;
+            }
             profile.Updatedat = DateTime.UtcNow;
 
             await _userRepository.UpdateMangakaProfile(profile);
             return 1;
         }
 
-        public async Task<int> UpdateAssistantProfile(int userId, DTO.UserDto.UpdateAssistantProfile dto)
+        public async Task<int> UpdateAssistantProfile(int userId, DTO.UserDto.UpdateAssistantProfile dto, string? avatarUrl)
         {
             var user = await _userRepository.GetUserById(userId);
             if (user == null) return 0;
@@ -84,7 +87,10 @@ namespace Services.Implement
             var profile = await _userRepository.GetAssistantProfile(userId);
             if (profile == null) return 0;
 
-            profile.AvatarUrl = dto.AvatarUrl;
+            if (!string.IsNullOrEmpty(avatarUrl))
+            {
+                profile.AvatarUrl = avatarUrl;
+            }
             profile.PortfolioUrl = dto.PortfolioUrl;
             profile.PhoneNumber = dto.PhoneNumber;
             profile.IsAvailable = dto.IsAvailable;
