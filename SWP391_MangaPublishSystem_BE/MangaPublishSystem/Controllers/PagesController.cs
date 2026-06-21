@@ -11,11 +11,13 @@ namespace MangaPublishSystem.Controllers
     public class PagesController : ControllerBase
     {
         private readonly IPageService _pageService;
+        private readonly IPageLayerService _pageLayerService;
         private readonly IFileStorageService _fileStorage;
 
-        public PagesController(IPageService pageService, IFileStorageService fileStorage)
+        public PagesController(IPageService pageService, IPageLayerService pageLayerService, IFileStorageService fileStorage)
         {
             _pageService = pageService;
+            _pageLayerService = pageLayerService;
             _fileStorage = fileStorage;
         }
 
@@ -47,6 +49,16 @@ namespace MangaPublishSystem.Controllers
             {
                 return BadRequest();
             }
+
+            var layerDto = new PageLayerDto.Create
+            {
+                Pageid = result,
+                Uploaderid = pageDto.Uploaderid,
+                Layername = "Default",
+                Zindex = 1
+            };
+            
+            await _pageLayerService.CreateAsync(layerDto, uploadedUrl);
 
             return Ok(new
             {
