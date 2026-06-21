@@ -28,33 +28,29 @@ namespace MangaPublishSystem.Controllers
             return 0;
         }
 
-        [HttpGet("mangaka")]
-        [Authorize(Roles = "4")] // 4 = Mangaka
-        public async Task<IActionResult> GetMangakaDashboard()
+        [HttpGet("TopSeries")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetTopSeries()
         {
-            var userId = GetUserId();
-            if (userId == 0) return Unauthorized();
-
-            var data = await _dashboardService.GetMangakaDashboardAsync(userId);
+            var data = await _dashboardService.GetTopSeriesAsync();
             return Ok(data);
         }
 
-        [HttpGet("assistant")]
-        [Authorize(Roles = "5")] // 5 = Assistant
-        public async Task<IActionResult> GetAssistantDashboard()
+        [HttpGet("Admin/Overview")]
+        //[Authorize(Roles = "1,2,3")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetAdminOverview()
         {
-            var userId = GetUserId();
-            if (userId == 0) return Unauthorized();
-
-            var data = await _dashboardService.GetAssistantDashboardAsync(userId);
+            var data = await _dashboardService.GetAdminOverviewAsync();
             return Ok(data);
         }
 
-        [HttpGet("admin")]
-        [Authorize(Roles = "1,2,3")] // 1=Admin, 2=Manager, 3=Editor
-        public async Task<IActionResult> GetAdminDashboard()
+        [HttpGet("Admin/SeriesStats")]
+        //[Authorize(Roles = "1,2,3")] 
+        [AllowAnonymous]
+        public async Task<IActionResult> GetAdminSeriesStats()
         {
-            var data = await _dashboardService.GetAdminDashboardAsync();
+            var data = await _dashboardService.GetAdminSeriesStatsAsync();
             return Ok(data);
         }
     }

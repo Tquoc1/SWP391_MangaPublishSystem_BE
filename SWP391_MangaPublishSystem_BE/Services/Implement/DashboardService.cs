@@ -13,77 +13,72 @@ namespace Services.Implement
         private readonly MangakaAssistantRepository _mangakaAssistantRepository;
         private readonly PageIssueRepository _pageIssueRepository;
         private readonly UserRepository _userRepository;
+        private readonly ChapterRepository _chapterRepository;
 
         public DashboardService(
             SeriesRepository seriesRepository,
             MangakaAssistantRepository mangakaAssistantRepository,
             PageIssueRepository pageIssueRepository,
-            UserRepository userRepository)
+            UserRepository userRepository,
+            ChapterRepository chapterRepository)
         {
             _seriesRepository = seriesRepository;
             _mangakaAssistantRepository = mangakaAssistantRepository;
             _pageIssueRepository = pageIssueRepository;
             _userRepository = userRepository;
+            _chapterRepository = chapterRepository;
         }
 
-        public async Task<DashboardDto.MangakaDashboardResponse> GetMangakaDashboardAsync(int mangakaId)
+        public async Task<List<SeriesDto>> GetTopSeriesAsync()
         {
-            var seriesList = await _seriesRepository.GetByMangakaIdAsync(mangakaId);
+            var seriesList = await _seriesRepository.GetAllWithDetailsAsync();
             
-            var allContracts = await _mangakaAssistantRepository.GetAllAsync();
-            var activeContracts = allContracts.Count(x => x.MangakaId == mangakaId && x.Status == "Accepted" && x.Isdeleted != true);
-            
-            var response = new DashboardDto.MangakaDashboardResponse
-            {
-                TotalSeries = seriesList.Count,
-                ApprovedSeries = seriesList.Count(x => x.Status == "Approved"),
-                PendingSeries = seriesList.Count(x => x.Status == "Pending"),
-                ActiveContracts = activeContracts,
-                RecentSeries = seriesList.OrderByDescending(x => x.Createdat).Take(5).Select(s => new SeriesDto
+            return seriesList
+                .Where(s => s.Isdeleted != true && (s.Status == "Approved" || s.Status == "Ongoing" || s.Status == "Completed"))
+                .OrderByDescending(s => s.Createdat)
+                .Take(5)
+                .Select(s => new SeriesDto
                 {
                     Seriesid = s.Seriesid,
                     Title = s.Title,
+                    Coverimageurl = s.Coverimageurl,
                     Status = s.Status,
                     Createdat = s.Createdat
-                }).ToList()
-            };
-
-            return response;
+                }).ToList();
         }
 
-        public async Task<DashboardDto.AssistantDashboardResponse> GetAssistantDashboardAsync(int assistantId)
-        {
-            var allContracts = await _mangakaAssistantRepository.GetAllAsync();
-            var activeContracts = allContracts.Count(x => x.AssistantId == assistantId && x.Status == "Accepted" && x.Isdeleted != true);
-            
-            var response = new DashboardDto.AssistantDashboardResponse
-            {
-                ActiveContracts = activeContracts,
-                PendingTasks = 0, 
-                CompletedTasks = 0,
-                RecentContracts = allContracts.Where(x => x.AssistantId == assistantId).OrderByDescending(x => x.Createdat).Take(5).Select(c => new MangakaAssistantDto
-                {
-                    ContractId = c.ContractId,
-                    Status = c.Status,
-                    Createdat = c.Createdat
-                }).ToList()
-            };
-
-            return response;
-        }
-
-        public async Task<DashboardDto.AdminDashboardResponse> GetAdminDashboardAsync()
+        public async Task<DashboardDto.AdminOverviewResponse> GetAdminOverviewAsync()
         {
             var users = await _userRepository.GetAllAsync();
             var series = await _seriesRepository.GetAllAsync();
+            var chapters = await _chapterRepository.GetChaptersAsync();
             
-            return new DashboardDto.AdminDashboardResponse
+            return new DashboardDto.AdminOverviewResponse
             {
                 TotalUsers = users.Count,
                 TotalMangakas = users.Count(u => u.Roleid == 4),
-                TotalAssistants = users.Count(u => u.Roleid == 5),
                 TotalSeries = series.Count,
-                PendingSeries = series.Count(s => s.Status == "Pending")
+                TotalChapters = chapters.Count
+            };
+        }
+
+        public async Task<DashboardDto.AdminSeriesStatsResponse> GetAdminSeriesStatsAsync()
+        {
+            var series = await _seriesRepository.GetAllAsync();
+            
+            int pending = series.Count(s => s.Status == "Pending");
+            int approved = series.Count(s => s.Status == "Approved");
+            int rejected = series.Count(s => s.Status == "Rejected");
+            int ongoing = series.Count(s => s.Status == "Ongoing");
+            int completed = series.Count(s => s.Status == "Completed");
+
+            return new DashboardDto.AdminSeriesStatsResponse
+            {
+                PendingSeries = pending,
+                ApprovedSeries = approved,
+                RejectedSeries = rejected,
+                OngoingSeries = ongoing,
+                CompletedSeries = completed
             };
         }
     }
