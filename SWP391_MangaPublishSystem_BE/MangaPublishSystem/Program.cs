@@ -12,6 +12,7 @@ using Services.Interface;
 using Services.Settings;
 using System.Text;
 using System.Text.Json.Serialization;
+using MangaPublishSystem.Extensions;
 using Services.Interface;
 using Services.Implement;
 using Repositories.Repository;
@@ -142,6 +143,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseGlobalExceptionHandler();
 
 app.UseAuthentication();
 
