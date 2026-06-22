@@ -11,6 +11,15 @@ namespace Services.Implement
 {
     public class PageIssueService : IPageIssueService
     {
+        private static readonly Dictionary<string, List<string>> _validTransitions = new(StringComparer.OrdinalIgnoreCase)
+        {
+            { "Pending", new List<string> { "InProgress", "Rejected", "Cancelled" } },
+            { "InProgress", new List<string> { "Submitted", "Cancelled" } },
+            { "Submitted", new List<string> { "Approved", "NeedsRevision" } },
+            { "NeedsRevision", new List<string> { "InProgress" } },
+            { "Approved", new List<string> { "Closed" } }
+        };
+
         private readonly PageIssueRepository _pageIssueRepository;
         private readonly INotificationService _notificationService;
 
@@ -66,12 +75,21 @@ namespace Services.Implement
             return issue.Issueid;
         }
 
-        public async Task<bool> UpdateStatusAsync(int id, PageIssueDto.UpdateStatus dto)
+        public async Task UpdateStatusAsync(int id, PageIssueDto.UpdateStatus dto)
         {
             var existing = await _pageIssueRepository.GetByIdAsync(id);
 
             if (existing == null || existing.Isdeleted == true)
-                return false;
+                throw new KeyNotFoundException("Không tìm thấy sự cố (Issue).");
+
+            if (string.Equals(existing.Status, dto.Status, StringComparison.OrdinalIgnoreCase))
+                return;
+
+            if (!_validTransitions.ContainsKey(existing.Status) || 
+                !_validTransitions[existing.Status].Contains(dto.Status, StringComparer.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException($"Không thể chuyển trạng thái từ '{existing.Status}' sang '{dto.Status}'. Luồng không hợp lệ!");
+            }
 
             existing.Status = dto.Status;
 
@@ -86,12 +104,12 @@ namespace Services.Implement
                 );
             }
 
-            return true;
+            return;
         }
-        public async Task<int> UpdateAsync(int id, PageIssueDto.Update dto)
+        public async Task UpdateAsync(int id, PageIssueDto.Update dto)
         {
             var existing = await _pageIssueRepository.GetByIdAsync(id);
-            if (existing == null) return 0;
+            if (existing == null) throw new KeyNotFoundException("Không tìm thấy sự cố cần cập nhật.");
 
             existing.AssignedToId = dto.AssignedToId;
             existing.Description = dto.Description;
@@ -103,13 +121,21 @@ namespace Services.Implement
             existing.Completedat = dto.Completedat;
 
             await _pageIssueRepository.UpdateAsync(existing);
-            return 1;
         }
 
-        public async Task<bool> UpdateStatusAsync(int id, string status)
+        public async Task UpdateStatusAsync(int id, string status)
         {
             var existing = await _pageIssueRepository.GetByIdAsync(id);
-            if (existing == null) return false;
+            if (existing == null) throw new KeyNotFoundException("Không tìm thấy sự cố.");
+
+            if (string.Equals(existing.Status, status, StringComparison.OrdinalIgnoreCase))
+                return;
+
+            if (!_validTransitions.ContainsKey(existing.Status) || 
+                !_validTransitions[existing.Status].Contains(status, StringComparer.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException($"Không thể chuyển trạng thái từ '{existing.Status}' sang '{status}'. Luồng không hợp lệ!");
+            }
 
             existing.Status = status;
             await _pageIssueRepository.UpdateAsync(existing);
@@ -123,31 +149,27 @@ namespace Services.Implement
                 );
             }
             
-            return true;
         }
 
-        public async Task<bool> SoftDeleteAsync(int id)
+        public async Task SoftDeleteAsync(int id)
         {
             var existing = await _pageIssueRepository.GetByIdAsync(id);
-            if (existing == null) return false;
+            if (existing == null) throw new KeyNotFoundException("Không tìm thấy sự cố để xóa.");
 
             existing.Isdeleted = true;
             await _pageIssueRepository.UpdateAsync(existing);
-            return true;
         }
 
-        public async Task<bool> RemoveAsync(int id)
+        public async Task RemoveAsync(int id)
         {
             var existing = await _pageIssueRepository.GetByIdAsync(id);
 
             if (existing == null || existing.Isdeleted == true)
-                return false;
+                throw new KeyNotFoundException("Không tìm thấy sự cố.");
 
             existing.Isdeleted = true;
 
             await _pageIssueRepository.UpdateAsync(existing);
-
-            return true;
         }
 
         private PageIssueDto MapToDto(PageIssue issue)

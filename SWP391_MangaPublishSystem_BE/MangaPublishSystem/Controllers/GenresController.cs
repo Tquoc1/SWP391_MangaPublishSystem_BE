@@ -60,20 +60,30 @@ namespace MangaPublishSystem.Controllers
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            var result = await _genreService.UpdateAsync(id, dto);
-            if (!result) return NotFound(new { Message = "Không tìm thấy thể loại để cập nhật." });
-
-            return NoContent();
+            try
+            {
+                await _genreService.UpdateAsync(id, dto);
+                return NoContent();
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { Message = ex.Message });
+            }
         }
 
         [HttpDelete("{id:int}")]
         [Authorize(Roles = "Admin, EB")]
         public async Task<ActionResult> Delete(int id)
         {
-            var result = await _genreService.RemoveAsync(id);
-            if (!result) return NotFound(new { Message = "Không tìm thấy thể loại để xóa." });
-
-            return NoContent();
+            try
+            {
+                await _genreService.RemoveAsync(id);
+                return NoContent();
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { Message = ex.Message });
+            }
         }
     }
 }

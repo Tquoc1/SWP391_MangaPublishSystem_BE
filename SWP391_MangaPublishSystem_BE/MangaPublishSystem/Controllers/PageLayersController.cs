@@ -74,13 +74,7 @@ namespace MangaPublishSystem.Controllers
         [Consumes("multipart/form-data")]
         public async Task<ActionResult> Update(int id, [FromForm] PageLayerDto.Update dto, IFormFile? layerFile)
         {
-            var existing = await _pageLayerService.GetByIdAsync(id);
-            if (existing == null)
-            {
-                return NotFound("Không tìm thấy lớp vẽ (Layer) cần cập nhật.");
-            }
-
-            string finalFileUrl = existing.Fileurl;
+            string finalFileUrl = null;
 
             if (layerFile != null && layerFile.Length > 0)
             {
@@ -89,47 +83,58 @@ namespace MangaPublishSystem.Controllers
                     stream, layerFile.FileName, layerFile.ContentType, "manga-layers");
             }
 
-            var result = await _pageLayerService.UpdateAsync(id, dto, finalFileUrl);
-            if (result <= 0)
+            try
             {
-                return BadRequest("Cập nhật lớp vẽ thất bại.");
+                await _pageLayerService.UpdateAsync(id, dto, finalFileUrl);
+                return NoContent();
             }
-
-            return NoContent();
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { Message = ex.Message });
+            }
         }
 
         [HttpPatch("{id:int}/visibility")]
         [Authorize(Roles = "Mangaka, Assistant")]
         public async Task<IActionResult> ToggleVisibility(int id)
         {
-            var result = await _pageLayerService.ToggleVisibilityAsync(id);
-            if (!result) return NotFound("Không tìm thấy lớp nhân vật hoặc trang truyện.");
-            return NoContent();
+            try
+            {
+                await _pageLayerService.ToggleVisibilityAsync(id);
+                return NoContent();
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { Message = ex.Message });
+            }
         }
 
         [HttpDelete("{id:int}/soft")]
         [Authorize(Roles = "Mangaka, Assistant, Admin")]
         public async Task<ActionResult> SoftDelete(int id)
         {
-            var success = await _pageLayerService.SoftDeleteAsync(id);
-            if (!success)
+            try
             {
-                return NotFound("Không tìm thấy lớp vẽ để xóa tạm.");
+                await _pageLayerService.SoftDeleteAsync(id);
+                return Ok(new { Message = "Soft deleted successfully" });
             }
-            return Ok(new { Message = "Soft deleted successfully" });
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { Message = ex.Message });
+            }
         }
 
-        [HttpDelete("{id:int}")]
-        [Authorize(Roles = "Mangaka, Admin")]
-        public async Task<ActionResult> Delete(int id)
-        {
-            var result = await _pageLayerService.RemoveAsync(id);
-            if (!result)
-            {
-                return NotFound("Không tìm thấy lớp vẽ để xóa hoặc lớp vẽ không tồn tại.");
-            }
+        //[HttpDelete("{id:int}")]
+        //[Authorize(Roles = "Mangaka, Admin")]
+        //public async Task<ActionResult> Delete(int id)
+        //{
+        //    var result = await _pageLayerService.RemoveAsync(id);
+        //    if (!result)
+        //    {
+        //        return NotFound("Không tìm thấy lớp vẽ để xóa hoặc lớp vẽ không tồn tại.");
+        //    }
 
-            return NoContent();
-        }
+        //    return NoContent();
+        //}
     }
 }

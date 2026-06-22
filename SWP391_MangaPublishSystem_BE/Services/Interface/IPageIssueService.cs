@@ -1,4 +1,4 @@
-﻿using DTOs;
+using DTOs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,10 +12,10 @@ namespace Services.Interface
         Task<List<PageIssueDto>> GetAllAsync(int? chapterId);
         Task<PageIssueDto> GetByIdAsync(int id);
         Task<int> CreateAsync(PageIssueDto.Create pageDto);
-        Task<int> UpdateAsync(int id, PageIssueDto.Update pageDto);
-        Task<bool> UpdateStatusAsync(int id, string status);
-        Task<bool> SoftDeleteAsync(int id);
-        Task<bool> RemoveAsync(int id);
-        Task<bool> UpdateStatusAsync(int id, PageIssueDto.UpdateStatus dto);
+        Task UpdateAsync(int id, PageIssueDto.Update pageDto);
+        Task UpdateStatusAsync(int id, string status);
+        Task SoftDeleteAsync(int id);
+        Task RemoveAsync(int id);
+        Task UpdateStatusAsync(int id, PageIssueDto.UpdateStatus dto);
     }
 }

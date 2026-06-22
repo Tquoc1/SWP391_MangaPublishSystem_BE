@@ -36,6 +36,7 @@ namespace DTOs
             public int Tantoueditorid { get; set; }
 
             [Required(ErrorMessage = "Vui lòng chọn giới hạn độ tuổi")]
+            [AllowedValues("G", "PG-13", "R-16", "R-18", ErrorMessage = "Giới hạn độ tuổi không hợp lệ")]
             public string Agerating { get; set; }
 
             [Required(ErrorMessage = "Mã tác giả không được để trống")]
@@ -50,6 +51,7 @@ namespace DTOs
             [MaxLength(255, ErrorMessage = "Tiêu đề truyện không được vượt quá 255 ký tự")]
             public string Title { get; set; }
             public string Synopsis { get; set; }
+            [AllowedValues("G", "PG-13", "R-16", "R-18", ErrorMessage = "Giới hạn độ tuổi không hợp lệ")]
             public string Agerating { get; set; }
 
             public List<int> GenreIds { get; set; } = new List<int>();
@@ -59,12 +61,14 @@ namespace DTOs
         public class UpdateStatus
         {
             [Required(ErrorMessage = "Trạng thái không được để trống")]
+            [AllowedValues("Draft", "Submitted", "UnderReview", "RevisionRequired", "Approved", "Rejected", "Publishing", "Completed", "Cancelled", ErrorMessage = "Trạng thái không hợp lệ")]
             public string Status { get; set; }
         }
 
         public class UpdatePublishFormat
         {
             [Required(ErrorMessage = "Định dạng xuất bản không được để trống")]
+            [AllowedValues("Pending", "Monthly", "Weekly", ErrorMessage = "Định dạng xuất bản không hợp lệ")]
             public string Publishformat { get; set; }
         }
 

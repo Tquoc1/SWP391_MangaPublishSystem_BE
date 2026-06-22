@@ -14,6 +14,11 @@ namespace Repositories.Repository
             return await _context.Users.FirstOrDefaultAsync(x => x.Userid == userId);
         }
 
+        public async Task<User> GetUserByUsername(string username)
+        {
+            return await _context.Users.FirstOrDefaultAsync(x => x.Username == username);
+        }
+
         public async Task<MangakaProfile> GetMangakaProfile(int userId)
         {
             return await _context.MangakaProfiles.FirstOrDefaultAsync(x => x.Userid == userId);
@@ -67,6 +72,25 @@ namespace Repositories.Repository
                 .Include(a => a.User)
                 .Where(a => a.IsAvailable == true)
                 .ToListAsync();
+        }
+
+        public async Task<List<User>> GetUsersAsync(int? roleId, string? status)
+        {
+            var query = _context.Users.Include(u => u.Role).Where(u => u.Isdeleted != true).AsQueryable();
+
+            if (roleId.HasValue)
+            {
+                query = query.Where(u => u.Roleid == roleId.Value);
+            }
+
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                query = query.Where(u => u.Status == status);
+            }
+
+            var users = await query.OrderByDescending(u => u.Createdat).ToListAsync();
+
+            return users;
         }
     }
 }

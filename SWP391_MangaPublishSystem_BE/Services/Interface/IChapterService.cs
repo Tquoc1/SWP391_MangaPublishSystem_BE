@@ -13,9 +13,9 @@ namespace Services.Interface
         Task<List<ChapterDto>> GetByAssistantIdAsync(int assistantId);
         Task<ChapterDto> GetByIdAsync(int id);
         Task<int> CreateAsync(ChapterDto.Create chapterDto);
-        Task<int> UpdateAsync(ChapterDto.Update chapterDto);
-        Task<bool> UpdateStatusAsync(int id, string status);
-        Task<bool> SoftDeleteAsync(int id);
-        Task<bool> RemoveAsync(int id);
+        Task UpdateAsync(ChapterDto.Update chapterDto);
+        Task UpdateStatusAsync(int id, string status);
+        Task SoftDeleteAsync(int id);
+        Task RemoveAsync(int id);
     }
 }

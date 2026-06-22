@@ -50,22 +50,22 @@ namespace Services.Implement
             return tag.Tagid;
         }
 
-        public async Task<bool> UpdateAsync(int id, TagDto.Update updateDto)
+        public async Task UpdateAsync(int id, TagDto.Update updateDto)
         {
             var tag = await _tagRepository.GetByIdAsync(id);
-            if (tag == null) return false;
+            if (tag == null) throw new KeyNotFoundException("Không tìm thấy thẻ để cập nhật.");
 
             tag.Tagname = updateDto.Tagname;
 
-            return await _tagRepository.UpdateAsync(tag) > 0;
+            await _tagRepository.UpdateAsync(tag);
         }
 
-        public async Task<bool> RemoveAsync(int id)
+        public async Task RemoveAsync(int id)
         {
             var tag = await _tagRepository.GetByIdAsync(id);
-            if (tag == null) return false;
+            if (tag == null) throw new KeyNotFoundException("Không tìm thấy thẻ để xóa.");
 
-            return await _tagRepository.RemoveAsync(tag);
+            await _tagRepository.RemoveAsync(tag);
         }
     }
 }

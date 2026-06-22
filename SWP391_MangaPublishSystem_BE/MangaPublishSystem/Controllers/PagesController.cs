@@ -115,56 +115,68 @@ namespace MangaPublishSystem.Controllers
         [Authorize(Roles = "Mangaka, Assistant")]
         public async Task<ActionResult> Update(int id, [FromBody] PageDto.Update pageUpdateDto)
         {
-            var existing = await _pageService.GetByIdAsync(id);
-            if (existing == null)
+            try
             {
-                return NotFound("Không tìm thấy trang truyện cần cập nhật.");
+                await _pageService.UpdateAsync(id, pageUpdateDto);
+                return NoContent();
             }
-
-            var result = await _pageService.UpdateAsync(id, pageUpdateDto);
-            if (result <= 0)
+            catch (KeyNotFoundException ex)
             {
-                return BadRequest("Cập nhật thất bại.");
+                return NotFound(new { Message = ex.Message });
             }
-
-            return NoContent();
         }
 
         [HttpPost("{id:int}/composite")]
         [Authorize(Roles = "Mangaka, Assistant")]
         public async Task<ActionResult> CompositeImage(int id)
         {
-            var result = await _pageService.CompositeAndSaveImageAsync(id);
-            if (result == null)
+            try
             {
-                return BadRequest(new { Message = "Không thể ghép ảnh hoặc không có layer hợp lệ." });
+                var result = await _pageService.CompositeAndSaveImageAsync(id);
+                return Ok(new { Message = "Composite successfully", Pageimageurl = result });
             }
-
-            return Ok(new { Message = "Composite successfully", Pageimageurl = result });
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { Message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { Message = ex.Message });
+            }
         }
 
         [HttpPatch("{id:int}/status")]
         [Authorize(Roles = "Admin, EB, Editor, Mangaka")]
         public async Task<ActionResult> UpdateStatus(int id, [FromBody] string status)
         {
-            var success = await _pageService.UpdateStatusAsync(id, status);
-            if (!success)
+            try
             {
-                return NotFound("Không tìm thấy trang truyện để cập nhật trạng thái.");
+                await _pageService.UpdateStatusAsync(id, status);
+                return Ok(new { Message = "Status updated successfully" });
             }
-            return Ok(new { Message = "Status updated successfully" });
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { Message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { Message = ex.Message });
+            }
         }
 
         [HttpDelete("{id:int}/soft")]
         [Authorize(Roles = "Admin, EB, Mangaka")]
         public async Task<ActionResult> SoftDelete(int id)
         {
-            var success = await _pageService.SoftDeleteAsync(id);
-            if (!success)
+            try
             {
-                return NotFound("Không tìm thấy trang truyện để xóa tạm.");
+                await _pageService.SoftDeleteAsync(id);
+                return Ok(new { Message = "Soft deleted successfully" });
             }
-            return Ok(new { Message = "Soft deleted successfully" });
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { Message = ex.Message });
+            }
         }
 
         //[HttpDelete("{id:int}")]

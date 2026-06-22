@@ -8,8 +8,8 @@ namespace Services.Interface
     {
         Task<List<NotificationDto.NotificationResponse>> GetUserNotificationsAsync(int userId);
         Task<int> GetUnreadCountAsync(int userId);
-        Task<bool> MarkAsReadAsync(int notificationId, int userId);
-        Task<bool> MarkAllAsReadAsync(int userId);
-        Task<bool> CreateNotificationAsync(int userId, string title, string message, int? seriesId = null);
+        Task MarkAsReadAsync(int notificationId, int userId);
+        Task MarkAllAsReadAsync(int userId);
+        Task CreateNotificationAsync(int userId, string title, string message, int? seriesId = null);
     }
 }

@@ -39,26 +39,24 @@ namespace Services.Implement
             return await _notificationRepository.GetUnreadCountAsync(userId);
         }
 
-        public async Task<bool> MarkAsReadAsync(int notificationId, int userId)
+        public async Task MarkAsReadAsync(int notificationId, int userId)
         {
             var notification = await _notificationRepository.GetByIdAsync(notificationId);
             if (notification == null || notification.Userid != userId)
             {
-                return false;
+                throw new KeyNotFoundException("Notification not found or access denied.");
             }
 
             notification.Isread = true;
             await _notificationRepository.UpdateAsync(notification);
-            return true;
         }
 
-        public async Task<bool> MarkAllAsReadAsync(int userId)
+        public async Task MarkAllAsReadAsync(int userId)
         {
             await _notificationRepository.MarkAllAsReadAsync(userId);
-            return true;
         }
 
-        public async Task<bool> CreateNotificationAsync(int userId, string title, string message, int? seriesId = null)
+        public async Task CreateNotificationAsync(int userId, string title, string message, int? seriesId = null)
         {
             var notification = new Notification
             {
@@ -71,7 +69,6 @@ namespace Services.Implement
             };
 
             await _notificationRepository.CreateAsync(notification);
-            return true;
         }
     }
 }

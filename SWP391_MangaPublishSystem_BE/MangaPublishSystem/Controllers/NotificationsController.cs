@@ -54,10 +54,15 @@ namespace MangaPublishSystem.Controllers
             var userId = GetUserId();
             if (userId == 0) return Unauthorized();
 
-            var result = await _notificationService.MarkAsReadAsync(id, userId);
-            if (!result) return NotFound("Notification not found or access denied.");
-
-            return Ok(new { Message = "Notification marked as read." });
+            try
+            {
+                await _notificationService.MarkAsReadAsync(id, userId);
+                return Ok(new { Message = "Notification marked as read." });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { Message = ex.Message });
+            }
         }
 
         [HttpPatch("read-all")]

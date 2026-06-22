@@ -53,23 +53,23 @@ namespace Services.Implement
             return genre.Genreid;
         }
 
-        public async Task<bool> UpdateAsync(int id, GenreDto.Update updateDto)
+        public async Task UpdateAsync(int id, GenreDto.Update updateDto)
         {
             var genre = await _genreRepository.GetByIdAsync(id);
-            if (genre == null) return false;
+            if (genre == null) throw new KeyNotFoundException("Không tìm thấy thể loại để cập nhật.");
 
             genre.Genrename = updateDto.Genrename;
             genre.Description = updateDto.Description;
 
-            return await _genreRepository.UpdateAsync(genre) > 0;
+            await _genreRepository.UpdateAsync(genre);
         }
 
-        public async Task<bool> RemoveAsync(int id)
+        public async Task RemoveAsync(int id)
         {
             var genre = await _genreRepository.GetByIdAsync(id);
-            if (genre == null) return false;
+            if (genre == null) throw new KeyNotFoundException("Không tìm thấy thể loại để xóa.");
 
-            return await _genreRepository.RemoveAsync(genre);
+            await _genreRepository.RemoveAsync(genre);
         }
     }
 }

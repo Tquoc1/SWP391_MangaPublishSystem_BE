@@ -17,6 +17,16 @@ namespace Services.Implement
 {
     public class PageService : IPageService
     {
+        private static readonly Dictionary<string, List<string>> _validTransitions = new(StringComparer.OrdinalIgnoreCase)
+        {
+            { "Draft", new List<string> { "Assigned" } },
+            { "Assigned", new List<string> { "InWork" } },
+            { "InWork", new List<string> { "Reviewing" } },
+            { "Reviewing", new List<string> { "Approved", "NeedsRevision" } },
+            { "NeedsRevision", new List<string> { "InWork" } },
+            { "Approved", new List<string> { "Completed" } }
+        };
+
         private readonly PageRepository _pageRepository;
         private readonly IPageLayerService _pageLayerService;
         private readonly IFileStorageService _fileStorage;
@@ -55,26 +65,25 @@ namespace Services.Implement
             return page.Pageid;
         }
 
-        public async Task<int> UpdateAsync(int id, PageDto.Update pageDto)
+        public async Task UpdateAsync(int id, PageDto.Update pageDto)
         {
             var existing = await _pageRepository.GetByIdAsync(id);
-            if (existing == null) return 0;
+            if (existing == null) throw new KeyNotFoundException("Không tìm thấy trang truyện cần cập nhật.");
 
             existing.Pagenumber = pageDto.Pagenumber;
 
             await _pageRepository.UpdateAsync(existing);
-            return 1;
         }
 
         public async Task<string> CompositeAndSaveImageAsync(int id)
         {
             var page = await _pageRepository.GetByIdAsync(id);
-            if (page == null) return null;
+            if (page == null) throw new KeyNotFoundException("Không tìm thấy trang truyện.");
 
             var layers = await _pageLayerService.GetAllAsync(id);
             var visibleLayers = layers.Where(l => l.Isvisible == true && !l.Isdeleted).OrderBy(l => l.Zindex).ToList();
 
-            if (!visibleLayers.Any()) return null;
+            if (!visibleLayers.Any()) throw new InvalidOperationException("Không có layer hợp lệ để ghép ảnh.");
 
             using var httpClient = new HttpClient();
             Image<Rgba32> compositeImage = null;
@@ -118,33 +127,39 @@ namespace Services.Implement
             return newImageUrl;
         }
 
-        public async Task<bool> UpdateStatusAsync(int id, string status)
+        public async Task UpdateStatusAsync(int id, string status)
         {
             var existing = await _pageRepository.GetByIdAsync(id);
-            if (existing == null) return false;
+            if (existing == null) throw new KeyNotFoundException("Không tìm thấy trang truyện để cập nhật trạng thái.");
+
+            if (string.Equals(existing.Status, status, StringComparison.OrdinalIgnoreCase))
+                return;
+
+            if (!_validTransitions.ContainsKey(existing.Status) || 
+                !_validTransitions[existing.Status].Contains(status, StringComparer.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException($"Không thể chuyển trạng thái từ '{existing.Status}' sang '{status}'. Luồng không hợp lệ!");
+            }
 
             existing.Status = status;
             await _pageRepository.UpdateAsync(existing);
-            return true;
         }
 
-        public async Task<bool> SoftDeleteAsync(int id)
+        public async Task SoftDeleteAsync(int id)
         {
             var existing = await _pageRepository.GetByIdAsync(id);
-            if (existing == null) return false;
+            if (existing == null) throw new KeyNotFoundException("Không tìm thấy trang truyện để xóa tạm.");
 
             existing.Isdeleted = true;
             await _pageRepository.UpdateAsync(existing);
-            return true;
         }
 
-        public async Task<bool> RemoveAsync(int id)
+        public async Task RemoveAsync(int id)
         {
             var existing = await _pageRepository.GetByIdAsync(id);
-            if (existing == null) return false;
+            if (existing == null) throw new KeyNotFoundException("Không tìm thấy trang truyện.");
 
             await _pageRepository.RemoveAsync(existing);
-            return true;
         }
 
         private PageDto MapToDto(Page page)

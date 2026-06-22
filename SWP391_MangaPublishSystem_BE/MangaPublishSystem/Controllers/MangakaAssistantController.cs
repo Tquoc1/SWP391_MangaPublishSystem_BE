@@ -1,4 +1,4 @@
-﻿using DTOs;
+using DTOs;
 using Microsoft.AspNetCore.Mvc;
 using Services.Interface;
 
@@ -36,58 +36,65 @@ namespace MangaPublishSystem.Controllers
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] MangakaAssistantDto.Create dto)
         {
-            var id = await _service.CreateAsync(dto);
-
-            if (id <= 0)
-                return BadRequest("This assistant is already assigned to the mangaka!!!");
-
-            return Ok(new
+            try
             {
-                message = "Mangaka assistant contract created successfully",
-                contractId = id
-            });
+                var id = await _service.CreateAsync(dto);
+                return Ok(new
+                {
+                    message = "Mangaka assistant contract created successfully",
+                    contractId = id
+                });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Update(int id, [FromBody] MangakaAssistantDto.Update dto)
         {
-            var result = await _service.UpdateAsync(id, dto);
-
-            if (result <= 0)
-                return NotFound("Contract not found !!!");
-
-            return Ok(new
+            try
             {
-                message = "Mangaka assistant contract updated successfully"
-            });
+                await _service.UpdateAsync(id, dto);
+                return Ok(new { message = "Mangaka assistant contract updated successfully" });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
         }
 
         [HttpPatch("{id:int}/status")]
         public async Task<IActionResult> UpdateStatus(int id, [FromBody] MangakaAssistantDto.UpdateStatus dto)
         {
-            var result = await _service.UpdateStatusAsync(id, dto.Status);
-
-            if (result <= 0)
-                return NotFound("Contract not found!!!");
-
-            return Ok(new
+            try
             {
-                message = "Mangaka assistant contract status updated successfully"
-            });
+                await _service.UpdateStatusAsync(id, dto.Status);
+                return Ok(new { message = "Mangaka assistant contract status updated successfully" });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {
-            var result = await _service.RemoveAsync(id);
-
-            if (!result)
-                return NotFound("Contract not found!!!");
-
-            return Ok(new
+            try
             {
-                message = "Mangaka assistant contract soft deleted successfully"
-            });
+                await _service.RemoveAsync(id);
+                return Ok(new { message = "Mangaka assistant contract soft deleted successfully" });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
         }
     }
 }

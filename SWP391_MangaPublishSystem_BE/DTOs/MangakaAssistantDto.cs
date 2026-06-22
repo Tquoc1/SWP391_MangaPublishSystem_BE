@@ -30,6 +30,7 @@ namespace DTOs
             public decimal SalaryAmount { get; set; }
 
             [Required(ErrorMessage = "Loại lương không được để trống")]
+            [AllowedValues("Fixed", "PerChapter", "Monthly", ErrorMessage = "Loại lương không hợp lệ")]
             public string SalaryType { get; set; }
 
             [Required(ErrorMessage = "Điều khoản hợp đồng không được để trống")]
@@ -43,6 +44,7 @@ namespace DTOs
         {
             [Range(0, double.MaxValue, ErrorMessage = "Lương không được âm")]
             public decimal SalaryAmount { get; set; }
+            [AllowedValues("Fixed", "PerChapter", "Monthly", ErrorMessage = "Loại lương không hợp lệ")]
             public string SalaryType { get; set; }
             public string ContractTerms { get; set; }
             public DateTime? StartDate { get; set; }
@@ -52,6 +54,7 @@ namespace DTOs
         public class UpdateStatus
         {
             [Required(ErrorMessage = "Trạng thái không được để trống")]
+            [AllowedValues("Terminated", "Active", "Pending", "Expired", "Suspended", "Completed", ErrorMessage = "Trạng thái không hợp lệ")]
             public string Status { get; set; }
         }
     }

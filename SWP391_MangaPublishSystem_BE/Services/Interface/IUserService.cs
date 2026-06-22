@@ -15,5 +15,12 @@ namespace Services.Interface
         Task<int> UpdateAssistantProfile(int userId, UserDto.UpdateAssistantProfile profile, string? avatarUrl);
         Task<List<UserDto.AvailableAssistant>> GetAvailableAssistants();
 
+        // Admin User Management
+        Task<List<UserDto.AdminUserResponse>> GetUsersAsync(int? roleId, string? status);
+        Task<UserDto.AdminUserResponse?> GetUserDetailsAsync(int id);
+        Task<int> AdminCreateUserAsync(UserDto.AdminCreateUserRequest request);
+        Task<int> AdminUpdateUserAsync(int id, UserDto.AdminUpdateUserRequest request);
+        Task<bool> AdminUpdateStatusAsync(int id, string newStatus);
+        Task<bool> AdminSoftDeleteUserAsync(int id);
     }
 }

@@ -42,5 +42,15 @@ namespace Services.DTO
             [Required(ErrorMessage = "Vai trò không được để trống")]
             public int RoleId { get; set; }
         }
+
+        public sealed record AuthResponse(
+            int UserId,
+            string Username,
+            string FullName,
+            string Email,
+            int RoleId,
+            string Token,
+            string RefreshToken
+        );
     }
 }

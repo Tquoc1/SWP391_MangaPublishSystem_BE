@@ -40,39 +40,50 @@ namespace MangaPublishSystem.Controllers
         [Authorize(Roles = "Admin, EB, Editor")]
         public async Task<IActionResult> Create([FromBody] BoardEvaluationDto.Create dto)
         {
-            var id = await _service.CreateAsync(dto);
-
-            return Ok(new
+            try
             {
-                message = "EB evaluated series successfully",
-                evaluationId = id
-            });
+                var id = await _service.CreateAsync(dto);
+
+                return Ok(new
+                {
+                    message = "EB evaluated series successfully",
+                    evaluationId = id
+                });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
         }
 
         [HttpPut("{id}")]
         [Authorize(Roles = "Admin, EB, Editor")]
         public async Task<IActionResult> Update(int id, [FromBody] BoardEvaluationDto.Update dto)
         {
-            var success = await _service.UpdateAsync(id, dto);
-            if (!success) return NotFound();
-
-            return Ok(new
+            try
             {
-                message = "EB evaluation updated successfully"
-            });
+                await _service.UpdateAsync(id, dto);
+                return Ok(new { message = "EB evaluation updated successfully" });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
         }
 
         [HttpDelete("{id}")]
         [Authorize(Roles = "Admin, EB, Editor")]
         public async Task<IActionResult> Delete(int id)
         {
-            var success = await _service.DeleteAsync(id);
-            if (!success) return NotFound();
-
-            return Ok(new
+            try
             {
-                message = "EB evaluation deleted successfully"
-            });
+                await _service.DeleteAsync(id);
+                return Ok(new { message = "EB evaluation deleted successfully" });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
         }
         [HttpPost("batch")]
         public async Task<IActionResult> CreateBatch([FromBody] BoardEvaluationDto.CreateBatch dto)
@@ -86,6 +97,14 @@ namespace MangaPublishSystem.Controllers
                     message = "Board evaluation batch created successfully.",
                     evaluationId = id
                 });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
             }
             catch (Exception ex)
             {

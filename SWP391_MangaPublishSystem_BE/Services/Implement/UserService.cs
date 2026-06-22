@@ -1,3 +1,4 @@
+using DocumentFormat.OpenXml.Math;
 using Entities.Models;
 using Repositories.Repository;
 using Services.Interface;
@@ -118,6 +119,106 @@ namespace Services.Implement
                 p.Skills,
                 p.SoftwareUsed
             )).ToList();
+        }
+
+        // Admin User Management
+        public async Task<List<DTO.UserDto.AdminUserResponse>> GetUsersAsync(int? roleId, string? status)
+        {
+            var users = await _userRepository.GetUsersAsync(roleId, status);
+            var result = users.Select(u => new DTO.UserDto.AdminUserResponse(
+                u.Userid,
+                u.Username,
+                u.Fullname,
+                u.Email,
+                u.Roleid,
+                u.Role?.Rolename ?? "",
+                u.Status,
+                u.Createdat
+            )).ToList();
+
+            return result;
+        }
+
+        public async Task<DTO.UserDto.AdminUserResponse?> GetUserDetailsAsync(int id)
+        {
+            var u = await _userRepository.GetUserById(id);
+            if (u == null || u.Isdeleted == true) return null;
+
+            // Lấy role tay nếu query không include (để an toàn)
+            string roleName = u.Role?.Rolename ?? "";
+            
+            return new DTO.UserDto.AdminUserResponse(
+                u.Userid,
+                u.Username,
+                u.Fullname,
+                u.Email,
+                u.Roleid,
+                roleName,
+                u.Status,
+                u.Createdat
+            );
+        }
+
+        public async Task<int> AdminCreateUserAsync(DTO.UserDto.AdminCreateUserRequest request)
+        {
+            var existing = await _userRepository.GetUserByUsername(request.Username);
+            if (existing != null)
+            {
+                throw new InvalidOperationException("Username đã tồn tại.");
+            }
+
+            var user = new User
+            {
+                Username = request.Username,
+                Passwordhash = BCrypt.Net.BCrypt.HashPassword(request.Password),
+                Fullname = request.FullName,
+                Email = request.Email,
+                Roleid = request.RoleId,
+                Createdat = DateTime.Now,
+                Isdeleted = false,
+                Status = "Active"
+            };
+
+            await _userRepository.CreateAsync(user);
+            return user.Userid;
+        }
+
+        public async Task<int> AdminUpdateUserAsync(int id, DTO.UserDto.AdminUpdateUserRequest request)
+        {
+            var user = await _userRepository.GetUserById(id);
+            if (user == null || user.Isdeleted == true) return 0;
+
+            user.Fullname = request.FullName;
+            user.Email = request.Email;
+            user.Roleid = request.RoleId;
+
+            if (!string.IsNullOrWhiteSpace(request.Password))
+            {
+                user.Passwordhash = BCrypt.Net.BCrypt.HashPassword(request.Password);
+            }
+
+            await _userRepository.UpdateAsync(user);
+            return 1;
+        }
+
+        public async Task<bool> AdminUpdateStatusAsync(int id, string newStatus)
+        {
+            var user = await _userRepository.GetUserById(id);
+            if (user == null || user.Isdeleted == true) return false;
+
+            user.Status = newStatus;
+            await _userRepository.UpdateAsync(user);
+            return true;
+        }
+
+        public async Task<bool> AdminSoftDeleteUserAsync(int id)
+        {
+            var user = await _userRepository.GetUserById(id);
+            if (user == null || user.Isdeleted == true) return false;
+
+            user.Isdeleted = true;
+            await _userRepository.UpdateAsync(user);
+            return true;
         }
     }
 }

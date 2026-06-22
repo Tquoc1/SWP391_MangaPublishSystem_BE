@@ -113,7 +113,7 @@ namespace Services.Implement
             var series = await _seriesRepository.GetByIdWithDetailsAsync(dto.Seriesid);
             if (series == null || series.Isdeleted == true)
             {
-                throw new Exception("Series không tồn tại.");
+                throw new KeyNotFoundException("Series không tồn tại.");
             }
             decimal average =
                 (dto.StoryScore +
@@ -193,10 +193,10 @@ namespace Services.Implement
             return rows > 0;
         }
         */
-        public async Task<bool> UpdateAsync(int id, BoardEvaluationDto.Update dto)
+        public async Task UpdateAsync(int id, BoardEvaluationDto.Update dto)
         {
             var evaluation = await _repository.GetByIdAsync(id);
-            if (evaluation == null) return false;
+            if (evaluation == null) throw new KeyNotFoundException("Không tìm thấy đánh giá hội đồng.");
 
             decimal average =
                 (dto.StoryScore +
@@ -214,35 +214,33 @@ namespace Services.Implement
             evaluation.Feedback = dto.Feedback;
             evaluation.Evaluatedat = DateTime.UtcNow;
 
-            var rows = await _repository.UpdateAsync(evaluation);
+            await _repository.UpdateAsync(evaluation);
 
             await RecalculateSeriesEvaluationAsync(evaluation.Seriesid);
-
-            return rows > 0;
         }
-        public async Task<bool> DeleteAsync(int id)
+        public async Task DeleteAsync(int id)
         {
             var evaluation = await _repository.GetByIdAsync(id);
-            if (evaluation == null) return false;
+            if (evaluation == null) throw new KeyNotFoundException("Không tìm thấy đánh giá hội đồng để xóa.");
 
-            return await _repository.DeleteAsync(evaluation);
+            await _repository.DeleteAsync(evaluation);
         }
 
         public async Task<int> CreateBatchAsync(BoardEvaluationDto.CreateBatch dto)
         {
             if (dto.Evaluators == null || !dto.Evaluators.Any())
-                throw new Exception("Evaluator list cannot be empty.");
+                throw new InvalidOperationException("Evaluator list cannot be empty.");
 
             var series = await _seriesRepository.GetByIdWithDetailsAsync(dto.Seriesid);
             if (series == null || series.Isdeleted == true)
-                throw new Exception("Series does not exist.");
+                throw new KeyNotFoundException("Series does not exist.");
 
             var duplicateEb = dto.Evaluators
                 .GroupBy(x => x.EbId)
                 .Any(g => g.Count() > 1);
 
             if (duplicateEb)
-                throw new Exception("One EB cannot appear more than once in the same evaluation.");
+                throw new InvalidOperationException("One EB cannot appear more than once in the same evaluation.");
 
             decimal avgStory = dto.Evaluators.Average(x => x.StoryScore);
             decimal avgArt = dto.Evaluators.Average(x => x.ArtScore);

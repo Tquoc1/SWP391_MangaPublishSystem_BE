@@ -60,20 +60,30 @@ namespace MangaPublishSystem.Controllers
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            var result = await _tagService.UpdateAsync(id, dto);
-            if (!result) return NotFound(new { Message = "Không tìm thấy thẻ để cập nhật." });
-
-            return NoContent();
+            try
+            {
+                await _tagService.UpdateAsync(id, dto);
+                return NoContent();
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { Message = ex.Message });
+            }
         }
 
         [HttpDelete("{id:int}")]
         [Authorize(Roles = "Admin, EB")]
         public async Task<ActionResult> Delete(int id)
         {
-            var result = await _tagService.RemoveAsync(id);
-            if (!result) return NotFound(new { Message = "Không tìm thấy thẻ để xóa." });
-
-            return NoContent();
+            try
+            {
+                await _tagService.RemoveAsync(id);
+                return NoContent();
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { Message = ex.Message });
+            }
         }
     }
 }

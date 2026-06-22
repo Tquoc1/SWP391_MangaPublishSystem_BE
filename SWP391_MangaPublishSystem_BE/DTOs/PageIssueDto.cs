@@ -35,9 +35,11 @@ namespace DTOs
             public int? AssignedToId { get; set; }
 
             [Required(ErrorMessage = "Loại vấn đề không được để trống")]
+            [AllowedValues("Revision", "Production", ErrorMessage = "Loại vấn đề không hợp lệ")]
             public string IssueType { get; set; }
 
             [Required(ErrorMessage = "Danh mục công việc không được để trống")]
+            [AllowedValues("Content", "Dialog", "Inking", "Effects", "Shading", "Background", ErrorMessage = "Danh mục công việc không hợp lệ")]
             public string WorkCategory { get; set; }
 
             public int BoxX { get; set; }
@@ -66,6 +68,7 @@ namespace DTOs
         public class UpdateStatus
         {
             [Required(ErrorMessage = "Trạng thái không được để trống")]
+            [AllowedValues("Approved", "NeedsRevision", "Submitted", "InProgress", "Pending", "Rejected", "Closed", "Cancelled", ErrorMessage = "Trạng thái không hợp lệ")]
             public string Status { get; set; } = string.Empty;
         }
     }
