@@ -1,4 +1,5 @@
-﻿using DTOs;
+using DTOs;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Services.DTO;
@@ -8,6 +9,7 @@ namespace MangaPublishSystem.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class PageIssuesController : ControllerBase
     {
         private readonly IPageIssueService _pageIssueService;
@@ -36,6 +38,7 @@ namespace MangaPublishSystem.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Editor, EB")]
         public async Task<ActionResult> Create([FromBody] PageIssueDto.Create pageDto)
         {
             if (pageDto == null)
@@ -58,6 +61,7 @@ namespace MangaPublishSystem.Controllers
         }
 
         [HttpPatch("{id}/status")]
+        [Authorize(Roles = "Mangaka, Assistant, Editor, EB")]
         public async Task<IActionResult> UpdateStatus(int id, PageIssueDto.UpdateStatus dto)
         {
             var result = await _pageIssueService.UpdateStatusAsync(id, dto);
@@ -72,6 +76,7 @@ namespace MangaPublishSystem.Controllers
         }
 
         [HttpPut("{id:int}")]
+        [Authorize(Roles = "Mangaka, Assistant, Editor, EB")]
         public async Task<ActionResult> Update(int id, [FromBody] PageIssueDto.Update pageDto)
         {
             if (pageDto == null)
@@ -89,6 +94,7 @@ namespace MangaPublishSystem.Controllers
         }
 
         [HttpPatch("{id:int}/status")]
+        [Authorize(Roles = "Mangaka, Assistant, Editor, EB")]
         public async Task<ActionResult> UpdateStatus(int id, [FromBody] string status)
         {
             var success = await _pageIssueService.UpdateStatusAsync(id, status);
@@ -100,6 +106,7 @@ namespace MangaPublishSystem.Controllers
         }
 
         [HttpDelete("{id:int}/soft")]
+        [Authorize(Roles = "Editor, EB, Admin")]
         public async Task<ActionResult> SoftDelete(int id)
         {
             var success = await _pageIssueService.SoftDeleteAsync(id);

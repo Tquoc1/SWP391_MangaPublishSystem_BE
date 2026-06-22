@@ -1,4 +1,5 @@
 using Entities.Models;
+using Microsoft.AspNetCore.Authorization;
 using Services.DTO;
 using Microsoft.AspNetCore.Mvc;
 using Services.Interface;
@@ -11,6 +12,7 @@ namespace MangaPublishSystem.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class SeriesController : ControllerBase
     {
         private readonly ISeriesService _seriesService;
@@ -49,6 +51,7 @@ namespace MangaPublishSystem.Controllers
         }
 
         [HttpPost(Order = 4)]
+        [Authorize(Roles = "Mangaka")]
         [Consumes("multipart/form-data")]
         public async Task<ActionResult> Create([FromForm] SeriesDto.Create seriesDto, IFormFile proposalFile, IFormFile coverImage)
         {
@@ -147,6 +150,7 @@ namespace MangaPublishSystem.Controllers
         //}
 
         [HttpPut("{id:int}", Order = 5)]
+        [Authorize(Roles = "Mangaka, Assistant")]
         [Consumes("multipart/form-data")]
         public async Task<ActionResult> Update(int id, [FromForm] SeriesDto.Update seriesDto, IFormFile? proposalFile, IFormFile? coverImage)
         {
@@ -183,6 +187,7 @@ namespace MangaPublishSystem.Controllers
         }
 
         [HttpPatch("{id:int}/status", Order = 6)]
+        [Authorize(Roles = "Admin, EB, Editor")]
         public async Task<ActionResult> UpdateStatus(int id, [FromBody] SeriesDto.UpdateStatus statusDto)
         {
             var result = await _seriesService.UpdateStatusAsync(id, statusDto);
@@ -195,6 +200,7 @@ namespace MangaPublishSystem.Controllers
         }
 
         [HttpPatch("{id:int}/publish-format", Order = 7)]
+        [Authorize(Roles = "Admin, EB, Editor")]
         public async Task<ActionResult> UpdatePublishFormat(int id, [FromBody] SeriesDto.UpdatePublishFormat formatDto)
         {
             var result = await _seriesService.UpdatePublishFormatAsync(id, formatDto);
@@ -207,6 +213,7 @@ namespace MangaPublishSystem.Controllers
         }
 
         [HttpDelete("softdelete/{id:int}", Order = 8)]
+        [Authorize(Roles = "Admin, EB, Mangaka")]
         public async Task<ActionResult> SoftDelete(int id)
         {
             var result = await _seriesService.SoftDeleteAsync(id);

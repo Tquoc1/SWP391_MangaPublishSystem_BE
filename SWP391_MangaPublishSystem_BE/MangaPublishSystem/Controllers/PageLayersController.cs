@@ -1,4 +1,5 @@
 using DTOs;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Services.DTO;
@@ -8,6 +9,7 @@ namespace MangaPublishSystem.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class PageLayersController : ControllerBase
     {
         private readonly IPageLayerService _pageLayerService;
@@ -38,6 +40,7 @@ namespace MangaPublishSystem.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Mangaka, Assistant")]
         [Consumes("multipart/form-data")]
         public async Task<ActionResult> Create([FromForm] PageLayerDto.Create dto, IFormFile layerFile)
         {
@@ -67,6 +70,7 @@ namespace MangaPublishSystem.Controllers
         }
 
         [HttpPut("{id:int}")]
+        [Authorize(Roles = "Mangaka, Assistant")]
         [Consumes("multipart/form-data")]
         public async Task<ActionResult> Update(int id, [FromForm] PageLayerDto.Update dto, IFormFile? layerFile)
         {
@@ -95,6 +99,7 @@ namespace MangaPublishSystem.Controllers
         }
 
         [HttpPatch("{id:int}/visibility")]
+        [Authorize(Roles = "Mangaka, Assistant")]
         public async Task<IActionResult> ToggleVisibility(int id)
         {
             var result = await _pageLayerService.ToggleVisibilityAsync(id);
@@ -103,6 +108,7 @@ namespace MangaPublishSystem.Controllers
         }
 
         [HttpDelete("{id:int}/soft")]
+        [Authorize(Roles = "Mangaka, Assistant, Admin")]
         public async Task<ActionResult> SoftDelete(int id)
         {
             var success = await _pageLayerService.SoftDeleteAsync(id);
@@ -114,6 +120,7 @@ namespace MangaPublishSystem.Controllers
         }
 
         [HttpDelete("{id:int}")]
+        [Authorize(Roles = "Mangaka, Admin")]
         public async Task<ActionResult> Delete(int id)
         {
             var result = await _pageLayerService.RemoveAsync(id);

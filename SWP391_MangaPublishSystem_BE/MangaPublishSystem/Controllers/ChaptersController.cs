@@ -1,4 +1,5 @@
 using DTOs;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Services.DTO;
@@ -8,6 +9,7 @@ namespace MangaPublishSystem.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class ChaptersController : ControllerBase
     {
         private readonly IChapterService _chapterService;
@@ -43,6 +45,7 @@ namespace MangaPublishSystem.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Mangaka, Assistant")]
         public async Task<IActionResult> Create([FromBody] ChapterDto.Create chapterDto)
         {
             if (chapterDto == null)
@@ -68,6 +71,7 @@ namespace MangaPublishSystem.Controllers
         }
 
         [HttpPut("{id:int}")]
+        [Authorize(Roles = "Mangaka, Assistant")]
         public async Task<IActionResult> Update(int id, [FromBody] ChapterDto.Update chapterDto)
         {
             chapterDto.Chapterid = id;
@@ -88,6 +92,7 @@ namespace MangaPublishSystem.Controllers
         }
 
         [HttpPatch("{id:int}/status")]
+        [Authorize(Roles = "Admin, EB, Editor")]
         public async Task<IActionResult> UpdateStatus(int id, [FromBody] string status)
         {
             var success = await _chapterService.UpdateStatusAsync(id, status);
@@ -99,6 +104,7 @@ namespace MangaPublishSystem.Controllers
         }
 
         [HttpDelete("{id:int}/soft")]
+        [Authorize(Roles = "Admin, EB, Mangaka")]
         public async Task<IActionResult> SoftDelete(int id)
         {
             var success = await _chapterService.SoftDeleteAsync(id);

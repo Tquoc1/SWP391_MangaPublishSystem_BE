@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using DTOs;
 using Services.Interface;
 using System.Collections.Generic;
@@ -8,6 +9,7 @@ namespace MangaPublishSystem.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class GenresController : ControllerBase
     {
         private readonly IGenreService _genreService;
@@ -36,6 +38,7 @@ namespace MangaPublishSystem.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin, EB")]
         public async Task<ActionResult> Create([FromBody] GenreDto.Create dto)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -52,6 +55,7 @@ namespace MangaPublishSystem.Controllers
         }
 
         [HttpPut("{id:int}")]
+        [Authorize(Roles = "Admin, EB")]
         public async Task<ActionResult> Update(int id, [FromBody] GenreDto.Update dto)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -63,6 +67,7 @@ namespace MangaPublishSystem.Controllers
         }
 
         [HttpDelete("{id:int}")]
+        [Authorize(Roles = "Admin, EB")]
         public async Task<ActionResult> Delete(int id)
         {
             var result = await _genreService.RemoveAsync(id);

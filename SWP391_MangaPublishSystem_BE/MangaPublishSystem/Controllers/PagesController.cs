@@ -1,4 +1,5 @@
 using DTOs;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Services.DTO;
@@ -8,6 +9,7 @@ namespace MangaPublishSystem.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class PagesController : ControllerBase
     {
         private readonly IPageService _pageService;
@@ -50,6 +52,7 @@ namespace MangaPublishSystem.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Mangaka, Assistant")]
         [Consumes("multipart/form-data")]
         public async Task<ActionResult> Create([FromForm] PageDto.Create pageDto, IFormFile pageFile)
         {
@@ -109,6 +112,7 @@ namespace MangaPublishSystem.Controllers
         }
 
         [HttpPut("{id:int}")]
+        [Authorize(Roles = "Mangaka, Assistant")]
         public async Task<ActionResult> Update(int id, [FromBody] PageDto.Update pageUpdateDto)
         {
             var existing = await _pageService.GetByIdAsync(id);
@@ -127,6 +131,7 @@ namespace MangaPublishSystem.Controllers
         }
 
         [HttpPost("{id:int}/composite")]
+        [Authorize(Roles = "Mangaka, Assistant")]
         public async Task<ActionResult> CompositeImage(int id)
         {
             var result = await _pageService.CompositeAndSaveImageAsync(id);
@@ -139,6 +144,7 @@ namespace MangaPublishSystem.Controllers
         }
 
         [HttpPatch("{id:int}/status")]
+        [Authorize(Roles = "Admin, EB, Editor, Mangaka")]
         public async Task<ActionResult> UpdateStatus(int id, [FromBody] string status)
         {
             var success = await _pageService.UpdateStatusAsync(id, status);
@@ -150,6 +156,7 @@ namespace MangaPublishSystem.Controllers
         }
 
         [HttpDelete("{id:int}/soft")]
+        [Authorize(Roles = "Admin, EB, Mangaka")]
         public async Task<ActionResult> SoftDelete(int id)
         {
             var success = await _pageService.SoftDeleteAsync(id);

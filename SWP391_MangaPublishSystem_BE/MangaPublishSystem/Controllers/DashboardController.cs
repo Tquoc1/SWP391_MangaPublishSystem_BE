@@ -37,8 +37,7 @@ namespace MangaPublishSystem.Controllers
         }
 
         [HttpGet("Admin/Overview")]
-        //[Authorize(Roles = "1,2,3")]
-        [AllowAnonymous]
+        [Authorize(Roles = "Admin, EB, Editor")]
         public async Task<IActionResult> GetAdminOverview()
         {
             var data = await _dashboardService.GetAdminOverviewAsync();
@@ -46,8 +45,7 @@ namespace MangaPublishSystem.Controllers
         }
 
         [HttpGet("Admin/SeriesStats")]
-        //[Authorize(Roles = "1,2,3")] 
-        [AllowAnonymous]
+        [Authorize(Roles = "Admin, EB, Editor")]
         public async Task<IActionResult> GetAdminSeriesStats()
         {
             var data = await _dashboardService.GetAdminSeriesStatsAsync();

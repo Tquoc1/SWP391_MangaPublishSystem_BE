@@ -90,6 +90,7 @@ namespace MangaPublishSystem.Controllers
         }
 
         [HttpPut("profile/mangaka")]
+        [Authorize(Roles = "Mangaka")]
         [Consumes("multipart/form-data")]
         public async Task<IActionResult> UpdateMangakaProfile([FromForm] UserDto.UpdateMangakaProfile request, IFormFile? avatarFile)
         {
@@ -123,6 +124,7 @@ namespace MangaPublishSystem.Controllers
         }
 
         [HttpPut("profile/assistant")]
+        [Authorize(Roles = "Assistant")]
         [Consumes("multipart/form-data")]
         public async Task<IActionResult> UpdateAssistantProfile([FromForm] UserDto.UpdateAssistantProfile request, IFormFile? avatarFile)
         {

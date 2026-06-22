@@ -20,6 +20,7 @@ namespace MangaPublishSystem.Controllers
         }
 
         [HttpPost("import")]
+        [Authorize(Roles = "Admin, EB, Editor")]
         [Consumes("multipart/form-data")]
         public async Task<IActionResult> ImportWeeklyRanking([FromForm] WeeklyRankingDto.Import dto)
         {

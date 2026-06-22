@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using Services.Interface;
@@ -9,6 +9,7 @@ using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Authorization;
 using Entities.Models;
 using Services.DTO;
+using Services.Constants;
 
 namespace MangaPublishSystem.Controllers
 {
@@ -169,7 +170,7 @@ namespace MangaPublishSystem.Controllers
                     {
                         new(ClaimTypes.Name, systemUserAccount.Username),
                         //new(ClaimTypes.Email, systemUserAccount.Email),
-                        new(ClaimTypes.Role, systemUserAccount.Roleid.ToString()),
+                        new(ClaimTypes.Role, ((UserRole)systemUserAccount.Roleid).ToString()),
                         new("roleid", systemUserAccount.Roleid.ToString()),
                         new("userid", systemUserAccount.Userid.ToString())
                     },
