@@ -500,4 +500,50 @@ ALTER TABLE [dbo].[pagelayers] ALTER COLUMN [isdeleted] BIT NOT NULL;
 ALTER TABLE [dbo].[pagelayers] ADD CONSTRAINT [chk_pagelayers_opacity] CHECK ([opacity] >= 0.0 AND [opacity] <= 1.0);
 GO
 
+USE [MangaPublishDB]
+GO
+
+/****** Object:  Table [dbo].[board_evaluation_details]    Script Date: 6/22/2026 7:38:18 AM ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE TABLE [dbo].[board_evaluation_details](
+	[detail_id] [int] IDENTITY(1,1) NOT NULL,
+	[evaluation_id] [int] NOT NULL,
+	[eb_id] [int] NOT NULL,
+	[story_score] [decimal](5, 2) NOT NULL,
+	[art_score] [decimal](5, 2) NOT NULL,
+	[character_score] [decimal](5, 2) NOT NULL,
+	[commercial_score] [decimal](5, 2) NOT NULL,
+	[pacing_score] [decimal](5, 2) NOT NULL,
+	[feedback] [nvarchar](max) NULL,
+	[evaluated_at] [datetime] NULL,
+	[average_score]  AS ((((([story_score]+[art_score])+[character_score])+[commercial_score])+[pacing_score])/(5.0)),
+PRIMARY KEY CLUSTERED 
+(
+	[detail_id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+
+ALTER TABLE [dbo].[board_evaluation_details] ADD  DEFAULT (getdate()) FOR [evaluated_at]
+GO
+
+ALTER TABLE [dbo].[board_evaluation_details]  WITH CHECK ADD  CONSTRAINT [FK_board_evaluation_details_eb] FOREIGN KEY([eb_id])
+REFERENCES [dbo].[users] ([userid])
+GO
+
+ALTER TABLE [dbo].[board_evaluation_details] CHECK CONSTRAINT [FK_board_evaluation_details_eb]
+GO
+
+ALTER TABLE [dbo].[board_evaluation_details]  WITH CHECK ADD  CONSTRAINT [FK_board_evaluation_details_evaluation] FOREIGN KEY([evaluation_id])
+REFERENCES [dbo].[board_evaluations] ([evaluationid])
+GO
+
+ALTER TABLE [dbo].[board_evaluation_details] CHECK CONSTRAINT [FK_board_evaluation_details_evaluation]
+GO
+
 
