@@ -66,6 +66,9 @@ builder.Services.AddScoped<IMangakaAssistantService, MangakaAssistantService>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddScoped<NotificationRepository>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<WeeklyRankingRepository>();
+builder.Services.AddScoped<IWeeklyRankingService, WeeklyRankingService>();
+
 
 var supabaseSettings = builder.Configuration.GetSection("Supabase").Get<SupabaseSettings>()
     ?? throw new InvalidOperationException("Missing 'Supabase' configuration section.");
