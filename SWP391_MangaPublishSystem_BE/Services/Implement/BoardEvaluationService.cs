@@ -227,6 +227,117 @@ namespace Services.Implement
 
             return await _repository.DeleteAsync(evaluation);
         }
+
+        public async Task<int> CreateBatchAsync(BoardEvaluationDto.CreateBatch dto)
+        {
+            if (dto.Evaluators == null || !dto.Evaluators.Any())
+                throw new Exception("Evaluator list cannot be empty.");
+
+            var series = await _seriesRepository.GetByIdWithDetailsAsync(dto.Seriesid);
+            if (series == null || series.Isdeleted == true)
+                throw new Exception("Series does not exist.");
+
+            var duplicateEb = dto.Evaluators
+                .GroupBy(x => x.EbId)
+                .Any(g => g.Count() > 1);
+
+            if (duplicateEb)
+                throw new Exception("One EB cannot appear more than once in the same evaluation.");
+
+            decimal avgStory = dto.Evaluators.Average(x => x.StoryScore);
+            decimal avgArt = dto.Evaluators.Average(x => x.ArtScore);
+            decimal avgCharacter = dto.Evaluators.Average(x => x.CharacterScore);
+            decimal avgCommercial = dto.Evaluators.Average(x => x.CommercialScore);
+            decimal avgPacing = dto.Evaluators.Average(x => x.PacingScore);
+
+            decimal finalAverage =
+                (avgStory + avgArt + avgCharacter + avgCommercial + avgPacing) / 5m;
+
+            bool isApproved = finalAverage >= 5m;
+
+            var evaluation = new BoardEvaluation
+            {
+                Seriesid = dto.Seriesid,
+                Inputtedbyid = dto.Inputtedbyid,
+
+                StoryScore = avgStory,
+                ArtScore = avgArt,
+                CharacterScore = avgCharacter,
+                CommercialScore = avgCommercial,
+                PacingScore = avgPacing,
+
+                AverageScore = finalAverage,
+                FinalDecision = isApproved ? "Approve" : "Reject",
+                ApprovedPublishFormat = isApproved ? "Weekly" : null,
+                Feedback = dto.Feedback,
+                Evaluatedat = DateTime.UtcNow
+            };
+
+            var details = dto.Evaluators.Select(x => new BoardEvaluationDetail
+            {
+                EbId = x.EbId,
+                StoryScore = x.StoryScore,
+                ArtScore = x.ArtScore,
+                CharacterScore = x.CharacterScore,
+                CommercialScore = x.CommercialScore,
+                PacingScore = x.PacingScore,
+                Feedback = x.Feedback,
+                EvaluatedAt = DateTime.UtcNow
+            }).ToList();
+
+            var evaluationId = await _repository.CreateBatchAsync(evaluation, details);
+
+            series.Status = isApproved ? "Approved" : "Rejected";
+            series.Publishformat = isApproved ? "Weekly" : "Pending";
+            series.Approvedat = isApproved ? DateTime.UtcNow : null;
+
+            await _seriesRepository.UpdateAsync(series);
+
+            return evaluationId;
+        }
+
+        public async Task<BoardEvaluationDto.BatchSummary?> GetBatchSummaryAsync(int evaluationId)
+        {
+            var evaluation = await _repository.GetBatchSummaryAsync(evaluationId);
+
+            if (evaluation == null)
+                return null;
+
+            var details = evaluation.BoardEvaluationDetails.ToList();
+
+            return new BoardEvaluationDto.BatchSummary
+            {
+                Evaluationid = evaluation.Evaluationid,
+                Seriesid = evaluation.Seriesid,
+
+                Evaluations = details.Select(x => new BoardEvaluationDto.DetailResponse
+                {
+                    DetailId = x.DetailId,
+                    EbId = x.EbId,
+                    StoryScore = x.StoryScore,
+                    ArtScore = x.ArtScore,
+                    CharacterScore = x.CharacterScore,
+                    CommercialScore = x.CommercialScore,
+                    PacingScore = x.PacingScore,
+                    AverageScore =
+                        (x.StoryScore +
+                         x.ArtScore +
+                         x.CharacterScore +
+                         x.CommercialScore +
+                         x.PacingScore) / 5m,
+                    Feedback = x.Feedback
+                }).ToList(),
+
+                AverageStoryScore = details.Average(x => x.StoryScore),
+                AverageArtScore = details.Average(x => x.ArtScore),
+                AverageCharacterScore = details.Average(x => x.CharacterScore),
+                AverageCommercialScore = details.Average(x => x.CommercialScore),
+                AveragePacingScore = details.Average(x => x.PacingScore),
+
+                FinalAverageScore = evaluation.AverageScore ?? 0,
+                Decision = evaluation.FinalDecision
+            };
+        }
         private async Task RecalculateSeriesEvaluationAsync(int seriesId)
         {
             var evaluations = await _repository.GetBySeriesIdAsync(seriesId);
