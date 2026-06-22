@@ -1,8 +1,6 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.ComponentModel.DataAnnotations;
 
 namespace DTOs
 {
@@ -10,33 +8,60 @@ namespace DTOs
     {
         public class Create
         {
+            [Required(ErrorMessage = "Series ID không được để trống")]
             public int Seriesid { get; set; }
+
+            [Required(ErrorMessage = "Người nhập không được để trống")]
             public int Inputtedbyid { get; set; }
 
+            [Range(0, 10, ErrorMessage = "Điểm phải từ 0 đến 10")]
             public decimal StoryScore { get; set; }
+
+            [Range(0, 10, ErrorMessage = "Điểm phải từ 0 đến 10")]
             public decimal ArtScore { get; set; }
+
+            [Range(0, 10, ErrorMessage = "Điểm phải từ 0 đến 10")]
             public decimal CharacterScore { get; set; }
+
+            [Range(0, 10, ErrorMessage = "Điểm phải từ 0 đến 10")]
             public decimal CommercialScore { get; set; }
+
+            [Range(0, 10, ErrorMessage = "Điểm phải từ 0 đến 10")]
             public decimal PacingScore { get; set; }
 
             public string? Feedback { get; set; }
         }
         public class CreateBatch
         {
+            [Required(ErrorMessage = "Series ID không được để trống")]
             public int Seriesid { get; set; }
+
+            [Required(ErrorMessage = "Người nhập không được để trống")]
             public int Inputtedbyid { get; set; }
+
             public string? Feedback { get; set; }
 
+            [MinLength(1, ErrorMessage = "Cần ít nhất một đánh giá từ ban giám khảo")]
             public List<EbScore> Evaluators { get; set; } = new();
         }
         public class EbScore
         {
+            [Required(ErrorMessage = "Mã giám khảo không được để trống")]
             public int EbId { get; set; }
 
+            [Range(0, 10, ErrorMessage = "Điểm phải từ 0 đến 10")]
             public decimal StoryScore { get; set; }
+
+            [Range(0, 10, ErrorMessage = "Điểm phải từ 0 đến 10")]
             public decimal ArtScore { get; set; }
+
+            [Range(0, 10, ErrorMessage = "Điểm phải từ 0 đến 10")]
             public decimal CharacterScore { get; set; }
+
+            [Range(0, 10, ErrorMessage = "Điểm phải từ 0 đến 10")]
             public decimal CommercialScore { get; set; }
+
+            [Range(0, 10, ErrorMessage = "Điểm phải từ 0 đến 10")]
             public decimal PacingScore { get; set; }
 
             public string? Feedback { get; set; }
@@ -74,10 +99,19 @@ namespace DTOs
         }
         public class Update
         {
+            [Range(0, 10, ErrorMessage = "Điểm phải từ 0 đến 10")]
             public decimal StoryScore { get; set; }
+
+            [Range(0, 10, ErrorMessage = "Điểm phải từ 0 đến 10")]
             public decimal ArtScore { get; set; }
+
+            [Range(0, 10, ErrorMessage = "Điểm phải từ 0 đến 10")]
             public decimal CharacterScore { get; set; }
+
+            [Range(0, 10, ErrorMessage = "Điểm phải từ 0 đến 10")]
             public decimal CommercialScore { get; set; }
+
+            [Range(0, 10, ErrorMessage = "Điểm phải từ 0 đến 10")]
             public decimal PacingScore { get; set; }
 
             public string? Feedback { get; set; }
@@ -105,5 +139,4 @@ namespace DTOs
             public DateTime? Evaluatedat { get; set; }
         }
     }
-
 }

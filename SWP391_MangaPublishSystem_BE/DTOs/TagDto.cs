@@ -9,15 +9,15 @@ namespace DTOs
 
         public class Create
         {
-            [Required]
-            [MaxLength(100)]
+            [Required(ErrorMessage = "Tên thẻ không được để trống")]
+            [MaxLength(100, ErrorMessage = "Tên thẻ không được vượt quá 100 ký tự")]
             public string Tagname { get; set; } = null!;
         }
 
         public class Update
         {
-            [Required]
-            [MaxLength(100)]
+            [Required(ErrorMessage = "Tên thẻ không được để trống")]
+            [MaxLength(100, ErrorMessage = "Tên thẻ không được vượt quá 100 ký tự")]
             public string Tagname { get; set; } = null!;
         }
     }

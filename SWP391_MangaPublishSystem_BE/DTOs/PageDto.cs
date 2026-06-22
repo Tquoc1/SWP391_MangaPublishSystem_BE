@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace DTOs
 {
@@ -13,12 +14,18 @@ namespace DTOs
 
         public class Create
         {
+            [Required(ErrorMessage = "Chapter ID không được để trống")]
             public int Chapterid { get; set; }
+
+            [Required(ErrorMessage = "Số trang không được để trống")]
+            [Range(1, int.MaxValue, ErrorMessage = "Số trang phải lớn hơn 0")]
             public int Pagenumber { get; set; }
         }
 
         public class Update
         {
+            [Required(ErrorMessage = "Số trang không được để trống")]
+            [Range(1, int.MaxValue, ErrorMessage = "Số trang phải lớn hơn 0")]
             public int Pagenumber { get; set; }
         }
     }

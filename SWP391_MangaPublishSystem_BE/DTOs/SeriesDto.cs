@@ -26,6 +26,7 @@ namespace DTOs
         public class Create
         {
             [Required(ErrorMessage = "Tiêu đề truyện không được để trống")]
+            [MaxLength(255, ErrorMessage = "Tiêu đề truyện không được vượt quá 255 ký tự")]
             public string Title { get; set; }
 
             [Required(ErrorMessage = "Mô tả truyện không được để trống")]
@@ -46,6 +47,7 @@ namespace DTOs
 
         public class Update
         {
+            [MaxLength(255, ErrorMessage = "Tiêu đề truyện không được vượt quá 255 ký tự")]
             public string Title { get; set; }
             public string Synopsis { get; set; }
             public string Agerating { get; set; }
@@ -56,11 +58,13 @@ namespace DTOs
 
         public class UpdateStatus
         {
+            [Required(ErrorMessage = "Trạng thái không được để trống")]
             public string Status { get; set; }
         }
 
         public class UpdatePublishFormat
         {
+            [Required(ErrorMessage = "Định dạng xuất bản không được để trống")]
             public string Publishformat { get; set; }
         }
 
