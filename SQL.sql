@@ -552,3 +552,6 @@ ALTER TABLE [dbo].[board_evaluation_details] CHECK CONSTRAINT [FK_board_evaluati
 GO
 ALTER TABLE [dbo].[series] ALTER COLUMN [tantoueditorid] [int] NULL;
 
+ALTER TABLE [dbo].[pagelayers] ADD CONSTRAINT [DF_pagelayers_isdeleted] DEFAULT (0) FOR [isdeleted];
+ALTER TABLE [dbo].[pagelayers] ADD CONSTRAINT [DF_pagelayers_opacity] DEFAULT (1.0) FOR [opacity];
+
