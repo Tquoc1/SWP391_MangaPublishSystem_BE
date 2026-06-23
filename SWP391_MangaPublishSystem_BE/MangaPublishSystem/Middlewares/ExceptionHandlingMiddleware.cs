@@ -36,7 +36,7 @@ namespace MangaPublishSystem.Middlewares
         private async Task HandleExceptionAsync(HttpContext context, Exception exception)
         {
             var statusCode = HttpStatusCode.InternalServerError;
-            var message = "An unexpected error occurred. Please try again later.";
+            var message = exception.Message; // Trả về lỗi thực tế thay vì lỗi chung chung
             List<string>? errors = null;
 
             switch (exception)
@@ -54,6 +54,18 @@ namespace MangaPublishSystem.Middlewares
                     _logger.LogWarning("Not Found: {Message}", message);
                     break;
 
+                case KeyNotFoundException keyNotFoundEx:
+                    statusCode = HttpStatusCode.NotFound;
+                    message = keyNotFoundEx.Message;
+                    _logger.LogWarning("Key Not Found: {Message}", message);
+                    break;
+
+                case InvalidOperationException invalidOpEx:
+                    statusCode = HttpStatusCode.BadRequest;
+                    message = invalidOpEx.Message;
+                    _logger.LogWarning("Invalid Operation: {Message}", message);
+                    break;
+
                 case UnauthorizedException unauthorizedEx:
                     statusCode = HttpStatusCode.Unauthorized;
                     message = unauthorizedEx.Message;
@@ -67,7 +79,9 @@ namespace MangaPublishSystem.Middlewares
                     break;
 
                 default:
-                    _logger.LogError(exception, "System Exception: {Message}", exception.Message);
+                    // Trả về luôn nội dung exception (kể cả lỗi SQL hay Supabase) để dễ debug
+                    message = exception.InnerException != null ? $"{exception.Message} - Inner: {exception.InnerException.Message}" : exception.Message;
+                    _logger.LogError(exception, "System Exception: {Message}", message);
                     break;
             }
 

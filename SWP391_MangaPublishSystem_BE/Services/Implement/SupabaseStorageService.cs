@@ -18,7 +18,7 @@ namespace Services.Implement
         public async Task<string> UploadAsync(Stream content, string fileName, string contentType, string? folder = null)
         {
             var baseUrl = _settings.Url.TrimEnd('/');
-            var safeName = Path.GetFileName(fileName);
+            var safeName = Uri.EscapeDataString(Path.GetFileName(fileName));
 
             // Unique object path so uploads never overwrite each other.
             var objectPath = string.IsNullOrWhiteSpace(folder)

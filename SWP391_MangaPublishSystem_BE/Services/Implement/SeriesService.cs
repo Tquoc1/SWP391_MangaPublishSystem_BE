@@ -63,7 +63,7 @@ namespace Services.Implement
                 Publishformat = "Pending",
                 Proposalfileurl = proposalFileUrl,
                 Coverimageurl = coverImageUrl,
-                Status = "Pending",
+                Status = "Draft",
                 Createdat = DateTime.UtcNow,
                 Isdeleted = false
             };
