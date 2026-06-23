@@ -550,5 +550,5 @@ GO
 
 ALTER TABLE [dbo].[board_evaluation_details] CHECK CONSTRAINT [FK_board_evaluation_details_evaluation]
 GO
-
+ALTER TABLE [dbo].[series] ALTER COLUMN [tantoueditorid] [int] NULL;
 
