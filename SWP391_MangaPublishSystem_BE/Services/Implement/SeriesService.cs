@@ -59,7 +59,7 @@ namespace Services.Implement
                 Synopsis = seriesDto.Synopsis,
                 Mangakaid = seriesDto.Mangakaid,
                 Agerating = seriesDto.Agerating ?? "G",
-                Tantoueditorid = seriesDto.Tantoueditorid,
+                Tantoueditorid = null,
                 Publishformat = "Pending",
                 Proposalfileurl = proposalFileUrl,
                 Coverimageurl = coverImageUrl,
@@ -189,6 +189,21 @@ namespace Services.Implement
         public async Task RemoveAsync(int id)
         {
             await SoftDeleteAsync(id);
+        }
+
+        public async Task UpdateTantouEditorAsync(int id, int tantouEditorId)
+        {
+            var existing = await _seriesRepository.GetByIdAsync(id);
+            if (existing == null) throw new KeyNotFoundException("Không tìm thấy tác phẩm.");
+
+            var editor = await _userRepository.GetUserById(tantouEditorId);
+            if (editor == null || editor.Roleid != 3 || editor.Isdeleted == true || editor.Status != "Active")
+            {
+                throw new ArgumentException("Mã biên tập viên không hợp lệ hoặc biên tập viên không hoạt động.");
+            }
+
+            existing.Tantoueditorid = tantouEditorId;
+            await _seriesRepository.UpdateAsync(existing);
         }
 
         private SeriesDto MapToDto(Series series)

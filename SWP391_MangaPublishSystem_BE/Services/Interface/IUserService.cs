@@ -14,6 +14,7 @@ namespace Services.Interface
         Task<int> UpdateMangakaProfile(int userId, UserDto.UpdateMangakaProfile profile, string? avatarUrl);
         Task<int> UpdateAssistantProfile(int userId, UserDto.UpdateAssistantProfile profile, string? avatarUrl);
         Task<List<UserDto.AvailableAssistant>> GetAvailableAssistants();
+        Task<List<UserDto.TantouEditorResponse>> GetTantouEditorsAsync();
 
         // Admin User Management
         Task<List<UserDto.AdminUserResponse>> GetUsersAsync(int? roleId, string? status);

@@ -163,6 +163,14 @@ namespace MangaPublishSystem.Controllers
             var assistants = await _userService.GetAvailableAssistants();
             return Ok(assistants);
         }
+
+        [HttpGet("tantou-editors")]
+        [Authorize(Roles = "Mangaka")]
+        public async Task<IActionResult> GetTantouEditors()
+        {
+            var editors = await _userService.GetTantouEditorsAsync();
+            return Ok(editors);
+        }
     }
 }
 

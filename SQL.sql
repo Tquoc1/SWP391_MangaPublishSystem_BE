@@ -139,7 +139,7 @@ CREATE TABLE [dbo].[series](
 	[title] [nvarchar](255) NOT NULL,
 	[synopsis] [nvarchar](max) NULL,
 	[mangakaid] [int] NOT NULL,
-	[tantoueditorid] [int] NOT NULL,
+	[tantoueditorid] [int] NULL,
 	[publishformat] [nvarchar](50) NULL,
 	[status] [nvarchar](50) NULL,
 	[proposalfileurl] [nvarchar](max) NULL,
