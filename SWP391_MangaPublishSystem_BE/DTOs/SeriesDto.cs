@@ -32,9 +32,6 @@ namespace DTOs
             [Required(ErrorMessage = "Mô tả truyện không được để trống")]
             public string Synopsis { get; set; }
 
-            [Required(ErrorMessage = "Mã biên tập viên không được để trống")]
-            public int Tantoueditorid { get; set; }
-
             [Required(ErrorMessage = "Vui lòng chọn giới hạn độ tuổi")]
             [AllowedValues("G", "PG-13", "R-16", "R-18", ErrorMessage = "Giới hạn độ tuổi không hợp lệ")]
             public string Agerating { get; set; }
@@ -70,6 +67,12 @@ namespace DTOs
             [Required(ErrorMessage = "Định dạng xuất bản không được để trống")]
             [AllowedValues("Pending", "Monthly", "Weekly", ErrorMessage = "Định dạng xuất bản không hợp lệ")]
             public string Publishformat { get; set; }
+        }
+
+        public class UpdateTantouEditor
+        {
+            [Required(ErrorMessage = "Mã biên tập viên không được để trống")]
+            public int Tantoueditorid { get; set; }
         }
 
         public class GenreSimpleDto

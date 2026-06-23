@@ -121,6 +121,18 @@ namespace Services.Implement
             )).ToList();
         }
 
+        public async Task<List<DTO.UserDto.TantouEditorResponse>> GetTantouEditorsAsync()
+        {
+            var users = await _userRepository.GetUsersAsync(3, "Active");
+            return users.Select(u => new DTO.UserDto.TantouEditorResponse(
+                u.Userid,
+                u.Username,
+                u.Fullname,
+                u.Email ?? string.Empty,
+                null
+            )).ToList();
+        }
+
         // Admin User Management
         public async Task<List<DTO.UserDto.AdminUserResponse>> GetUsersAsync(int? roleId, string? status)
         {

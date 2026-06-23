@@ -48,6 +48,14 @@ namespace Services.DTO
             DateTime? CreatedAt
         );
 
+        public sealed record TantouEditorResponse(
+            int UserId,
+            string Username,
+            string FullName,
+            string Email,
+            string? PhoneNumber = null
+        );
+
         public class AdminCreateUserRequest
         {
             [Required(ErrorMessage = "Username không được để trống")]

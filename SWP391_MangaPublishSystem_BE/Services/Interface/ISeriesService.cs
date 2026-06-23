@@ -14,6 +14,7 @@ namespace Services.Interface
         Task UpdatePublishFormatAsync(int id, SeriesDto.UpdatePublishFormat seriesDto);
         Task SoftDeleteAsync(int id);
         Task RemoveAsync(int id);
+        Task UpdateTantouEditorAsync(int id, int tantouEditorId);
         Task UploadCoverAsync(int id, string coverImageUrl);
         Task UploadProposalAsync(int id, string proposalFileUrl);
     }

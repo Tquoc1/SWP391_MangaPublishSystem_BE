@@ -219,6 +219,25 @@ namespace MangaPublishSystem.Controllers
             }
         }
 
+        [HttpPatch("{id:int}/tantou-editor")]
+        [Authorize(Roles = "Mangaka")]
+        public async Task<ActionResult> UpdateTantouEditor(int id, [FromBody] SeriesDto.UpdateTantouEditor updateDto)
+        {
+            try
+            {
+                await _seriesService.UpdateTantouEditorAsync(id, updateDto.Tantoueditorid);
+                return NoContent();
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
         [HttpDelete("softdelete/{id:int}", Order = 8)]
         [Authorize(Roles = "Admin, EB, Mangaka")]
         public async Task<ActionResult> SoftDelete(int id)
