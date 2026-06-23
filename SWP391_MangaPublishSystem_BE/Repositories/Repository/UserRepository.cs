@@ -14,6 +14,11 @@ namespace Repositories.Repository
             return await _context.Users.FirstOrDefaultAsync(x => x.Userid == userId);
         }
 
+        public async Task<User> GetUserByUsername(string username)
+        {
+            return await _context.Users.FirstOrDefaultAsync(x => x.Username == username);
+        }
+
         public async Task<MangakaProfile> GetMangakaProfile(int userId)
         {
             return await _context.MangakaProfiles.FirstOrDefaultAsync(x => x.Userid == userId);
@@ -46,6 +51,46 @@ namespace Repositories.Repository
         {
             _context.AssistantProfiles.Update(profile);
             await _context.SaveChangesAsync();
+        }
+
+        public async Task<int> UpdateAsync(User entity)
+        {
+            _context.Users.Update(entity);
+            return await _context.SaveChangesAsync();
+        }
+
+        public async Task<List<User>> GetAdminsAsync()
+        {
+            return await _context.Users
+                .Where(u => u.Roleid == 1 || u.Roleid == 2 || u.Roleid == 3)
+                .ToListAsync();
+        }
+
+        public async Task<List<AssistantProfile>> GetAvailableAssistantsAsync()
+        {
+            return await _context.AssistantProfiles
+                .Include(a => a.User)
+                .Where(a => a.IsAvailable == true)
+                .ToListAsync();
+        }
+
+        public async Task<List<User>> GetUsersAsync(int? roleId, string? status)
+        {
+            var query = _context.Users.Include(u => u.Role).Where(u => u.Isdeleted != true).AsQueryable();
+
+            if (roleId.HasValue)
+            {
+                query = query.Where(u => u.Roleid == roleId.Value);
+            }
+
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                query = query.Where(u => u.Status == status);
+            }
+
+            var users = await query.OrderByDescending(u => u.Createdat).ToListAsync();
+
+            return users;
         }
     }
 }

@@ -9,12 +9,12 @@ namespace Services.Interface
         Task<SeriesDto> GetByIdAsync(int id);
         Task<List<SeriesDto>> GetByMangakaIdAsync(int mangakaId);
         Task<int> CreateAsync(SeriesDto.Create seriesDto, string proposalFileUrl , string coverImageUrl);
-        Task<bool> UpdateAsync(int id, SeriesDto.Update seriesDto, string proposalFileUrl, string coverImageUrl);
-        Task<bool> UpdateStatusAsync(int id, SeriesDto.UpdateStatus seriesDto);
-        Task<bool> UpdatePublishFormatAsync(int id, SeriesDto.UpdatePublishFormat seriesDto);
-        Task<bool> SoftDeleteAsync(int id);
-        Task<bool> RemoveAsync(int id);
-        Task<bool> UploadCoverAsync(int id, string coverImageUrl);
-        Task<bool> UploadProposalAsync(int id, string proposalFileUrl);
+        Task UpdateAsync(int id, SeriesDto.Update seriesDto, string proposalFileUrl, string coverImageUrl);
+        Task UpdateStatusAsync(int id, SeriesDto.UpdateStatus seriesDto);
+        Task UpdatePublishFormatAsync(int id, SeriesDto.UpdatePublishFormat seriesDto);
+        Task SoftDeleteAsync(int id);
+        Task RemoveAsync(int id);
+        Task UploadCoverAsync(int id, string coverImageUrl);
+        Task UploadProposalAsync(int id, string proposalFileUrl);
     }
 }

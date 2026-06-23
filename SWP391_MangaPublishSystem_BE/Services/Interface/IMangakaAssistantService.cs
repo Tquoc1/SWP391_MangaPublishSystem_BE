@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,8 +12,8 @@ namespace Services.Interface
         Task<List<MangakaAssistantDto>> GetAllAsync(int? mangakaId, int? assistantId);
         Task<MangakaAssistantDto> GetByIdAsync(int id);
         Task<int> CreateAsync(MangakaAssistantDto.Create dto);
-        Task<int> UpdateAsync(int id, MangakaAssistantDto.Update dto);
-        Task<int> UpdateStatusAsync(int id, string status);
-        Task<bool> RemoveAsync(int id);
+        Task UpdateAsync(int id, MangakaAssistantDto.Update dto);
+        Task UpdateStatusAsync(int id, string status);
+        Task RemoveAsync(int id);
     }
 }

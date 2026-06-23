@@ -50,49 +50,47 @@ namespace Services.Implement
             return layer.Layerid;
         }
 
-        public async Task<int> UpdateAsync(int id, PageLayerDto.Update dto, string fileUrl)
+        public async Task UpdateAsync(int id, PageLayerDto.Update dto, string fileUrl)
         {
             var existing = await _pageLayerRepository.GetByIdAsync(id);
-            if (existing == null) return 0;
+            if (existing == null) throw new KeyNotFoundException("Không tìm thấy lớp vẽ (Layer) cần cập nhật.");
 
             existing.Layername = dto.Layername;
             existing.Zindex = dto.Zindex;
             existing.Opacity = dto.Opacity ?? existing.Opacity;
             existing.Versionnumber = dto.Versionnumber;
-            existing.Fileurl = fileUrl;
+            
+            if (!string.IsNullOrEmpty(fileUrl))
+                existing.Fileurl = fileUrl;
 
             await _pageLayerRepository.UpdateAsync(existing);
-            return 1;
         }
 
-        public async Task<bool> ToggleVisibilityAsync(int id)
+        public async Task ToggleVisibilityAsync(int id)
         {
             var existing = await _pageLayerRepository.GetByIdAsync(id);
-            if (existing == null) return false;
+            if (existing == null) throw new KeyNotFoundException("Không tìm thấy lớp vẽ.");
 
             existing.Isvisible = !existing.Isvisible;
 
             await _pageLayerRepository.UpdateAsync(existing);
-            return true;
         }
 
-        public async Task<bool> SoftDeleteAsync(int id)
+        public async Task SoftDeleteAsync(int id)
         {
             var existing = await _pageLayerRepository.GetByIdAsync(id);
-            if (existing == null) return false;
+            if (existing == null) throw new KeyNotFoundException("Không tìm thấy lớp vẽ.");
 
             existing.Isdeleted = true;
             await _pageLayerRepository.UpdateAsync(existing);
-            return true;
         }
 
-        public async Task<bool> RemoveAsync(int id)
+        public async Task RemoveAsync(int id)
         {
             var existing = await _pageLayerRepository.GetByIdAsync(id);
-            if (existing == null) return false;
+            if (existing == null) throw new KeyNotFoundException("Không tìm thấy lớp vẽ.");
 
             await _pageLayerRepository.RemoveAsync(existing);
-            return true;
         }
 
         private PageLayerDto MapToDto(Pagelayer layer)

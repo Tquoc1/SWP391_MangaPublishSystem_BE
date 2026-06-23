@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,7 +13,9 @@ namespace Services.Interface
         Task<List<BoardEvaluationDto.Response>> GetAllAsync();
         Task<BoardEvaluationDto.Response> GetByIdAsync(int id);
         Task<int> CreateAsync(BoardEvaluationDto.Create dto);
-        Task<bool> UpdateAsync(int id, BoardEvaluationDto.Update dto);
-        Task<bool> DeleteAsync(int id);
+        Task UpdateAsync(int id, BoardEvaluationDto.Update dto);
+        Task DeleteAsync(int id);
+        Task<int> CreateBatchAsync(BoardEvaluationDto.CreateBatch dto);
+        Task<BoardEvaluationDto.BatchSummary?> GetBatchSummaryAsync(int evaluationId);
     }
 }

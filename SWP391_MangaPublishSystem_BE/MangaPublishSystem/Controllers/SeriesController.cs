@@ -1,4 +1,5 @@
 using Entities.Models;
+using Microsoft.AspNetCore.Authorization;
 using Services.DTO;
 using Microsoft.AspNetCore.Mvc;
 using Services.Interface;
@@ -11,6 +12,7 @@ namespace MangaPublishSystem.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class SeriesController : ControllerBase
     {
         private readonly ISeriesService _seriesService;
@@ -49,6 +51,7 @@ namespace MangaPublishSystem.Controllers
         }
 
         [HttpPost(Order = 4)]
+        [Authorize(Roles = "Mangaka")]
         [Consumes("multipart/form-data")]
         public async Task<ActionResult> Create([FromForm] SeriesDto.Create seriesDto, IFormFile proposalFile, IFormFile coverImage)
         {
@@ -147,87 +150,88 @@ namespace MangaPublishSystem.Controllers
         //}
 
         [HttpPut("{id:int}", Order = 5)]
+        [Authorize(Roles = "Mangaka, Assistant")]
         [Consumes("multipart/form-data")]
         public async Task<ActionResult> Update(int id, [FromForm] SeriesDto.Update seriesDto, IFormFile? proposalFile, IFormFile? coverImage)
         {
-            var existing = await _seriesService.GetByIdAsync(id);
-            if (existing == null)
+            try
             {
-                return NotFound("Không tìm thấy tác phẩm cần cập nhật.");
+                var existing = await _seriesService.GetByIdAsync(id);
+                if (existing == null) return NotFound(new { message = "Không tìm thấy tác phẩm cần cập nhật." });
+
+                string finalProposalUrl = existing.Proposalfileurl;
+                string finalCoverImageUrl = existing.Coverimageurl;
+
+                if (proposalFile != null && proposalFile.Length > 0)
+                {
+                    await using var stream = proposalFile.OpenReadStream();
+                    finalProposalUrl = await _fileStorage.UploadAsync(
+                        stream, proposalFile.FileName, proposalFile.ContentType, "proposals");
+                }
+
+                if (coverImage != null && coverImage.Length > 0)
+                {
+                    await using var stream = coverImage.OpenReadStream();
+                    finalCoverImageUrl = await _fileStorage.UploadAsync(
+                        stream, coverImage.FileName, coverImage.ContentType, "covers");
+                }
+
+                await _seriesService.UpdateAsync(id, seriesDto, finalProposalUrl, finalCoverImageUrl);
+                return NoContent();
             }
-
-            string finalProposalUrl = existing.Proposalfileurl;
-            string finalCoverImageUrl = existing.Coverimageurl;
-
-            if (proposalFile != null && proposalFile.Length > 0)
+            catch (KeyNotFoundException ex)
             {
-                await using var stream = proposalFile.OpenReadStream();
-                finalProposalUrl = await _fileStorage.UploadAsync(
-                    stream, proposalFile.FileName, proposalFile.ContentType, "proposals");
+                return NotFound(new { message = ex.Message });
             }
-
-            if (coverImage != null && coverImage.Length > 0)
-            {
-                await using var stream = coverImage.OpenReadStream();
-                finalCoverImageUrl = await _fileStorage.UploadAsync(
-                    stream, coverImage.FileName, coverImage.ContentType, "covers");
-            }
-
-            var result = await _seriesService.UpdateAsync(id, seriesDto, finalProposalUrl, finalCoverImageUrl);
-            if (!result)
-            {
-                return BadRequest("Cập nhật thất bại.");
-            }
-
-            return NoContent();
         }
 
         [HttpPatch("{id:int}/status", Order = 6)]
+        [Authorize(Roles = "Admin, EB, Editor")]
         public async Task<ActionResult> UpdateStatus(int id, [FromBody] SeriesDto.UpdateStatus statusDto)
         {
-            var result = await _seriesService.UpdateStatusAsync(id, statusDto);
-            if (!result)
+            try
             {
-                return NotFound("Không tìm thấy tác phẩm hoặc cập nhật trạng thái thất bại.");
+                await _seriesService.UpdateStatusAsync(id, statusDto);
+                return NoContent();
             }
-
-            return NoContent();
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
         [HttpPatch("{id:int}/publish-format", Order = 7)]
+        [Authorize(Roles = "Admin, EB, Editor")]
         public async Task<ActionResult> UpdatePublishFormat(int id, [FromBody] SeriesDto.UpdatePublishFormat formatDto)
         {
-            var result = await _seriesService.UpdatePublishFormatAsync(id, formatDto);
-            if (!result)
+            try
             {
-                return NotFound("Không tìm thấy tác phẩm hoặc cập nhật định dạng thất bại.");
+                await _seriesService.UpdatePublishFormatAsync(id, formatDto);
+                return NoContent();
             }
-
-            return NoContent();
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
         }
 
         [HttpDelete("softdelete/{id:int}", Order = 8)]
+        [Authorize(Roles = "Admin, EB, Mangaka")]
         public async Task<ActionResult> SoftDelete(int id)
         {
-            var result = await _seriesService.SoftDeleteAsync(id);
-            if (!result)
+            try
             {
-                return NotFound("Không tìm thấy tác phẩm cần xóa.");
+                await _seriesService.SoftDeleteAsync(id);
+                return NoContent();
             }
-
-            return NoContent();
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
         }
-
-        //[HttpDelete("{id:int}", Order = 9)]
-        //public async Task<ActionResult> Delete(int id)
-        //{
-        //    var result = await _seriesService.RemoveAsync(id);
-        //    if (!result)
-        //    {
-        //        return NotFound("Không tìm thấy tác phẩm cần xóa cứng khỏi hệ thống.");
-        //    }
-
-        //    return NoContent();
-        //}
     }
 }

@@ -1,4 +1,5 @@
 using DTOs;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Services.DTO;
@@ -8,15 +9,27 @@ namespace MangaPublishSystem.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class PagesController : ControllerBase
     {
         private readonly IPageService _pageService;
+        private readonly IPageLayerService _pageLayerService;
         private readonly IFileStorageService _fileStorage;
+        private readonly IChapterService _chapterService;
+        private readonly ISeriesService _seriesService;
 
-        public PagesController(IPageService pageService, IFileStorageService fileStorage)
+        public PagesController(
+            IPageService pageService, 
+            IPageLayerService pageLayerService, 
+            IFileStorageService fileStorage,
+            IChapterService chapterService,
+            ISeriesService seriesService)
         {
             _pageService = pageService;
+            _pageLayerService = pageLayerService;
             _fileStorage = fileStorage;
+            _chapterService = chapterService;
+            _seriesService = seriesService;
         }
 
         [HttpGet]
@@ -39,8 +52,19 @@ namespace MangaPublishSystem.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult> Create([FromBody] PageDto.Create pageDto)
+        [Authorize(Roles = "Mangaka, Assistant")]
+        [Consumes("multipart/form-data")]
+        public async Task<ActionResult> Create([FromForm] PageDto.Create pageDto, IFormFile pageFile)
         {
+            if (pageFile == null || pageFile.Length == 0)
+            {
+                return BadRequest("Vui lòng tải lên hình ảnh cho trang truyện.");
+            }
+
+            await using var stream = pageFile.OpenReadStream();
+            string uploadedUrl = await _fileStorage.UploadAsync(
+                stream, pageFile.FileName, pageFile.ContentType, "manga-pages");
+
             var result = await _pageService.CreateAsync(pageDto);
 
             if (result <= 0)
@@ -48,64 +72,111 @@ namespace MangaPublishSystem.Controllers
                 return BadRequest();
             }
 
+            int uploaderId = 0;
+            if (User.HasClaim(c => c.Type == "userid"))
+            {
+                int.TryParse(User.FindFirst("userid")?.Value, out uploaderId);
+            }
+
+            // Nếu người dùng không đăng nhập (uploaderId = 0), lấy Mangakaid làm uploaderId mặc định
+            if (uploaderId == 0)
+            {
+                var chapter = await _chapterService.GetByIdAsync(pageDto.Chapterid);
+                if (chapter != null)
+                {
+                    var series = await _seriesService.GetByIdAsync(chapter.Seriesid);
+                    if (series != null)
+                    {
+                        uploaderId = series.Mangakaid;
+                    }
+                }
+            }
+
+            var layerDto = new PageLayerDto.Create
+            {
+                Pageid = result,
+                Uploaderid = uploaderId,
+                Layername = "Default",
+                Zindex = 1
+            };
+            
+            await _pageLayerService.CreateAsync(layerDto, uploadedUrl);
+
             return Ok(new
             {
                 Message = "Created successfully",
                 Id = result,
-                Data = pageDto
+                Data = pageDto,
+                Pageimageurl = uploadedUrl
             });
         }
 
         [HttpPut("{id:int}")]
+        [Authorize(Roles = "Mangaka, Assistant")]
         public async Task<ActionResult> Update(int id, [FromBody] PageDto.Update pageUpdateDto)
         {
-            var existing = await _pageService.GetByIdAsync(id);
-            if (existing == null)
+            try
             {
-                return NotFound("Không tìm thấy trang truyện cần cập nhật.");
+                await _pageService.UpdateAsync(id, pageUpdateDto);
+                return NoContent();
             }
-
-            var result = await _pageService.UpdateAsync(id, pageUpdateDto);
-            if (result <= 0)
+            catch (KeyNotFoundException ex)
             {
-                return BadRequest("Cập nhật thất bại.");
+                return NotFound(new { Message = ex.Message });
             }
-
-            return NoContent();
         }
 
         [HttpPost("{id:int}/composite")]
+        [Authorize(Roles = "Mangaka, Assistant")]
         public async Task<ActionResult> CompositeImage(int id)
         {
-            var result = await _pageService.CompositeAndSaveImageAsync(id);
-            if (result == null)
+            try
             {
-                return BadRequest(new { Message = "Không thể ghép ảnh hoặc không có layer hợp lệ." });
+                var result = await _pageService.CompositeAndSaveImageAsync(id);
+                return Ok(new { Message = "Composite successfully", Pageimageurl = result });
             }
-
-            return Ok(new { Message = "Composite successfully", Pageimageurl = result });
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { Message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { Message = ex.Message });
+            }
         }
 
         [HttpPatch("{id:int}/status")]
+        [Authorize(Roles = "Admin, EB, Editor, Mangaka")]
         public async Task<ActionResult> UpdateStatus(int id, [FromBody] string status)
         {
-            var success = await _pageService.UpdateStatusAsync(id, status);
-            if (!success)
+            try
             {
-                return NotFound("Không tìm thấy trang truyện để cập nhật trạng thái.");
+                await _pageService.UpdateStatusAsync(id, status);
+                return Ok(new { Message = "Status updated successfully" });
             }
-            return Ok(new { Message = "Status updated successfully" });
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { Message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { Message = ex.Message });
+            }
         }
 
         [HttpDelete("{id:int}/soft")]
+        [Authorize(Roles = "Admin, EB, Mangaka")]
         public async Task<ActionResult> SoftDelete(int id)
         {
-            var success = await _pageService.SoftDeleteAsync(id);
-            if (!success)
+            try
             {
-                return NotFound("Không tìm thấy trang truyện để xóa tạm.");
+                await _pageService.SoftDeleteAsync(id);
+                return Ok(new { Message = "Soft deleted successfully" });
             }
-            return Ok(new { Message = "Soft deleted successfully" });
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { Message = ex.Message });
+            }
         }
 
         //[HttpDelete("{id:int}")]

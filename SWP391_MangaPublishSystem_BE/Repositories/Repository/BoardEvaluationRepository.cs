@@ -41,5 +41,33 @@ namespace Repositories.Repository
             _context.BoardEvaluations.Remove(evaluation);
             return await _context.SaveChangesAsync() > 0;
         }
+        public async Task<int> CreateBatchAsync(
+    BoardEvaluation evaluation,
+    List<BoardEvaluationDetail> details)
+        {
+            using var transaction = await _context.Database.BeginTransactionAsync();
+
+            await _context.BoardEvaluations.AddAsync(evaluation);
+            await _context.SaveChangesAsync();
+
+            foreach (var detail in details)
+            {
+                detail.EvaluationId = evaluation.Evaluationid;
+            }
+
+            await _context.BoardEvaluationDetails.AddRangeAsync(details);
+            await _context.SaveChangesAsync();
+
+            await transaction.CommitAsync();
+
+            return evaluation.Evaluationid;
+        }
+
+        public async Task<BoardEvaluation?> GetBatchSummaryAsync(int evaluationId)
+        {
+            return await _context.BoardEvaluations
+                .Include(x => x.BoardEvaluationDetails)
+                .FirstOrDefaultAsync(x => x.Evaluationid == evaluationId);
+        }
     }
 }

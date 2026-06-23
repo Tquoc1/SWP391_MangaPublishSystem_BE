@@ -1,3 +1,4 @@
+using DocumentFormat.OpenXml.Math;
 using Entities.Models;
 using Repositories.Repository;
 using Services.Interface;
@@ -43,7 +44,7 @@ namespace Services.Implement
             return 1;
         }
 
-        public async Task<int> UpdateMangakaProfile(int userId, DTO.UserDto.UpdateMangakaProfile dto)
+        public async Task<int> UpdateMangakaProfile(int userId, DTO.UserDto.UpdateMangakaProfile dto, string? avatarUrl)
         {
             var user = await _userRepository.GetUserById(userId);
             if (user == null) return 0;
@@ -63,14 +64,17 @@ namespace Services.Implement
             profile.BankName = dto.BankName;
             profile.BankAccountNumber = dto.BankAccountNumber;
             profile.BankAccountName = dto.BankAccountName;
-            profile.AvatarUrl = dto.AvatarUrl;
+            if (!string.IsNullOrEmpty(avatarUrl))
+            {
+                profile.AvatarUrl = avatarUrl;
+            }
             profile.Updatedat = DateTime.UtcNow;
 
             await _userRepository.UpdateMangakaProfile(profile);
             return 1;
         }
 
-        public async Task<int> UpdateAssistantProfile(int userId, DTO.UserDto.UpdateAssistantProfile dto)
+        public async Task<int> UpdateAssistantProfile(int userId, DTO.UserDto.UpdateAssistantProfile dto, string? avatarUrl)
         {
             var user = await _userRepository.GetUserById(userId);
             if (user == null) return 0;
@@ -84,7 +88,10 @@ namespace Services.Implement
             var profile = await _userRepository.GetAssistantProfile(userId);
             if (profile == null) return 0;
 
-            profile.AvatarUrl = dto.AvatarUrl;
+            if (!string.IsNullOrEmpty(avatarUrl))
+            {
+                profile.AvatarUrl = avatarUrl;
+            }
             profile.PortfolioUrl = dto.PortfolioUrl;
             profile.PhoneNumber = dto.PhoneNumber;
             profile.IsAvailable = dto.IsAvailable;
@@ -97,6 +104,121 @@ namespace Services.Implement
 
             await _userRepository.UpdateAssistantProfile(profile);
             return 1;
+        }
+
+        public async Task<List<DTO.UserDto.AvailableAssistant>> GetAvailableAssistants()
+        {
+            var profiles = await _userRepository.GetAvailableAssistantsAsync();
+            return profiles.Select(p => new DTO.UserDto.AvailableAssistant(
+                p.Userid,
+                p.User?.Username ?? string.Empty,
+                p.User?.Fullname ?? string.Empty,
+                p.User?.Email ?? string.Empty,
+                p.AvatarUrl,
+                p.PortfolioUrl,
+                p.Skills,
+                p.SoftwareUsed
+            )).ToList();
+        }
+
+        // Admin User Management
+        public async Task<List<DTO.UserDto.AdminUserResponse>> GetUsersAsync(int? roleId, string? status)
+        {
+            var users = await _userRepository.GetUsersAsync(roleId, status);
+            var result = users.Select(u => new DTO.UserDto.AdminUserResponse(
+                u.Userid,
+                u.Username,
+                u.Fullname,
+                u.Email,
+                u.Roleid,
+                u.Role?.Rolename ?? "",
+                u.Status,
+                u.Createdat
+            )).ToList();
+
+            return result;
+        }
+
+        public async Task<DTO.UserDto.AdminUserResponse?> GetUserDetailsAsync(int id)
+        {
+            var u = await _userRepository.GetUserById(id);
+            if (u == null || u.Isdeleted == true) return null;
+
+            // Lấy role tay nếu query không include (để an toàn)
+            string roleName = u.Role?.Rolename ?? "";
+            
+            return new DTO.UserDto.AdminUserResponse(
+                u.Userid,
+                u.Username,
+                u.Fullname,
+                u.Email,
+                u.Roleid,
+                roleName,
+                u.Status,
+                u.Createdat
+            );
+        }
+
+        public async Task<int> AdminCreateUserAsync(DTO.UserDto.AdminCreateUserRequest request)
+        {
+            var existing = await _userRepository.GetUserByUsername(request.Username);
+            if (existing != null)
+            {
+                throw new InvalidOperationException("Username đã tồn tại.");
+            }
+
+            var user = new User
+            {
+                Username = request.Username,
+                Passwordhash = BCrypt.Net.BCrypt.HashPassword(request.Password),
+                Fullname = request.FullName,
+                Email = request.Email,
+                Roleid = request.RoleId,
+                Createdat = DateTime.Now,
+                Isdeleted = false,
+                Status = "Active"
+            };
+
+            await _userRepository.CreateAsync(user);
+            return user.Userid;
+        }
+
+        public async Task<int> AdminUpdateUserAsync(int id, DTO.UserDto.AdminUpdateUserRequest request)
+        {
+            var user = await _userRepository.GetUserById(id);
+            if (user == null || user.Isdeleted == true) return 0;
+
+            user.Fullname = request.FullName;
+            user.Email = request.Email;
+            user.Roleid = request.RoleId;
+
+            if (!string.IsNullOrWhiteSpace(request.Password))
+            {
+                user.Passwordhash = BCrypt.Net.BCrypt.HashPassword(request.Password);
+            }
+
+            await _userRepository.UpdateAsync(user);
+            return 1;
+        }
+
+        public async Task<bool> AdminUpdateStatusAsync(int id, string newStatus)
+        {
+            var user = await _userRepository.GetUserById(id);
+            if (user == null || user.Isdeleted == true) return false;
+
+            user.Status = newStatus;
+            await _userRepository.UpdateAsync(user);
+            return true;
+        }
+
+        public async Task<bool> AdminSoftDeleteUserAsync(int id)
+        {
+            var user = await _userRepository.GetUserById(id);
+            if (user == null || user.Isdeleted == true) return false;
+
+            user.Isdeleted = true;
+            await _userRepository.UpdateAsync(user);
+            return true;
         }
     }
 }

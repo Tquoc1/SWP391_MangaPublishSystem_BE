@@ -1,14 +1,16 @@
-using Entities.Models;
+using Services.DTO;
 
 namespace Services.Interface
 {
     public interface IAuthService
     {
-        Task<User> GetUserAccount(string userName, string password);
-        Task<User> GetUserByUsername(string userName);
-        Task<int> CreateUser(User user);
-        Task<int> CreateUserToken(UserToken token);
-        Task<UserToken> GetUserToken(string token);
-        Task<int> RevokeUserToken(UserToken token);
+        Task<AuthDto.AuthResponse> LoginAsync(AuthDto.Login request);
+        Task<AuthDto.AuthResponse> RegisterAsync(AuthDto.Register request);
+        Task<AuthDto.AuthResponse> RefreshTokenAsync(AuthDto.RefreshToken request);
+        Task<AuthDto.AuthResponse> CreateStaffAsync(AuthDto.CreateStaffRequest request);
+        Task LogoutAsync(AuthDto.RefreshToken request);
+        
+        // Cần thiết nếu UserService dùng
+        Task<Entities.Models.User> GetUserByUsername(string userName);
     }
 }

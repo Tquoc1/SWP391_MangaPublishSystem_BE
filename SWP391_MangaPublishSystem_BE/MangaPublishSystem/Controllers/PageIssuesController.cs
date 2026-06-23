@@ -1,4 +1,5 @@
-﻿using DTOs;
+using DTOs;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Services.DTO;
@@ -8,6 +9,7 @@ namespace MangaPublishSystem.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class PageIssuesController : ControllerBase
     {
         private readonly IPageIssueService _pageIssueService;
@@ -36,6 +38,7 @@ namespace MangaPublishSystem.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Editor, EB")]
         public async Task<ActionResult> Create([FromBody] PageIssueDto.Create pageDto)
         {
             if (pageDto == null)
@@ -58,56 +61,52 @@ namespace MangaPublishSystem.Controllers
         }
 
         [HttpPatch("{id}/status")]
+        [Authorize(Roles = "Mangaka, Assistant, Editor, EB")]
         public async Task<IActionResult> UpdateStatus(int id, PageIssueDto.UpdateStatus dto)
         {
-            var result = await _pageIssueService.UpdateStatusAsync(id, dto);
-
-            if (!result)
-                return NotFound();
-
-            return Ok(new
+            try
             {
-                message = "PageIssue status updated successfully"
-            });
+                await _pageIssueService.UpdateStatusAsync(id, dto);
+                return Ok(new { message = "PageIssue status updated successfully" });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
         [HttpPut("{id:int}")]
+        [Authorize(Roles = "Mangaka, Assistant, Editor, EB")]
         public async Task<ActionResult> Update(int id, [FromBody] PageIssueDto.Update pageDto)
         {
-            if (pageDto == null)
+            try
             {
-                return BadRequest("Dữ liệu cập nhật không hợp lệ.");
+                await _pageIssueService.UpdateAsync(id, pageDto);
+                return NoContent();
             }
-
-            var result = await _pageIssueService.UpdateAsync(id, pageDto);
-            if (result <= 0)
+            catch (KeyNotFoundException ex)
             {
-                return BadRequest("Cập nhật thông tin sự cố thất bại.");
+                return NotFound(new { message = ex.Message });
             }
-
-            return NoContent();
-        }
-
-        [HttpPatch("{id:int}/status")]
-        public async Task<ActionResult> UpdateStatus(int id, [FromBody] string status)
-        {
-            var success = await _pageIssueService.UpdateStatusAsync(id, status);
-            if (!success)
-            {
-                return NotFound("Không tìm thấy sự cố để cập nhật trạng thái.");
-            }
-            return Ok(new { Message = "Status updated successfully" });
         }
 
         [HttpDelete("{id:int}/soft")]
+        [Authorize(Roles = "Editor, EB, Admin")]
         public async Task<ActionResult> SoftDelete(int id)
         {
-            var success = await _pageIssueService.SoftDeleteAsync(id);
-            if (!success)
+            try
             {
-                return NotFound("Không tìm thấy sự cố để xóa tạm.");
+                await _pageIssueService.SoftDeleteAsync(id);
+                return Ok(new { Message = "Soft deleted successfully" });
             }
-            return Ok(new { Message = "Soft deleted successfully" });
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
         }
 
         //[HttpDelete("{id:int}")]

@@ -1,4 +1,4 @@
-﻿USE [master];
+USE [master];
 GO
 
 /* ==========================================
@@ -55,6 +55,7 @@ CREATE TABLE [dbo].[users](
 	[fullname] [nvarchar](255) NOT NULL,
 	[email] [nvarchar](255) NULL,
 	[roleid] [int] NOT NULL,
+	[status] [nvarchar](50) NULL DEFAULT ('Active'),
 	[createdat] [datetime] NULL DEFAULT (getdate()),
 	[isdeleted] [bit] NULL DEFAULT ((0)),
  CONSTRAINT [users_pkey] PRIMARY KEY CLUSTERED ([userid] ASC),
@@ -376,23 +377,27 @@ GO
 
 ALTER TABLE [dbo].[board_evaluations] WITH CHECK ADD CHECK (([approved_publish_format]='Monthly' OR [approved_publish_format]='Weekly'))
 GO
-ALTER TABLE [dbo].[board_evaluations] WITH CHECK ADD CHECK (([final_decision]='Reject' OR [final_decision]='Approve'))
+ALTER TABLE [dbo].[board_evaluations] WITH CHECK ADD CHECK (([final_decision]='Reject' OR [final_decision]='Approve' OR [final_decision]='Pending'))
 GO
-ALTER TABLE [dbo].[chapters] WITH CHECK ADD CHECK (([status]='Delayed' OR [status]='Published' OR [status]='ReadyForPrint' OR [status]='EditorReviewing' OR [status]='StudioWorking' OR [status]='Drafting'))
+ALTER TABLE [dbo].[chapters] WITH CHECK ADD CHECK (([status]='Delayed' OR [status]='Published' OR [status]='ReadyForPrint' OR [status]='EditorReviewing' OR [status]='StudioWorking' OR [status]='Drafting' OR [status]='Cancelled' OR [status]='Archived'))
 GO
 ALTER TABLE [dbo].[mangaka_assistants] WITH CHECK ADD CHECK (([salary_type]='Fixed' OR [salary_type]='PerChapter' OR [salary_type]='Monthly'))
 GO
-ALTER TABLE [dbo].[mangaka_assistants] WITH CHECK ADD CHECK (([status]='Terminated' OR [status]='Active' OR [status]='Pending'))
+ALTER TABLE [dbo].[mangaka_assistants] WITH CHECK ADD CHECK (([status]='Terminated' OR [status]='Active' OR [status]='Pending' OR [status]='Expired' OR [status]='Suspended' OR [status]='Completed'))
 GO
 ALTER TABLE [dbo].[page_issues] WITH CHECK ADD CHECK (([issue_type]='Revision' OR [issue_type]='Production'))
 GO
-ALTER TABLE [dbo].[page_issues] WITH CHECK ADD CHECK (([status]='Approved' OR [status]='NeedsRevision' OR [status]='Submitted' OR [status]='InProgress' OR [status]='Pending'))
+ALTER TABLE [dbo].[page_issues] WITH CHECK ADD CHECK (([status]='Approved' OR [status]='NeedsRevision' OR [status]='Submitted' OR [status]='InProgress' OR [status]='Pending' OR [status]='Rejected' OR [status]='Closed' OR [status]='Cancelled'))
 GO
 ALTER TABLE [dbo].[page_issues] WITH CHECK ADD CHECK (([work_category]='Content' OR [work_category]='Dialog' OR [work_category]='Inking' OR [work_category]='Effects' OR [work_category]='Shading' OR [work_category]='Background'))
 GO
-ALTER TABLE [dbo].[pages] WITH CHECK ADD CHECK (([status]='Approved' OR [status]='Reviewing' OR [status]='InWork' OR [status]='Draft'))
+ALTER TABLE [dbo].[pages] WITH CHECK ADD CHECK (([status]='Draft' OR [status]='Assigned' OR [status]='InWork' OR [status]='Reviewing' OR [status]='NeedsRevision' OR [status]='Approved' OR [status]='Completed'))
 GO
 ALTER TABLE [dbo].[series] WITH CHECK ADD CHECK (([publishformat]='Pending' OR [publishformat]='Monthly' OR [publishformat]='Weekly'))
+GO
+ALTER TABLE [dbo].[series] WITH CHECK ADD CHECK (([status]='Draft' OR [status]='Submitted' OR [status]='UnderReview' OR [status]='RevisionRequired' OR [status]='Approved' OR [status]='Rejected' OR [status]='Publishing' OR [status]='Completed' OR [status]='Cancelled'))
+GO
+ALTER TABLE [dbo].[users] WITH CHECK ADD CHECK (([status]='Active' OR [status]='Inactive' OR [status]='Locked'))
 GO
 
 	ALTER TABLE [dbo].[series]

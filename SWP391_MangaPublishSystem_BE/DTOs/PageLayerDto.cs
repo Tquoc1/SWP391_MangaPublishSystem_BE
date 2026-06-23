@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace DTOs
 {
@@ -18,8 +19,14 @@ namespace DTOs
 
         public class Create
         {
+            [Required(ErrorMessage = "Page ID không được để trống")]
             public int Pageid { get; set; }
+
+            [Required(ErrorMessage = "Người tải lên không được để trống")]
             public int Uploaderid { get; set; }
+
+            [Required(ErrorMessage = "Tên layer không được để trống")]
+            [MaxLength(255, ErrorMessage = "Tên layer không được vượt quá 255 ký tự")]
             public string Layername { get; set; }
             public int? Zindex { get; set; }
             public decimal? Opacity { get; set; }
@@ -27,6 +34,7 @@ namespace DTOs
 
         public class Update
         {
+            [MaxLength(255, ErrorMessage = "Tên layer không được vượt quá 255 ký tự")]
             public string Layername { get; set; }
             public int? Zindex { get; set; }
             public decimal? Opacity { get; set; }

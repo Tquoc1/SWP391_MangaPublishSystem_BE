@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace DTOs
 {
@@ -22,18 +19,32 @@ namespace DTOs
 
         public class Create
         {
+            [Required(ErrorMessage = "Mangaka ID không được để trống")]
             public int MangakaId { get; set; }
+
+            [Required(ErrorMessage = "Assistant ID không được để trống")]
             public int AssistantId { get; set; }
+
+            [Required(ErrorMessage = "Lương không được để trống")]
+            [Range(0, double.MaxValue, ErrorMessage = "Lương không được âm")]
             public decimal SalaryAmount { get; set; }
+
+            [Required(ErrorMessage = "Loại lương không được để trống")]
+            [AllowedValues("Fixed", "PerChapter", "Monthly", ErrorMessage = "Loại lương không hợp lệ")]
             public string SalaryType { get; set; }
+
+            [Required(ErrorMessage = "Điều khoản hợp đồng không được để trống")]
             public string ContractTerms { get; set; }
+
             public DateTime? StartDate { get; set; }
             public DateTime? EndDate { get; set; }
         }
 
         public class Update
         {
+            [Range(0, double.MaxValue, ErrorMessage = "Lương không được âm")]
             public decimal SalaryAmount { get; set; }
+            [AllowedValues("Fixed", "PerChapter", "Monthly", ErrorMessage = "Loại lương không hợp lệ")]
             public string SalaryType { get; set; }
             public string ContractTerms { get; set; }
             public DateTime? StartDate { get; set; }
@@ -42,6 +53,8 @@ namespace DTOs
 
         public class UpdateStatus
         {
+            [Required(ErrorMessage = "Trạng thái không được để trống")]
+            [AllowedValues("Terminated", "Active", "Pending", "Expired", "Suspended", "Completed", ErrorMessage = "Trạng thái không hợp lệ")]
             public string Status { get; set; }
         }
     }

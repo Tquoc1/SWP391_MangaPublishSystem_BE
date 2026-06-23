@@ -1,4 +1,4 @@
-﻿using DTOs;
+using DTOs;
 using Entities.Models;
 using Repositories.Repository;
 using Services.Interface;
@@ -7,11 +7,20 @@ namespace Services.Implement
 {
     public class MangakaAssistantService : IMangakaAssistantService
     {
-        private readonly MangakaAssistantRepository _repository;
+        private static readonly Dictionary<string, List<string>> _validTransitions = new(StringComparer.OrdinalIgnoreCase)
+        {
+            { "Pending", new List<string> { "Active", "Terminated" } },
+            { "Active", new List<string> { "Suspended", "Terminated", "Expired", "Completed" } },
+            { "Suspended", new List<string> { "Active", "Terminated" } }
+        };
 
-        public MangakaAssistantService(MangakaAssistantRepository repository)
+        private readonly MangakaAssistantRepository _repository;
+        private readonly INotificationService _notificationService;
+
+        public MangakaAssistantService(MangakaAssistantRepository repository, INotificationService notificationService)
         {
             _repository = repository;
+            _notificationService = notificationService;
         }
 
         public async Task<List<MangakaAssistantDto>> GetAllAsync(int? mangakaId, int? assistantId)
@@ -50,7 +59,7 @@ namespace Services.Implement
             var existed = await _repository.ExistsActiveContractAsync(dto.MangakaId, dto.AssistantId);
             if (existed)
             {
-                return 0;
+                throw new InvalidOperationException("This assistant is already assigned to the mangaka!!!");
             }
 
             var entity = new MangakaAssistant
@@ -67,16 +76,25 @@ namespace Services.Implement
                 Isdeleted = false
             };
 
-            return await _repository.AddAsync(entity);
+            var result = await _repository.AddAsync(entity);
+            if (result > 0)
+            {
+                await _notificationService.CreateNotificationAsync(
+                    dto.AssistantId,
+                    "Lời mời hợp tác mới",
+                    $"Một Mangaka vừa gửi cho bạn một lời mời hợp tác."
+                );
+            }
+            return result;
         }
 
-        public async Task<int> UpdateAsync(int id, MangakaAssistantDto.Update dto)
+        public async Task UpdateAsync(int id, MangakaAssistantDto.Update dto)
         {
             var entity = await _repository.GetByIdAsync(id);
 
             if (entity == null || entity.Isdeleted == true)
             {
-                return 0;
+                throw new KeyNotFoundException("Contract not found !!!");
             }
 
             entity.SalaryAmount = dto.SalaryAmount;
@@ -85,36 +103,51 @@ namespace Services.Implement
             entity.StartDate = ToDateOnly(dto.StartDate);
             entity.EndDate = ToDateOnly(dto.EndDate);
 
-            return await _repository.UpdateAsync(entity);
+            await _repository.UpdateAsync(entity);
         }
 
-        public async Task<int> UpdateStatusAsync(int id, string status)
+        public async Task UpdateStatusAsync(int id, string status)
         {
             var entity = await _repository.GetByIdAsync(id);
 
             if (entity == null || entity.Isdeleted == true)
             {
-                return 0;
+                throw new KeyNotFoundException("Contract not found!!!");
+            }
+
+            if (string.Equals(entity.Status, status, StringComparison.OrdinalIgnoreCase))
+                return;
+
+            if (!_validTransitions.ContainsKey(entity.Status) || 
+                !_validTransitions[entity.Status].Contains(status, StringComparer.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException($"Không thể chuyển trạng thái từ '{entity.Status}' sang '{status}'. Luồng không hợp lệ!");
             }
 
             entity.Status = status;
 
-            return await _repository.UpdateAsync(entity);
+            await _repository.UpdateAsync(entity);
+            
+            string action = status == "Accepted" ? "chấp nhận" : (status == "Rejected" ? "từ chối" : "cập nhật");
+            await _notificationService.CreateNotificationAsync(
+                entity.MangakaId,
+                "Phản hồi lời mời hợp tác",
+                $"Một Assistant đã {action} lời mời của bạn."
+            );
         }
 
-        public async Task<bool> RemoveAsync(int id)
+        public async Task RemoveAsync(int id)
         {
             var entity = await _repository.GetByIdAsync(id);
 
             if (entity == null || entity.Isdeleted == true)
             {
-                return false;
+                throw new KeyNotFoundException("Contract not found!!!");
             }
 
             entity.Isdeleted = true;
 
-            var result = await _repository.UpdateAsync(entity);
-            return result > 0;
+            await _repository.UpdateAsync(entity);
         }
 
         private MangakaAssistantDto MapToDto(MangakaAssistant entity)

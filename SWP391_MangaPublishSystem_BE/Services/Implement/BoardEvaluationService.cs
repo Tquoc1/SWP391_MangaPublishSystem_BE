@@ -1,4 +1,4 @@
-﻿using DTOs;
+using DTOs;
 using Entities.Models;
 using Microsoft.EntityFrameworkCore;
 using Repositories.Repository;
@@ -11,13 +11,16 @@ namespace Services.Implement
     {
         private readonly BoardEvaluationRepository _repository;
         private readonly SeriesRepository _seriesRepository;
+        private readonly INotificationService _notificationService;
 
         public BoardEvaluationService(
             BoardEvaluationRepository repository,
-            SeriesRepository seriesRepository)
+            SeriesRepository seriesRepository,
+            INotificationService notificationService)
         {
             _repository = repository;
             _seriesRepository = seriesRepository;
+            _notificationService = notificationService;
         }
 
         public async Task<List<BoardEvaluationDto.Response>> GetAllAsync()
@@ -110,7 +113,7 @@ namespace Services.Implement
             var series = await _seriesRepository.GetByIdWithDetailsAsync(dto.Seriesid);
             if (series == null || series.Isdeleted == true)
             {
-                throw new Exception("Series không tồn tại.");
+                throw new KeyNotFoundException("Series không tồn tại.");
             }
             decimal average =
                 (dto.StoryScore +
@@ -136,6 +139,16 @@ namespace Services.Implement
             await _repository.CreateAsync(evaluation);
 
             await RecalculateSeriesEvaluationAsync(dto.Seriesid);
+            
+            if (series.Mangakaid > 0)
+            {
+                await _notificationService.CreateNotificationAsync(
+                    series.Mangakaid,
+                    "Có đánh giá mới từ Hội đồng",
+                    $"Tác phẩm '{series.Title}' của bạn vừa nhận được một đánh giá mới.",
+                    series.Seriesid
+                );
+            }
 
             return evaluation.Evaluationid;
         }
@@ -180,10 +193,10 @@ namespace Services.Implement
             return rows > 0;
         }
         */
-        public async Task<bool> UpdateAsync(int id, BoardEvaluationDto.Update dto)
+        public async Task UpdateAsync(int id, BoardEvaluationDto.Update dto)
         {
             var evaluation = await _repository.GetByIdAsync(id);
-            if (evaluation == null) return false;
+            if (evaluation == null) throw new KeyNotFoundException("Không tìm thấy đánh giá hội đồng.");
 
             decimal average =
                 (dto.StoryScore +
@@ -201,18 +214,127 @@ namespace Services.Implement
             evaluation.Feedback = dto.Feedback;
             evaluation.Evaluatedat = DateTime.UtcNow;
 
-            var rows = await _repository.UpdateAsync(evaluation);
+            await _repository.UpdateAsync(evaluation);
 
             await RecalculateSeriesEvaluationAsync(evaluation.Seriesid);
-
-            return rows > 0;
         }
-        public async Task<bool> DeleteAsync(int id)
+        public async Task DeleteAsync(int id)
         {
             var evaluation = await _repository.GetByIdAsync(id);
-            if (evaluation == null) return false;
+            if (evaluation == null) throw new KeyNotFoundException("Không tìm thấy đánh giá hội đồng để xóa.");
 
-            return await _repository.DeleteAsync(evaluation);
+            await _repository.DeleteAsync(evaluation);
+        }
+
+        public async Task<int> CreateBatchAsync(BoardEvaluationDto.CreateBatch dto)
+        {
+            if (dto.Evaluators == null || !dto.Evaluators.Any())
+                throw new InvalidOperationException("Evaluator list cannot be empty.");
+
+            var series = await _seriesRepository.GetByIdWithDetailsAsync(dto.Seriesid);
+            if (series == null || series.Isdeleted == true)
+                throw new KeyNotFoundException("Series does not exist.");
+
+            var duplicateEb = dto.Evaluators
+                .GroupBy(x => x.EbId)
+                .Any(g => g.Count() > 1);
+
+            if (duplicateEb)
+                throw new InvalidOperationException("One EB cannot appear more than once in the same evaluation.");
+
+            decimal avgStory = dto.Evaluators.Average(x => x.StoryScore);
+            decimal avgArt = dto.Evaluators.Average(x => x.ArtScore);
+            decimal avgCharacter = dto.Evaluators.Average(x => x.CharacterScore);
+            decimal avgCommercial = dto.Evaluators.Average(x => x.CommercialScore);
+            decimal avgPacing = dto.Evaluators.Average(x => x.PacingScore);
+
+            decimal finalAverage =
+                (avgStory + avgArt + avgCharacter + avgCommercial + avgPacing) / 5m;
+
+            bool isApproved = finalAverage >= 5m;
+
+            var evaluation = new BoardEvaluation
+            {
+                Seriesid = dto.Seriesid,
+                Inputtedbyid = dto.Inputtedbyid,
+
+                StoryScore = avgStory,
+                ArtScore = avgArt,
+                CharacterScore = avgCharacter,
+                CommercialScore = avgCommercial,
+                PacingScore = avgPacing,
+
+                AverageScore = finalAverage,
+                FinalDecision = isApproved ? "Approve" : "Reject",
+                ApprovedPublishFormat = isApproved ? "Weekly" : null,
+                Feedback = dto.Feedback,
+                Evaluatedat = DateTime.UtcNow
+            };
+
+            var details = dto.Evaluators.Select(x => new BoardEvaluationDetail
+            {
+                EbId = x.EbId,
+                StoryScore = x.StoryScore,
+                ArtScore = x.ArtScore,
+                CharacterScore = x.CharacterScore,
+                CommercialScore = x.CommercialScore,
+                PacingScore = x.PacingScore,
+                Feedback = x.Feedback,
+                EvaluatedAt = DateTime.UtcNow
+            }).ToList();
+
+            var evaluationId = await _repository.CreateBatchAsync(evaluation, details);
+
+            series.Status = isApproved ? "Approved" : "Rejected";
+            series.Publishformat = isApproved ? "Weekly" : "Pending";
+            series.Approvedat = isApproved ? DateTime.UtcNow : null;
+
+            await _seriesRepository.UpdateAsync(series);
+
+            return evaluationId;
+        }
+
+        public async Task<BoardEvaluationDto.BatchSummary?> GetBatchSummaryAsync(int evaluationId)
+        {
+            var evaluation = await _repository.GetBatchSummaryAsync(evaluationId);
+
+            if (evaluation == null)
+                return null;
+
+            var details = evaluation.BoardEvaluationDetails.ToList();
+
+            return new BoardEvaluationDto.BatchSummary
+            {
+                Evaluationid = evaluation.Evaluationid,
+                Seriesid = evaluation.Seriesid,
+
+                Evaluations = details.Select(x => new BoardEvaluationDto.DetailResponse
+                {
+                    DetailId = x.DetailId,
+                    EbId = x.EbId,
+                    StoryScore = x.StoryScore,
+                    ArtScore = x.ArtScore,
+                    CharacterScore = x.CharacterScore,
+                    CommercialScore = x.CommercialScore,
+                    PacingScore = x.PacingScore,
+                    AverageScore =
+                        (x.StoryScore +
+                         x.ArtScore +
+                         x.CharacterScore +
+                         x.CommercialScore +
+                         x.PacingScore) / 5m,
+                    Feedback = x.Feedback
+                }).ToList(),
+
+                AverageStoryScore = details.Average(x => x.StoryScore),
+                AverageArtScore = details.Average(x => x.ArtScore),
+                AverageCharacterScore = details.Average(x => x.CharacterScore),
+                AverageCommercialScore = details.Average(x => x.CommercialScore),
+                AveragePacingScore = details.Average(x => x.PacingScore),
+
+                FinalAverageScore = evaluation.AverageScore ?? 0,
+                Decision = evaluation.FinalDecision
+            };
         }
         private async Task RecalculateSeriesEvaluationAsync(int seriesId)
         {

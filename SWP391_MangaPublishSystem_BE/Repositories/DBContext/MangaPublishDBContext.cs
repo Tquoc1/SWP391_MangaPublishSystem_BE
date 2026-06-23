@@ -17,6 +17,7 @@ public partial class MangaPublishDBContext : DbContext
     public virtual DbSet<AssistantProfile> AssistantProfiles { get; set; }
 
     public virtual DbSet<BoardEvaluation> BoardEvaluations { get; set; }
+    public virtual DbSet<BoardEvaluationDetail> BoardEvaluationDetails { get; set; }
 
     public virtual DbSet<Chapter> Chapters { get; set; }
 
@@ -119,6 +120,37 @@ public partial class MangaPublishDBContext : DbContext
                 .HasForeignKey<AssistantProfile>(d => d.Userid)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("assistant_profiles_userid_fkey");
+        });
+
+        modelBuilder.Entity<BoardEvaluationDetail>(entity =>
+        {
+            entity.HasKey(e => e.DetailId);
+
+            entity.ToTable("board_evaluation_details");
+
+            entity.Property(e => e.DetailId).HasColumnName("detail_id");
+            entity.Property(e => e.EvaluationId).HasColumnName("evaluation_id");
+            entity.Property(e => e.EbId).HasColumnName("eb_id");
+
+            entity.Property(e => e.StoryScore).HasColumnName("story_score");
+            entity.Property(e => e.ArtScore).HasColumnName("art_score");
+            entity.Property(e => e.CharacterScore).HasColumnName("character_score");
+            entity.Property(e => e.CommercialScore).HasColumnName("commercial_score");
+            entity.Property(e => e.PacingScore).HasColumnName("pacing_score");
+            entity.Property(e => e.AverageScore)
+                            .HasColumnName("average_score")
+                            .ValueGeneratedOnAddOrUpdate();
+
+            entity.Property(e => e.Feedback).HasColumnName("feedback");
+            entity.Property(e => e.EvaluatedAt).HasColumnName("evaluated_at");
+
+            entity.HasOne(d => d.Evaluation)
+                .WithMany(p => p.BoardEvaluationDetails)
+                .HasForeignKey(d => d.EvaluationId);
+
+            entity.HasOne(d => d.Eb)
+                .WithMany()
+                .HasForeignKey(d => d.EbId);
         });
 
         modelBuilder.Entity<BoardEvaluation>(entity =>

@@ -1,4 +1,5 @@
-﻿using DTOs;
+using DTOs;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Services.DTO;
@@ -8,6 +9,7 @@ namespace MangaPublishSystem.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class ChaptersController : ControllerBase
     {
         private readonly IChapterService _chapterService;
@@ -24,6 +26,13 @@ namespace MangaPublishSystem.Controllers
             return Ok(result);
         }
 
+        [HttpGet("assistant/{assistantId:int}")]
+        public async Task<IActionResult> GetByAssistantId(int assistantId)
+        {
+            var result = await _chapterService.GetByAssistantIdAsync(assistantId);
+            return Ok(result);
+        }
+
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetById(int id)
         {
@@ -36,6 +45,7 @@ namespace MangaPublishSystem.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Mangaka, Assistant")]
         public async Task<IActionResult> Create([FromBody] ChapterDto.Create chapterDto)
         {
             if (chapterDto == null)
@@ -61,45 +71,54 @@ namespace MangaPublishSystem.Controllers
         }
 
         [HttpPut("{id:int}")]
+        [Authorize(Roles = "Mangaka, Assistant")]
         public async Task<IActionResult> Update(int id, [FromBody] ChapterDto.Update chapterDto)
         {
             chapterDto.Chapterid = id;
 
-            var existing = await _chapterService.GetByIdAsync(id);
-            if (existing == null)
+            try
             {
-                return NotFound(new { Message = "Không tìm thấy chương truyện cần cập nhật." });
+                await _chapterService.UpdateAsync(chapterDto);
+                return NoContent(); 
             }
-
-            var result = await _chapterService.UpdateAsync(chapterDto);
-            if (result <= 0)
+            catch (KeyNotFoundException ex)
             {
-                return BadRequest(new { Message = "Cập nhật dữ liệu thất bại." });
+                return NotFound(new { Message = ex.Message });
             }
-
-            return NoContent(); 
         }
 
         [HttpPatch("{id:int}/status")]
+        [Authorize(Roles = "Admin, EB, Editor, Mangaka")]
         public async Task<IActionResult> UpdateStatus(int id, [FromBody] string status)
         {
-            var success = await _chapterService.UpdateStatusAsync(id, status);
-            if (!success)
+            try
             {
-                return NotFound(new { Message = "Không tìm thấy chương truyện để cập nhật trạng thái." });
+                await _chapterService.UpdateStatusAsync(id, status);
+                return Ok(new { Message = "Status updated successfully" });
             }
-            return Ok(new { Message = "Status updated successfully" });
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { Message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { Message = ex.Message });
+            }
         }
 
         [HttpDelete("{id:int}/soft")]
+        [Authorize(Roles = "Admin, EB, Mangaka")]
         public async Task<IActionResult> SoftDelete(int id)
         {
-            var success = await _chapterService.SoftDeleteAsync(id);
-            if (!success)
+            try
             {
-                return NotFound(new { Message = "Không tìm thấy chương truyện để xóa tạm." });
+                await _chapterService.SoftDeleteAsync(id);
+                return Ok(new { Message = "Soft deleted successfully" });
             }
-            return Ok(new { Message = "Soft deleted successfully" });
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { Message = ex.Message });
+            }
         }
 
         //[HttpDelete("{id:int}")]

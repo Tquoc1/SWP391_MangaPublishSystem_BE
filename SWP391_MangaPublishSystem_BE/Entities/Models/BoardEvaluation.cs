@@ -36,4 +36,6 @@ public partial class BoardEvaluation
     public virtual User Inputtedby { get; set; }
 
     public virtual Series Series { get; set; }
+    public virtual ICollection<BoardEvaluationDetail> BoardEvaluationDetails { get; set; }
+    = new List<BoardEvaluationDetail>();
 }

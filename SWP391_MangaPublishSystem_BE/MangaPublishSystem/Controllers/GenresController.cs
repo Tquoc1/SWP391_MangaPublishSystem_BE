@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using DTOs;
 using Services.Interface;
 using System.Collections.Generic;
@@ -8,6 +9,7 @@ namespace MangaPublishSystem.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class GenresController : ControllerBase
     {
         private readonly IGenreService _genreService;
@@ -36,6 +38,7 @@ namespace MangaPublishSystem.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin, EB")]
         public async Task<ActionResult> Create([FromBody] GenreDto.Create dto)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -52,23 +55,35 @@ namespace MangaPublishSystem.Controllers
         }
 
         [HttpPut("{id:int}")]
+        [Authorize(Roles = "Admin, EB")]
         public async Task<ActionResult> Update(int id, [FromBody] GenreDto.Update dto)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            var result = await _genreService.UpdateAsync(id, dto);
-            if (!result) return NotFound(new { Message = "Không tìm thấy thể loại để cập nhật." });
-
-            return NoContent();
+            try
+            {
+                await _genreService.UpdateAsync(id, dto);
+                return NoContent();
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { Message = ex.Message });
+            }
         }
 
         [HttpDelete("{id:int}")]
+        [Authorize(Roles = "Admin, EB")]
         public async Task<ActionResult> Delete(int id)
         {
-            var result = await _genreService.RemoveAsync(id);
-            if (!result) return NotFound(new { Message = "Không tìm thấy thể loại để xóa." });
-
-            return NoContent();
+            try
+            {
+                await _genreService.RemoveAsync(id);
+                return NoContent();
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { Message = ex.Message });
+            }
         }
     }
 }

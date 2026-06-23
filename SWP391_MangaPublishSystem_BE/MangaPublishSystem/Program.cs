@@ -12,6 +12,7 @@ using Services.Interface;
 using Services.Settings;
 using System.Text;
 using System.Text.Json.Serialization;
+using MangaPublishSystem.Extensions;
 using Services.Interface;
 using Services.Implement;
 using Repositories.Repository;
@@ -63,6 +64,11 @@ builder.Services.AddScoped<TagRepository>();
 builder.Services.AddScoped<ITagService, TagService>();
 builder.Services.AddScoped<MangakaAssistantRepository>();
 builder.Services.AddScoped<IMangakaAssistantService, MangakaAssistantService>();
+builder.Services.AddScoped<IDashboardService, DashboardService>();
+builder.Services.AddScoped<NotificationRepository>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<WeeklyRankingRepository>();
+builder.Services.AddScoped<IWeeklyRankingService, WeeklyRankingService>();
 
 
 var supabaseSettings = builder.Configuration.GetSection("Supabase").Get<SupabaseSettings>()
@@ -137,6 +143,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseGlobalExceptionHandler();
 
 app.UseAuthentication();
 
