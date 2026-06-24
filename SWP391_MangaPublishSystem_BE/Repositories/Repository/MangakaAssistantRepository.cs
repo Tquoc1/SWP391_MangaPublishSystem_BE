@@ -1,4 +1,4 @@
-﻿using Entities.Models;
+using Entities.Models;
 using Membership.Repositories.QuocDT.Base;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,12 +15,17 @@ namespace Repositories.Repository
 
         public async Task<List<MangakaAssistant>> GetAllAsync()
         {
-            return await _context.MangakaAssistants.ToListAsync();
+            return await _context.MangakaAssistants
+                .Include(x => x.Mangaka)
+                .Include(x => x.Assistant)
+                .ToListAsync();
         }
 
         public async Task<MangakaAssistant?> GetByIdAsync(int id)
         {
             return await _context.MangakaAssistants
+                .Include(x => x.Mangaka)
+                .Include(x => x.Assistant)
                 .FirstOrDefaultAsync(x => x.ContractId == id);
         }
 

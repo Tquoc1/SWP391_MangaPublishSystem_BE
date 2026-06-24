@@ -16,9 +16,23 @@ namespace Repositories.Repository
         {
         }
 
-        public async Task<List<Series>> GetAllWithDetailsAsync()
+        public async Task<List<Series>> GetAllWithDetailsAsync(int? mangakaId = null, string? status = null)
         {
-            return await _context.Series
+            var query = _context.Series.AsQueryable();
+
+            query = query.Where(s => s.Isdeleted != true);
+
+            if (mangakaId.HasValue)
+            {
+                query = query.Where(s => s.Mangakaid == mangakaId.Value);
+            }
+
+            if (!string.IsNullOrEmpty(status))
+            {
+                query = query.Where(s => s.Status == status);
+            }
+
+            return await query
                 .Include(s => s.Genres)
                 .Include(s => s.Tags)
                 .ToListAsync();

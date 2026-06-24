@@ -33,9 +33,9 @@ namespace Services.Implement
             _userRepository = userRepository;
         }
 
-        public async Task<List<SeriesDto>> GetAllAsync()
+        public async Task<List<SeriesDto>> GetAllAsync(int? mangakaId, string? status)
         {
-            var seriesList = await _seriesRepository.GetAllWithDetailsAsync();
+            var seriesList = await _seriesRepository.GetAllWithDetailsAsync(mangakaId, status);
             return seriesList.Select(MapToDto).ToList();
         }
 
@@ -47,8 +47,7 @@ namespace Services.Implement
 
         public async Task<List<SeriesDto>> GetByMangakaIdAsync(int mangakaId)
         {
-            var seriesList = await _seriesRepository.GetByMangakaIdAsync(mangakaId);
-            return seriesList.Select(MapToDto).ToList();
+            return await GetAllAsync(mangakaId, null);
         }
 
         public async Task<int> CreateAsync(SeriesDto.Create seriesDto, string proposalFileUrl, string coverImageUrl)

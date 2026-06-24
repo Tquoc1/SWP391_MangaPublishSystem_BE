@@ -9,7 +9,7 @@ namespace Services.Interface
 {
     public interface IPageService
     {
-        Task<List<PageDto>> GetAllAsync(int? chapterId);
+        Task<List<PageDto>> GetAllAsync(int? chapterId, string? status);
         Task<PageDto> GetByIdAsync(int id);
         Task<int> CreateAsync(PageDto.Create pageDto);
         Task UpdateAsync(int id,PageDto.Update pageDto);

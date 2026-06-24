@@ -5,7 +5,7 @@ namespace Services.Interface
 {
     public interface ISeriesService
     {
-        Task<List<SeriesDto>> GetAllAsync();
+        Task<List<SeriesDto>> GetAllAsync(int? mangakaId, string? status);
         Task<SeriesDto> GetByIdAsync(int id);
         Task<List<SeriesDto>> GetByMangakaIdAsync(int mangakaId);
         Task<int> CreateAsync(SeriesDto.Create seriesDto, string proposalFileUrl , string coverImageUrl);

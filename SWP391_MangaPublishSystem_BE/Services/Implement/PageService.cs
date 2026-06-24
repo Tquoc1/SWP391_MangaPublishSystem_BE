@@ -38,9 +38,9 @@ namespace Services.Implement
             _fileStorage = fileStorage;
         }
 
-        public async Task<List<PageDto>> GetAllAsync(int? chapterId)
+        public async Task<List<PageDto>> GetAllAsync(int? chapterId, string? status)
         {
-            var pages = await _pageRepository.GetPagesAsync(chapterId);
+            var pages = await _pageRepository.GetPagesAsync(chapterId, status);
             return pages.Select(MapToDto).ToList();
         }
 
