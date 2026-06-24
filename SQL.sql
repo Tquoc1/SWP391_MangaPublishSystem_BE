@@ -555,3 +555,6 @@ ALTER TABLE [dbo].[series] ALTER COLUMN [tantoueditorid] [int] NULL;
 ALTER TABLE [dbo].[pagelayers] ADD CONSTRAINT [DF_pagelayers_isdeleted] DEFAULT (0) FOR [isdeleted];
 ALTER TABLE [dbo].[pagelayers] ADD CONSTRAINT [DF_pagelayers_opacity] DEFAULT (1.0) FOR [opacity];
 
+ALTER TABLE [dbo].[mangaka_assistants] ADD [isdeleted] [bit] NULL DEFAULT ((0));
+ALTER TABLE [dbo].[mangaka_assistants] ADD [contract_file_url] [nvarchar](max) NULL;
+
