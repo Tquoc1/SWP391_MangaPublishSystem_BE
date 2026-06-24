@@ -70,6 +70,8 @@ namespace DTOs
         {
             public int DetailId { get; set; }
             public int EbId { get; set; }
+            public string? Fullname { get; set; }
+            public string? Username { get; set; }
 
             public decimal StoryScore { get; set; }
             public decimal ArtScore { get; set; }
@@ -78,6 +80,29 @@ namespace DTOs
             public decimal PacingScore { get; set; }
 
             public decimal AverageScore { get; set; }
+            public string? Feedback { get; set; }
+        }
+
+        public class PartialGradeInput
+        {
+            [Required(ErrorMessage = "Mã giám khảo không được để trống")]
+            public int EbId { get; set; }
+
+            [Range(0, 10, ErrorMessage = "Điểm phải từ 0 đến 10")]
+            public decimal StoryScore { get; set; }
+
+            [Range(0, 10, ErrorMessage = "Điểm phải từ 0 đến 10")]
+            public decimal ArtScore { get; set; }
+
+            [Range(0, 10, ErrorMessage = "Điểm phải từ 0 đến 10")]
+            public decimal CharacterScore { get; set; }
+
+            [Range(0, 10, ErrorMessage = "Điểm phải từ 0 đến 10")]
+            public decimal CommercialScore { get; set; }
+
+            [Range(0, 10, ErrorMessage = "Điểm phải từ 0 đến 10")]
+            public decimal PacingScore { get; set; }
+
             public string? Feedback { get; set; }
         }
 
