@@ -1,4 +1,4 @@
-﻿namespace Entities.Models;
+namespace Entities.Models;
 
 public partial class BoardEvaluationDetail
 {
@@ -23,6 +23,7 @@ public partial class BoardEvaluationDetail
     public string? Feedback { get; set; }
 
     public DateTime? EvaluatedAt { get; set; }
+    public bool? Isdeleted { get; set; }
 
     public virtual BoardEvaluation Evaluation { get; set; }
 

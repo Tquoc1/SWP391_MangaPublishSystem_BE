@@ -9,10 +9,12 @@ namespace MangaPublishSystem.Controllers
     public class MangakaAssistantController : ControllerBase
     {
         private readonly IMangakaAssistantService _service;
+        private readonly IFileStorageService _fileStorage;
 
-        public MangakaAssistantController(IMangakaAssistantService service)
+        public MangakaAssistantController(IMangakaAssistantService service, IFileStorageService fileStorage)
         {
             _service = service;
+            _fileStorage = fileStorage;
         }
 
         [HttpGet]
@@ -94,6 +96,32 @@ namespace MangaPublishSystem.Controllers
             catch (KeyNotFoundException ex)
             {
                 return NotFound(new { message = ex.Message });
+            }
+        }
+
+        [HttpPut("{id:int}/upload-file")]
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> UploadContractFile(int id, IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+            {
+                return BadRequest("Vui lòng chọn một file hợp đồng.");
+            }
+
+            try
+            {
+                await using var stream = file.OpenReadStream();
+                var fileUrl = await _fileStorage.UploadAsync(
+                    stream, file.FileName, file.ContentType, "contracts");
+
+                var contract = new MangakaAssistantDto.Update { ContractFileUrl = fileUrl };
+                await _service.UpdateAsync(id, contract);
+
+                return Ok(new { message = "Tải lên file hợp đồng thành công", fileUrl = fileUrl });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
             }
         }
     }

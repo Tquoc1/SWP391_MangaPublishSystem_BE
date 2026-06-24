@@ -73,7 +73,8 @@ namespace Services.Implement
                 StartDate = ToDateOnly(dto.StartDate),
                 EndDate = ToDateOnly(dto.EndDate),
                 Createdat = DateTime.Now,
-                Isdeleted = false
+                Isdeleted = false,
+                ContractFileUrl = dto.ContractFileUrl
             };
 
             var result = await _repository.AddAsync(entity);
@@ -102,6 +103,10 @@ namespace Services.Implement
             entity.ContractTerms = dto.ContractTerms;
             entity.StartDate = ToDateOnly(dto.StartDate);
             entity.EndDate = ToDateOnly(dto.EndDate);
+            if (dto.ContractFileUrl != null)
+            {
+                entity.ContractFileUrl = dto.ContractFileUrl;
+            }
 
             await _repository.UpdateAsync(entity);
         }
@@ -164,7 +169,10 @@ namespace Services.Implement
                 StartDate = ToDateTime(entity.StartDate),
                 EndDate = ToDateTime(entity.EndDate),
                 Createdat = entity.Createdat,
-                Isdeleted = entity.Isdeleted
+                Isdeleted = entity.Isdeleted,
+                MangakaName = entity.Mangaka?.Fullname,
+                AssistantName = entity.Assistant?.Fullname,
+                ContractFileUrl = entity.ContractFileUrl
             };
         }
 

@@ -20,9 +20,9 @@ namespace MangaPublishSystem.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<PageIssueDto>>> GetAll([FromQuery] int? chapterId)
+        public async Task<ActionResult<List<PageIssueDto>>> GetAll([FromQuery] int? chapterId, [FromQuery] string? status, [FromQuery] string? workCategory)
         {
-            var issues = await _pageIssueService.GetAllAsync(chapterId);
+            var issues = await _pageIssueService.GetAllAsync(chapterId, status, workCategory);
             return Ok(issues);
         }
 
@@ -38,7 +38,7 @@ namespace MangaPublishSystem.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Editor, EB")]
+        [Authorize(Roles = "Mangaka, Editor, EB")]
         public async Task<ActionResult> Create([FromBody] PageIssueDto.Create pageDto)
         {
             if (pageDto == null)
@@ -95,7 +95,7 @@ namespace MangaPublishSystem.Controllers
         }
 
         [HttpDelete("{id:int}/soft")]
-        [Authorize(Roles = "Editor, EB, Admin")]
+        [Authorize(Roles = "Mangaka, Editor, EB, Admin")]
         public async Task<ActionResult> SoftDelete(int id)
         {
             try

@@ -9,7 +9,7 @@ namespace Services.Interface
 {
     public interface IChapterService
     {
-        Task<List<ChapterDto>> GetAllAsync(int? seriesId);
+        Task<List<ChapterDto>> GetAllAsync(int? seriesId, string? status);
         Task<List<ChapterDto>> GetByAssistantIdAsync(int assistantId);
         Task<ChapterDto> GetByIdAsync(int id);
         Task<int> CreateAsync(ChapterDto.Create chapterDto);

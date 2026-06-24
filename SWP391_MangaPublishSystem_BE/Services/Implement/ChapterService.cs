@@ -28,9 +28,9 @@ namespace Services.Implement
             _chapterRepository = chapterRepository;
         }
 
-        public async Task<List<ChapterDto>> GetAllAsync(int? seriesId = null)
+        public async Task<List<ChapterDto>> GetAllAsync(int? seriesId, string? status)
         {
-            var chapters = await _chapterRepository.GetChaptersAsync(seriesId);
+            var chapters = await _chapterRepository.GetChaptersAsync(seriesId, status);
             return chapters.Select(MapToDto).ToList();
         }
 

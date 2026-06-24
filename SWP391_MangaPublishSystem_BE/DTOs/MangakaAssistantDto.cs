@@ -16,6 +16,9 @@ namespace DTOs
         public DateTime? EndDate { get; set; }
         public DateTime? Createdat { get; set; }
         public bool? Isdeleted { get; set; }
+        public string MangakaName { get; set; }
+        public string AssistantName { get; set; }
+        public string? ContractFileUrl { get; set; }
 
         public class Create
         {
@@ -38,6 +41,7 @@ namespace DTOs
 
             public DateTime? StartDate { get; set; }
             public DateTime? EndDate { get; set; }
+            public string? ContractFileUrl { get; set; }
         }
 
         public class Update
@@ -49,6 +53,7 @@ namespace DTOs
             public string ContractTerms { get; set; }
             public DateTime? StartDate { get; set; }
             public DateTime? EndDate { get; set; }
+            public string? ContractFileUrl { get; set; }
         }
 
         public class UpdateStatus

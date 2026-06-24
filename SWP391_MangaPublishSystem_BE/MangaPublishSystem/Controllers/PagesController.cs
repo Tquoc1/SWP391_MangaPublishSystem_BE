@@ -33,9 +33,9 @@ namespace MangaPublishSystem.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<PageDto>>> GetAll([FromQuery] int? chapterId)
+        public async Task<ActionResult<List<PageDto>>> GetAll([FromQuery] int? chapterId, [FromQuery] string? status)
         {
-            var pages = await _pageService.GetAllAsync(chapterId);
+            var pages = await _pageService.GetAllAsync(chapterId, status);
             return Ok(pages);
         }
 

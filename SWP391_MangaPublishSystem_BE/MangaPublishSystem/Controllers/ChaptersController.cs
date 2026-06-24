@@ -20,9 +20,9 @@ namespace MangaPublishSystem.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll([FromQuery] int? seriesId)
+        public async Task<IActionResult> GetAll([FromQuery] int? seriesId, [FromQuery] string? status)
         {
-            var result = await _chapterService.GetAllAsync(seriesId);
+            var result = await _chapterService.GetAllAsync(seriesId, status);
             return Ok(result);
         }
 
