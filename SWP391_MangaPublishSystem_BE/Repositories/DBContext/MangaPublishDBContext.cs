@@ -308,6 +308,13 @@ public partial class MangaPublishDBContext : DbContext
                 .HasDefaultValue("Pending")
                 .HasColumnName("status");
 
+            entity.Property(e => e.Isdeleted)
+                .HasDefaultValue(false)
+                .HasColumnName("isdeleted");
+
+            entity.Property(e => e.ContractFileUrl)
+                .HasColumnName("contract_file_url");
+
             entity.HasOne(d => d.Assistant).WithMany(p => p.MangakaAssistantAssistants)
                 .HasForeignKey(d => d.AssistantId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
@@ -779,6 +786,10 @@ public partial class MangaPublishDBContext : DbContext
                 .HasColumnType("decimal(5, 2)")
                 .HasColumnName("average_score")
                 .HasComputedColumnSql("((((([story_score]+[art_score])+[character_score])+[commercial_score])+[pacing_score])/(5.0))", stored: false);
+
+            entity.Property(e => e.Isdeleted)
+                .HasDefaultValue(false)
+                .HasColumnName("isdeleted");
 
             entity.HasOne(d => d.Eb).WithMany()
                 .HasForeignKey(d => d.EbId)
