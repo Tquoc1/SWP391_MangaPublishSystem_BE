@@ -70,13 +70,32 @@ namespace MangaPublishSystem.Controllers
         }
 
         [HttpGet("{seriesId:int}/evaluators-status")]
-        [Authorize(Roles = "Admin, EB, Editor")]
+        [Authorize(Roles = "Admin, EB, Editor, Mangaka")]
         public async Task<IActionResult> GetEvaluatorsStatus(int seriesId)
         {
             try
             {
                 var result = await _evaluationService.GetEvaluatorsStatusAsync(seriesId);
                 return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpPatch("{seriesId:int}/general-feedback")]
+        [Authorize(Roles = "Admin, EB, Editor, Mangaka")]
+        public async Task<IActionResult> UpdateGeneralFeedback(int seriesId, [FromBody] BoardEvaluationDto.GeneralFeedbackInput dto)
+        {
+            try
+            {
+                await _evaluationService.UpdateGeneralFeedbackAsync(seriesId, dto.Feedback);
+                return Ok(new { message = "Cập nhật nhận xét chung thành công." });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
             }
             catch (Exception ex)
             {

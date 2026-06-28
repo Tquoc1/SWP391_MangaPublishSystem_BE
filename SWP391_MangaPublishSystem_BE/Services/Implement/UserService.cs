@@ -133,6 +133,17 @@ namespace Services.Implement
             )).ToList();
         }
 
+        public async Task<List<DTO.UserDto.EbMemberResponse>> GetEbMembersAsync()
+        {
+            var users = await _userRepository.GetUsersAsync(2, "Active");
+            return users.Select(u => new DTO.UserDto.EbMemberResponse(
+                u.Userid,
+                u.Username,
+                u.Fullname,
+                u.Email ?? string.Empty
+            )).ToList();
+        }
+
         // Admin User Management
         public async Task<List<DTO.UserDto.AdminUserResponse>> GetUsersAsync(int? roleId, string? status)
         {

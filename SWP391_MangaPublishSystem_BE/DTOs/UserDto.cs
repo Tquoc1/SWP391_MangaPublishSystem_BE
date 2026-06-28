@@ -56,6 +56,13 @@ namespace Services.DTO
             string? PhoneNumber = null
         );
 
+        public sealed record EbMemberResponse(
+            int UserId,
+            string Username,
+            string FullName,
+            string Email
+        );
+
         public class AdminCreateUserRequest
         {
             [Required(ErrorMessage = "Username không được để trống")]

@@ -171,6 +171,14 @@ namespace MangaPublishSystem.Controllers
             var editors = await _userService.GetTantouEditorsAsync();
             return Ok(editors);
         }
+
+        [HttpGet("evaluators")]
+        [Authorize(Roles = "Admin, EB, Editor, Mangaka")]
+        public async Task<IActionResult> GetEvaluators()
+        {
+            var evaluators = await _userService.GetEbMembersAsync();
+            return Ok(evaluators);
+        }
     }
 }
 

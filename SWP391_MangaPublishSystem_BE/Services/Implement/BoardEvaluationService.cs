@@ -523,5 +523,16 @@ namespace Services.Implement
 
             return result;
         }
+
+        public async Task UpdateGeneralFeedbackAsync(int seriesId, string feedback)
+        {
+            var evaluation = await _repository.GetBySeriesIdWithDetailsAsync(seriesId);
+            if (evaluation == null)
+            {
+                throw new KeyNotFoundException("Không tìm thấy đánh giá cho series này.");
+            }
+            evaluation.Feedback = feedback;
+            await _repository.SaveMainEvaluationAsync(evaluation);
+        }
     }
 }

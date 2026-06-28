@@ -20,5 +20,6 @@ namespace Services.Interface
         Task<BoardEvaluationDto.BatchSummary?> GetBySeriesIdSummaryAsync(int seriesId);
         Task SavePartialMemberScoreAsync(int seriesId, BoardEvaluationDto.PartialGradeInput dto);
         Task<List<BoardEvaluationDto.EvaluatorStatusResponse>> GetEvaluatorsStatusAsync(int seriesId);
+        Task UpdateGeneralFeedbackAsync(int seriesId, string feedback);
     }
 }

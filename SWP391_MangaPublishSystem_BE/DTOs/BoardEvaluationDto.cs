@@ -172,5 +172,11 @@ namespace DTOs
 
             public DateTime? Evaluatedat { get; set; }
         }
+
+        public class GeneralFeedbackInput
+        {
+            [Required(ErrorMessage = "Nhận xét không được để trống")]
+            public string Feedback { get; set; }
+        }
     }
 }
