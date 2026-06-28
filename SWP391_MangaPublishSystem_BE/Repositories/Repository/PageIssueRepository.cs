@@ -12,7 +12,7 @@ namespace Repositories.Repository
         public PageIssueRepository() { }
         public PageIssueRepository(MangaPublishDBContext context) : base(context) => _context = context;
 
-        public async Task<List<PageIssue>> GetIssuesAsync(int? chapterId = null, string? status = null, string? workCategory = null, bool includeDeleted = false)
+        public async Task<List<PageIssue>> GetIssuesAsync(int? chapterId = null, int? pageId = null, string? status = null, string? workCategory = null, bool includeDeleted = false)
         {
             var query = _context.PageIssues.AsQueryable();
 
@@ -21,7 +21,11 @@ namespace Repositories.Repository
                 query = query.Where(i => i.Isdeleted == false || i.Isdeleted == null);
             }
 
-            if (chapterId.HasValue)
+            if (pageId.HasValue)
+            {
+                query = query.Where(i => i.Pageid == pageId.Value);
+            }
+            else if (chapterId.HasValue)
             {
                 var pageIds = await _context.Pages
                     .Where(p => p.Chapterid == chapterId.Value)

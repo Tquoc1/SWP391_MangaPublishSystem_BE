@@ -106,6 +106,15 @@ namespace DTOs
             public string? Feedback { get; set; }
         }
 
+        public class EvaluatorStatusResponse
+        {
+            public int UserId { get; set; }
+            public string? Fullname { get; set; }
+            public string? Username { get; set; }
+            public bool HasEvaluated { get; set; }
+            public DetailResponse? EvaluationDetail { get; set; }
+        }
+
         public class BatchSummary
         {
             public int Evaluationid { get; set; }

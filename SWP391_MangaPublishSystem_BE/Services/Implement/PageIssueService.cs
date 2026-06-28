@@ -29,9 +29,9 @@ namespace Services.Implement
             _notificationService = notificationService;
         }
 
-        public async Task<List<PageIssueDto>> GetAllAsync(int? chapterId, string? status, string? workCategory)
+        public async Task<List<PageIssueDto>> GetAllAsync(int? chapterId, int? pageId, string? status, string? workCategory)
         {
-            var issues = await _pageIssueRepository.GetIssuesAsync(chapterId, status, workCategory);
+            var issues = await _pageIssueRepository.GetIssuesAsync(chapterId, pageId, status, workCategory);
             return issues.Select(MapToDto).ToList();
         }
 

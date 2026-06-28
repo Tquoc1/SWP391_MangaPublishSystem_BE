@@ -20,9 +20,9 @@ namespace MangaPublishSystem.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<PageIssueDto>>> GetAll([FromQuery] int? chapterId, [FromQuery] string? status, [FromQuery] string? workCategory)
+        public async Task<ActionResult<List<PageIssueDto>>> GetAll([FromQuery] int? chapterId, [FromQuery] int? pageId, [FromQuery] string? status, [FromQuery] string? workCategory)
         {
-            var issues = await _pageIssueService.GetAllAsync(chapterId, status, workCategory);
+            var issues = await _pageIssueService.GetAllAsync(chapterId, pageId, status, workCategory);
             return Ok(issues);
         }
 

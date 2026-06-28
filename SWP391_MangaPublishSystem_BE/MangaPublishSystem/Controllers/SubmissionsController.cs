@@ -68,5 +68,20 @@ namespace MangaPublishSystem.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
+
+        [HttpGet("{seriesId:int}/evaluators-status")]
+        [Authorize(Roles = "Admin, EB, Editor")]
+        public async Task<IActionResult> GetEvaluatorsStatus(int seriesId)
+        {
+            try
+            {
+                var result = await _evaluationService.GetEvaluatorsStatusAsync(seriesId);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
     }
 }

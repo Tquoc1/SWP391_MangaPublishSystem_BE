@@ -12,15 +12,18 @@ namespace Services.Implement
         private readonly BoardEvaluationRepository _repository;
         private readonly SeriesRepository _seriesRepository;
         private readonly INotificationService _notificationService;
+        private readonly UserRepository _userRepository;
 
         public BoardEvaluationService(
             BoardEvaluationRepository repository,
             SeriesRepository seriesRepository,
-            INotificationService notificationService)
+            INotificationService notificationService,
+            UserRepository userRepository)
         {
             _repository = repository;
             _seriesRepository = seriesRepository;
             _notificationService = notificationService;
+            _userRepository = userRepository;
         }
 
         public async Task<List<BoardEvaluationDto.Response>> GetAllAsync()
@@ -479,6 +482,46 @@ namespace Services.Implement
             series.Approvedat = isApproved ? DateTime.UtcNow : null;
 
             await _seriesRepository.UpdateAsync(series);
+        }
+
+        public async Task<List<BoardEvaluationDto.EvaluatorStatusResponse>> GetEvaluatorsStatusAsync(int seriesId)
+        {
+            var ebUsers = await _userRepository.GetUsersAsync(2, "Active");
+
+            var evaluation = await _repository.GetBySeriesIdWithDetailsAsync(seriesId);
+            var details = evaluation?.BoardEvaluationDetails.ToList() ?? new List<BoardEvaluationDetail>();
+
+            var result = new List<BoardEvaluationDto.EvaluatorStatusResponse>();
+
+            foreach (var user in ebUsers)
+            {
+                var detail = details.FirstOrDefault(x => x.EbId == user.Userid);
+                var hasEvaluated = detail != null;
+
+                result.Add(new BoardEvaluationDto.EvaluatorStatusResponse
+                {
+                    UserId = user.Userid,
+                    Fullname = user.Fullname,
+                    Username = user.Username,
+                    HasEvaluated = hasEvaluated,
+                    EvaluationDetail = hasEvaluated ? new BoardEvaluationDto.DetailResponse
+                    {
+                        DetailId = detail.DetailId,
+                        EbId = detail.EbId,
+                        Fullname = user.Fullname,
+                        Username = user.Username,
+                        StoryScore = detail.StoryScore,
+                        ArtScore = detail.ArtScore,
+                        CharacterScore = detail.CharacterScore,
+                        CommercialScore = detail.CommercialScore,
+                        PacingScore = detail.PacingScore,
+                        AverageScore = (detail.StoryScore + detail.ArtScore + detail.CharacterScore + detail.CommercialScore + detail.PacingScore) / 5m,
+                        Feedback = detail.Feedback
+                    } : null
+                });
+            }
+
+            return result;
         }
     }
 }
