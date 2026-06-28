@@ -13,12 +13,10 @@ namespace Services.Implement
     {
         private static readonly Dictionary<string, List<string>> _validTransitions = new(StringComparer.OrdinalIgnoreCase)
         {
-            { "Drafting", new List<string> { "StudioWorking", "Cancelled" } },
-            { "StudioWorking", new List<string> { "EditorReviewing", "Cancelled", "Delayed" } },
-            { "EditorReviewing", new List<string> { "ReadyForPrint", "StudioWorking", "Cancelled", "Delayed" } },
-            { "ReadyForPrint", new List<string> { "Published", "Delayed" } },
-            { "Published", new List<string> { "Archived" } },
-            { "Delayed", new List<string> { "StudioWorking", "EditorReviewing", "ReadyForPrint" } }
+            { "InProduction", new List<string> { "Ready", "Delayed", "Cancelled" } },
+            { "Ready", new List<string> { "Published", "Delayed", "Cancelled" } },
+            { "Published", new List<string> { "Delayed", "Cancelled" } },
+            { "Delayed", new List<string> { "InProduction", "Ready", "Published", "Cancelled" } }
         };
 
         private readonly ChapterRepository _chapterRepository;
@@ -54,7 +52,7 @@ namespace Services.Implement
                 Chapternumber = chapterDto.Chapternumber,
                 Title = chapterDto.Title,
                 Deadline = chapterDto.Deadline,
-                Status = "Drafting",
+                Status = "InProduction",
                 Createdat = DateTime.UtcNow,
                 Isdeleted = false
             };

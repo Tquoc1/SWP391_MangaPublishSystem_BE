@@ -68,7 +68,7 @@ namespace DTOs
         public class UpdateStatus
         {
             [Required(ErrorMessage = "Trạng thái không được để trống")]
-            [AllowedValues("Approved", "NeedsRevision", "Submitted", "InProgress", "Pending", "Rejected", "Closed", "Cancelled", ErrorMessage = "Trạng thái không hợp lệ")]
+            [AllowedValues("Reported", "InProgress", "Resolved", "Completed", "Cancelled", ErrorMessage = "Trạng thái không hợp lệ")]
             public string Status { get; set; } = string.Empty;
         }
     }

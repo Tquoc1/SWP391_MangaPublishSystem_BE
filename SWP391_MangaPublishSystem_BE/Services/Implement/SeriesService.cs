@@ -14,12 +14,10 @@ namespace Services.Implement
     {
         private static readonly Dictionary<string, List<string>> _validTransitions = new(StringComparer.OrdinalIgnoreCase)
         {
-            { "Draft", new List<string> { "Submitted", "Cancelled" } },
-            { "Submitted", new List<string> { "UnderReview", "Cancelled" } },
-            { "UnderReview", new List<string> { "Approved", "Rejected", "RevisionRequired" } },
-            { "RevisionRequired", new List<string> { "Submitted", "Cancelled" } },
-            { "Approved", new List<string> { "Publishing", "Cancelled" } },
-            { "Publishing", new List<string> { "Completed" } }
+            { "Draft", new List<string> { "EditorReview", "Cancelled" } },
+            { "EditorReview", new List<string> { "EBReview", "Cancelled" } },
+            { "EBReview", new List<string> { "Publishing", "Cancelled" } },
+            { "Publishing", new List<string> { "Completed", "Cancelled" } }
         };
 
         private readonly SeriesRepository _seriesRepository;
@@ -124,7 +122,7 @@ namespace Services.Implement
             }
 
             existing.Status = seriesDto.Status;
-            if (seriesDto.Status.Equals("Approved", StringComparison.OrdinalIgnoreCase))
+            if (seriesDto.Status.Equals("Publishing", StringComparison.OrdinalIgnoreCase))
             {
                 existing.Approvedat = DateTime.UtcNow;
             }
@@ -133,7 +131,7 @@ namespace Services.Implement
             
             if (existing.Mangakaid > 0)
             {
-                string statusVn = existing.Status == "Approved" ? "Đã duyệt" : (existing.Status == "Rejected" ? "Từ chối" : existing.Status);
+                string statusVn = existing.Status == "Publishing" ? "Đã duyệt phát hành" : (existing.Status == "Cancelled" ? "Đã hủy" : existing.Status);
                 await _notificationService.CreateNotificationAsync(
                     existing.Mangakaid,
                     "Cập nhật trạng thái Tác phẩm",

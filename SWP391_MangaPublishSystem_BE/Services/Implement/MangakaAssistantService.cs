@@ -9,9 +9,9 @@ namespace Services.Implement
     {
         private static readonly Dictionary<string, List<string>> _validTransitions = new(StringComparer.OrdinalIgnoreCase)
         {
-            { "Pending", new List<string> { "Active", "Terminated" } },
-            { "Active", new List<string> { "Suspended", "Terminated", "Expired", "Completed" } },
-            { "Suspended", new List<string> { "Active", "Terminated" } }
+            { "Pending", new List<string> { "Active", "Inactive" } },
+            { "Active", new List<string> { "Suspended", "Inactive" } },
+            { "Suspended", new List<string> { "Active", "Inactive" } }
         };
 
         private readonly MangakaAssistantRepository _repository;
@@ -133,7 +133,7 @@ namespace Services.Implement
 
             await _repository.UpdateAsync(entity);
             
-            string action = status == "Accepted" ? "chấp nhận" : (status == "Rejected" ? "từ chối" : "cập nhật");
+            string action = status.Equals("Active", StringComparison.OrdinalIgnoreCase) ? "chấp nhận" : (status.Equals("Inactive", StringComparison.OrdinalIgnoreCase) ? "từ chối" : "cập nhật");
             await _notificationService.CreateNotificationAsync(
                 entity.MangakaId,
                 "Phản hồi lời mời hợp tác",

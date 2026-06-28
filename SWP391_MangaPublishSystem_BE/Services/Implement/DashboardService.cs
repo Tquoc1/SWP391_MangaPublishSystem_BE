@@ -34,7 +34,7 @@ namespace Services.Implement
             var seriesList = await _seriesRepository.GetAllWithDetailsAsync();
             
             return seriesList
-                .Where(s => s.Isdeleted != true && (s.Status == "Approved" || s.Status == "Ongoing" || s.Status == "Completed"))
+                .Where(s => s.Isdeleted != true && (s.Status == "Publishing" || s.Status == "Completed"))
                 .OrderByDescending(s => s.Createdat)
                 .Take(5)
                 .Select(s => new SeriesDto
@@ -66,10 +66,10 @@ namespace Services.Implement
         {
             var series = await _seriesRepository.GetAllAsync();
             
-            int pending = series.Count(s => s.Status == "Pending");
-            int approved = series.Count(s => s.Status == "Approved");
-            int rejected = series.Count(s => s.Status == "Rejected");
-            int ongoing = series.Count(s => s.Status == "Ongoing");
+            int pending = series.Count(s => s.Status == "Draft" || s.Status == "EditorReview" || s.Status == "EBReview");
+            int approved = series.Count(s => s.Status == "Publishing");
+            int rejected = series.Count(s => s.Status == "Cancelled");
+            int ongoing = series.Count(s => s.Status == "Publishing");
             int completed = series.Count(s => s.Status == "Completed");
 
             return new DashboardDto.AdminSeriesStatsResponse

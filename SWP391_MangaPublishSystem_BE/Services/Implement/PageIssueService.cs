@@ -13,11 +13,9 @@ namespace Services.Implement
     {
         private static readonly Dictionary<string, List<string>> _validTransitions = new(StringComparer.OrdinalIgnoreCase)
         {
-            { "Pending", new List<string> { "InProgress", "Rejected", "Cancelled" } },
-            { "InProgress", new List<string> { "Submitted", "Cancelled" } },
-            { "Submitted", new List<string> { "Approved", "NeedsRevision" } },
-            { "NeedsRevision", new List<string> { "InProgress" } },
-            { "Approved", new List<string> { "Closed" } }
+            { "Reported", new List<string> { "InProgress", "Cancelled" } },
+            { "InProgress", new List<string> { "Resolved", "Cancelled" } },
+            { "Resolved", new List<string> { "Completed", "Cancelled" } }
         };
 
         private readonly PageIssueRepository _pageIssueRepository;
@@ -55,7 +53,7 @@ namespace Services.Implement
                 BoxWidth = dto.BoxWidth,
                 BoxHeight = dto.BoxHeight,
                 Description = dto.Description,
-                Status = "Pending",
+                Status = "Reported",
                 Deadline = dto.Deadline,
                 Createdat = DateTime.UtcNow,
                 Isdeleted = false

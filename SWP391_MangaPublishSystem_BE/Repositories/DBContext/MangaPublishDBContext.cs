@@ -417,7 +417,7 @@ public partial class MangaPublishDBContext : DbContext
             entity.Property(e => e.Pagenumber).HasColumnName("pagenumber");
             entity.Property(e => e.Status)
                 .HasMaxLength(50)
-                .HasDefaultValue("Draft")
+                .HasDefaultValue("InWork")
                 .HasColumnName("status");
 
             entity.HasOne(d => d.Chapter).WithMany(p => p.Pages)
@@ -462,7 +462,7 @@ public partial class MangaPublishDBContext : DbContext
             entity.Property(e => e.Pageid).HasColumnName("pageid");
             entity.Property(e => e.Status)
                 .HasMaxLength(50)
-                .HasDefaultValue("Pending")
+                .HasDefaultValue("Reported")
                 .HasColumnName("status");
             entity.Property(e => e.WorkCategory)
                 .HasMaxLength(50)

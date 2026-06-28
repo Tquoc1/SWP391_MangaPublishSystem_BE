@@ -288,7 +288,7 @@ namespace Services.Implement
 
             var evaluationId = await _repository.CreateBatchAsync(evaluation, details);
 
-            series.Status = isApproved ? "Approved" : "Rejected";
+            series.Status = isApproved ? "Publishing" : "Cancelled";
             series.Publishformat = isApproved ? "Weekly" : "Pending";
             series.Approvedat = isApproved ? DateTime.UtcNow : null;
 
@@ -449,7 +449,7 @@ namespace Services.Implement
 
                 await _repository.SaveMainEvaluationAsync(evaluation);
 
-                series.Status = isApproved ? "Approved" : "Rejected";
+                series.Status = isApproved ? "Publishing" : "Cancelled";
                 series.Publishformat = isApproved ? "Weekly" : "Pending";
                 series.Approvedat = isApproved ? DateTime.UtcNow : null;
                 await _seriesRepository.UpdateAsync(series);
@@ -477,7 +477,7 @@ namespace Services.Implement
             if (series == null || series.Isdeleted == true)
                 return;
 
-            series.Status = isApproved ? "Approved" : "Rejected";
+            series.Status = isApproved ? "Publishing" : "Cancelled";
             series.Publishformat = isApproved ? "Weekly" : "Pending";
             series.Approvedat = isApproved ? DateTime.UtcNow : null;
 

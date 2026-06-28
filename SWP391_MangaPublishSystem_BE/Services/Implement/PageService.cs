@@ -19,12 +19,8 @@ namespace Services.Implement
     {
         private static readonly Dictionary<string, List<string>> _validTransitions = new(StringComparer.OrdinalIgnoreCase)
         {
-            { "Draft", new List<string> { "Assigned" } },
-            { "Assigned", new List<string> { "InWork" } },
             { "InWork", new List<string> { "Reviewing" } },
-            { "Reviewing", new List<string> { "Approved", "NeedsRevision" } },
-            { "NeedsRevision", new List<string> { "InWork" } },
-            { "Approved", new List<string> { "Completed" } }
+            { "Reviewing", new List<string> { "Approved", "InWork" } }
         };
 
         private readonly PageRepository _pageRepository;
@@ -57,7 +53,7 @@ namespace Services.Implement
                 Chapterid = pageDto.Chapterid,
                 Pagenumber = pageDto.Pagenumber,
                 Pageimageurl = string.Empty,
-                Status = "Draft",
+                Status = "InWork",
                 Isdeleted = false
             };
 
