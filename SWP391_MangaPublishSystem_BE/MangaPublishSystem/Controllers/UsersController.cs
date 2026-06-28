@@ -165,7 +165,7 @@ namespace MangaPublishSystem.Controllers
         }
 
         [HttpGet("tantou-editors")]
-        [Authorize(Roles = "Mangaka")]
+        [Authorize(Roles = "Admin, EB, Editor, Mangaka")]
         public async Task<IActionResult> GetTantouEditors()
         {
             var editors = await _userService.GetTantouEditorsAsync();
