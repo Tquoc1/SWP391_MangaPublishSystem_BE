@@ -46,13 +46,13 @@ namespace Services.Implement
             return page != null ? MapToDto(page) : null;
         }
 
-        public async Task<int> CreateAsync(PageDto.Create pageDto)
+        public async Task<int> CreateAsync(PageDto.Create pageDto, string pageImageUrl)
         {
             var page = new Page
             {
                 Chapterid = pageDto.Chapterid,
                 Pagenumber = pageDto.Pagenumber,
-                Pageimageurl = string.Empty,
+                Pageimageurl = pageImageUrl,
                 Status = "InWork",
                 Isdeleted = false
             };
