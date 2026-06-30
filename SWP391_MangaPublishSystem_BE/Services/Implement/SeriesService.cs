@@ -86,6 +86,8 @@ namespace Services.Implement
                     admin.Userid,
                     "Tác phẩm mới chờ duyệt",
                     $"Tác phẩm '{series.Title}' vừa được gửi lên hệ thống và đang chờ phê duyệt.",
+                    series.Seriesid,
+                    "Series",
                     series.Seriesid
                 );
             }
@@ -136,6 +138,8 @@ namespace Services.Implement
                     existing.Mangakaid,
                     "Cập nhật trạng thái Tác phẩm",
                     $"Tác phẩm '{existing.Title}' của bạn đã được chuyển sang trạng thái: {statusVn}.",
+                    existing.Seriesid,
+                    "Series",
                     existing.Seriesid
                 );
             }

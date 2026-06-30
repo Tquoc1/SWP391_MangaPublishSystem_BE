@@ -30,7 +30,9 @@ namespace Services.Implement
                 Title = n.Title,
                 Message = n.Message,
                 IsRead = n.Isread ?? false,
-                CreatedAt = n.Createdat
+                CreatedAt = n.Createdat,
+                ReferenceType = n.Referencetype,
+                ReferenceId = n.Referenceid
             }).ToList();
         }
 
@@ -56,7 +58,7 @@ namespace Services.Implement
             await _notificationRepository.MarkAllAsReadAsync(userId);
         }
 
-        public async Task CreateNotificationAsync(int userId, string title, string message, int? seriesId = null)
+        public async Task CreateNotificationAsync(int userId, string title, string message, int? seriesId = null, string? referenceType = null, int? referenceId = null)
         {
             var notification = new Notification
             {
@@ -64,6 +66,8 @@ namespace Services.Implement
                 Title = title,
                 Message = message,
                 Seriesid = seriesId,
+                Referencetype = referenceType,
+                Referenceid = referenceId,
                 Isread = false,
                 Createdat = DateTime.UtcNow
             };

@@ -388,6 +388,10 @@ public partial class MangaPublishDBContext : DbContext
                 .HasMaxLength(255)
                 .HasColumnName("title");
             entity.Property(e => e.Userid).HasColumnName("userid");
+            entity.Property(e => e.Referencetype)
+                .HasMaxLength(100)
+                .HasColumnName("referencetype");
+            entity.Property(e => e.Referenceid).HasColumnName("referenceid");
 
             entity.HasOne(d => d.Series).WithMany(p => p.Notifications)
                 .HasForeignKey(d => d.Seriesid)

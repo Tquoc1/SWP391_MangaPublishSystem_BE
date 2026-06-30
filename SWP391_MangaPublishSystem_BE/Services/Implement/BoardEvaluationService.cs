@@ -149,7 +149,9 @@ namespace Services.Implement
                     series.Mangakaid,
                     "Có đánh giá mới từ Hội đồng",
                     $"Tác phẩm '{series.Title}' của bạn vừa nhận được một đánh giá mới.",
-                    series.Seriesid
+                    series.Seriesid,
+                    "Evaluation",
+                    evaluation.Evaluationid
                 );
             }
 

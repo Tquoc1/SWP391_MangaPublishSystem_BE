@@ -83,7 +83,10 @@ namespace Services.Implement
                 await _notificationService.CreateNotificationAsync(
                     dto.AssistantId,
                     "Lời mời hợp tác mới",
-                    $"Một Mangaka vừa gửi cho bạn một lời mời hợp tác."
+                    $"Một Mangaka vừa gửi cho bạn một lời mời hợp tác.",
+                    null,
+                    "Contract",
+                    entity.ContractId
                 );
             }
             return result;
@@ -137,7 +140,10 @@ namespace Services.Implement
             await _notificationService.CreateNotificationAsync(
                 entity.MangakaId,
                 "Phản hồi lời mời hợp tác",
-                $"Một Assistant đã {action} lời mời của bạn."
+                $"Một Assistant đã {action} lời mời của bạn.",
+                null,
+                "Contract",
+                entity.ContractId
             );
         }
 

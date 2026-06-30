@@ -20,10 +20,17 @@ namespace Services.Implement
         };
 
         private readonly ChapterRepository _chapterRepository;
+        private readonly SeriesRepository _seriesRepository;
+        private readonly INotificationService _notificationService;
 
-        public ChapterService(ChapterRepository chapterRepository)
+        public ChapterService(
+            ChapterRepository chapterRepository,
+            SeriesRepository seriesRepository,
+            INotificationService notificationService)
         {
             _chapterRepository = chapterRepository;
+            _seriesRepository = seriesRepository;
+            _notificationService = notificationService;
         }
 
         public async Task<List<ChapterDto>> GetAllAsync(int? seriesId, string? status)
@@ -58,6 +65,20 @@ namespace Services.Implement
             };
 
             await _chapterRepository.CreateAsync(chapter);
+
+            var series = await _seriesRepository.GetByIdAsync(chapterDto.Seriesid);
+            if (series != null && series.Mangakaid > 0)
+            {
+                await _notificationService.CreateNotificationAsync(
+                    series.Mangakaid,
+                    "Chương mới được tạo",
+                    $"Chương {chapterDto.Chapternumber}: '{chapterDto.Title}' của tác phẩm '{series.Title}' đã được tạo.",
+                    series.Seriesid,
+                    "Chapter",
+                    chapter.Chapterid
+                );
+            }
+
             return chapter.Chapterid;
         }
 
@@ -89,6 +110,20 @@ namespace Services.Implement
 
             existing.Status = status;
             await _chapterRepository.UpdateAsync(existing);
+
+            var series = await _seriesRepository.GetByIdAsync(existing.Seriesid);
+            if (series != null && series.Mangakaid > 0)
+            {
+                string statusVn = status == "Published" ? "đã phát hành" : (status == "Ready" ? "sẵn sàng xuất bản" : (status == "Delayed" ? "bị hoãn" : status));
+                await _notificationService.CreateNotificationAsync(
+                    series.Mangakaid,
+                    "Cập nhật trạng thái Chương",
+                    $"Chương {existing.Chapternumber} của tác phẩm '{series.Title}' đã chuyển sang trạng thái: {statusVn}.",
+                    series.Seriesid,
+                    "Chapter",
+                    existing.Chapterid
+                );
+            }
         }
 
         public async Task SoftDeleteAsync(int id)

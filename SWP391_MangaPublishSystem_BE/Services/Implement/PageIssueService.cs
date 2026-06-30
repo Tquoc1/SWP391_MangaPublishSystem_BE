@@ -66,7 +66,10 @@ namespace Services.Implement
                 await _notificationService.CreateNotificationAsync(
                     dto.AssignedToId.Value,
                     "Công việc mới được giao",
-                    $"Bạn vừa được giao một công việc mới ở trang {dto.Pageid}."
+                    $"Bạn vừa được giao một công việc mới ở trang {dto.Pageid}.",
+                    null,
+                    "Issue",
+                    issue.Issueid
                 );
             }
             
@@ -98,7 +101,10 @@ namespace Services.Implement
                 await _notificationService.CreateNotificationAsync(
                     existing.CreatedById,
                     "Công việc đã hoàn thành",
-                    $"Assistant đã hoàn thành công việc ở trang {existing.Pageid}."
+                    $"Assistant đã hoàn thành công việc ở trang {existing.Pageid}.",
+                    null,
+                    "Issue",
+                    existing.Issueid
                 );
             }
 
@@ -143,7 +149,10 @@ namespace Services.Implement
                 await _notificationService.CreateNotificationAsync(
                     existing.CreatedById,
                     "Công việc đã hoàn thành",
-                    $"Assistant đã hoàn thành công việc ở trang {existing.Pageid}."
+                    $"Assistant đã hoàn thành công việc ở trang {existing.Pageid}.",
+                    null,
+                    "Issue",
+                    existing.Issueid
                 );
             }
             

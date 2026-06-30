@@ -14,6 +14,8 @@ namespace DTOs
             public string Message { get; set; } = null!;
             public bool IsRead { get; set; }
             public DateTime? CreatedAt { get; set; }
+            public string? ReferenceType { get; set; }
+            public int? ReferenceId { get; set; }
         }
 
         public class Create
