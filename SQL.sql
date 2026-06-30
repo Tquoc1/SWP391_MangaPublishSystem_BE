@@ -559,8 +559,6 @@ ALTER TABLE [dbo].[mangaka_assistants] ADD [isdeleted] [bit] NULL DEFAULT ((0));
 ALTER TABLE [dbo].[mangaka_assistants] ADD [contract_file_url] [nvarchar](max) NULL;
 
 ALTER TABLE [dbo].[board_evaluation_details] ADD [isdeleted] [bit] NULL DEFAULT ((0));
-ALTER TABLE [dbo].[board_evaluation_details] ADD [average_score] AS ((((([story_score] + [art_score]) + [character_score]) + [commercial_score]) + [pacing_score]) / (5.0));
-
 
 ALTER TABLE notifications ADD referencetype NVARCHAR(100) NULL;
 ALTER TABLE notifications ADD referenceid INT NULL;
