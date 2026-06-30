@@ -11,7 +11,7 @@ namespace Services.Interface
     {
         Task<List<PageDto>> GetAllAsync(int? chapterId, string? status);
         Task<PageDto> GetByIdAsync(int id);
-        Task<int> CreateAsync(PageDto.Create pageDto);
+        Task<int> CreateAsync(PageDto.Create pageDto, string pageImageUrl);
         Task UpdateAsync(int id,PageDto.Update pageDto);
         Task<string> CompositeAndSaveImageAsync(int id);
         Task UpdateStatusAsync(int id, string status);

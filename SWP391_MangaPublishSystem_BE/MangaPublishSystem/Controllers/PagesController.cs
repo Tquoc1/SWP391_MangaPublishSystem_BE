@@ -65,7 +65,7 @@ namespace MangaPublishSystem.Controllers
             string uploadedUrl = await _fileStorage.UploadAsync(
                 stream, pageFile.FileName, pageFile.ContentType, "manga-pages");
 
-            var result = await _pageService.CreateAsync(pageDto);
+            var result = await _pageService.CreateAsync(pageDto, uploadedUrl);
 
             if (result <= 0)
             {
