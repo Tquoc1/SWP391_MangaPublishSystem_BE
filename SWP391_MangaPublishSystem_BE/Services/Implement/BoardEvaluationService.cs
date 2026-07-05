@@ -290,12 +290,6 @@ namespace Services.Implement
 
             var evaluationId = await _repository.CreateBatchAsync(evaluation, details);
 
-            series.Status = isApproved ? "Publishing" : "Cancelled";
-            series.Publishformat = isApproved ? "Weekly" : "Pending";
-            series.Approvedat = isApproved ? DateTime.UtcNow : null;
-
-            await _seriesRepository.UpdateAsync(series);
-
             return evaluationId;
         }
 
@@ -450,40 +444,12 @@ namespace Services.Implement
                 evaluation.ApprovedPublishFormat = isApproved ? "Weekly" : null;
 
                 await _repository.SaveMainEvaluationAsync(evaluation);
-
-                series.Status = isApproved ? "Publishing" : "Cancelled";
-                series.Publishformat = isApproved ? "Weekly" : "Pending";
-                series.Approvedat = isApproved ? DateTime.UtcNow : null;
-                await _seriesRepository.UpdateAsync(series);
             }
         }
         private async Task RecalculateSeriesEvaluationAsync(int seriesId)
         {
-            var evaluations = await _repository.GetBySeriesIdAsync(seriesId);
-
-            if (evaluations == null || !evaluations.Any())
-                return;
-
-            decimal avgStory = evaluations.Average(x => x.StoryScore);
-            decimal avgArt = evaluations.Average(x => x.ArtScore);
-            decimal avgCharacter = evaluations.Average(x => x.CharacterScore);
-            decimal avgCommercial = evaluations.Average(x => x.CommercialScore);
-            decimal avgPacing = evaluations.Average(x => x.PacingScore);
-
-            decimal finalAverage =
-                (avgStory + avgArt + avgCharacter + avgCommercial + avgPacing) / 5m;
-
-            bool isApproved = finalAverage >= 5m;
-
-            var series = await _seriesRepository.GetByIdWithDetailsAsync(seriesId);
-            if (series == null || series.Isdeleted == true)
-                return;
-
-            series.Status = isApproved ? "Publishing" : "Cancelled";
-            series.Publishformat = isApproved ? "Weekly" : "Pending";
-            series.Approvedat = isApproved ? DateTime.UtcNow : null;
-
-            await _seriesRepository.UpdateAsync(series);
+            // Do not automatically update series status during evaluation.
+            await Task.CompletedTask;
         }
 
         public async Task<List<BoardEvaluationDto.EvaluatorStatusResponse>> GetEvaluatorsStatusAsync(int seriesId)
