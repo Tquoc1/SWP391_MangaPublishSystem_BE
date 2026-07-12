@@ -186,7 +186,7 @@ namespace MangaPublishSystem.Controllers
         }
 
         [HttpPatch("{id:int}/status", Order = 6)]
-        [Authorize(Roles = "Admin, EB, Editor")]
+        [Authorize(Roles = "Admin, EB, Editor,Mangaka")]
         public async Task<ActionResult> UpdateStatus(int id, [FromBody] SeriesDto.UpdateStatus statusDto)
         {
             try
