@@ -39,6 +39,7 @@ namespace DTOs
             public int? Zindex { get; set; }
             public decimal? Opacity { get; set; }
             public int? Versionnumber { get; set; }
+            public bool? Isvisible { get; set; }
         }
     }
 }

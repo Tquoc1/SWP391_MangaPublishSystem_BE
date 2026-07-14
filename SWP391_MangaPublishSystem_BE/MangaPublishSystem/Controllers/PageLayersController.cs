@@ -94,20 +94,7 @@ namespace MangaPublishSystem.Controllers
             }
         }
 
-        [HttpPatch("{id:int}/visibility")]
-        [Authorize(Roles = "Mangaka, Assistant")]
-        public async Task<IActionResult> ToggleVisibility(int id)
-        {
-            try
-            {
-                await _pageLayerService.ToggleVisibilityAsync(id);
-                return NoContent();
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(new { Message = ex.Message });
-            }
-        }
+
 
         [HttpDelete("{id:int}/soft")]
         [Authorize(Roles = "Mangaka, Assistant, Admin")]

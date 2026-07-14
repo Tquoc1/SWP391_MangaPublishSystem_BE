@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace DTOs
@@ -11,6 +12,7 @@ namespace DTOs
         public string Pageimageurl { get; set; }
         public string Status { get; set; }
         public bool? Isdeleted { get; set; }
+        public List<PageLayerDto> Layers { get; set; } = new();
 
         public class Create
         {

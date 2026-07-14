@@ -60,6 +60,11 @@ namespace Services.Implement
             existing.Opacity = dto.Opacity ?? existing.Opacity;
             existing.Versionnumber = dto.Versionnumber;
             
+            if (dto.Isvisible.HasValue)
+            {
+                existing.Isvisible = dto.Isvisible.Value;
+            }
+            
             if (!string.IsNullOrEmpty(fileUrl))
                 existing.Fileurl = fileUrl;
 

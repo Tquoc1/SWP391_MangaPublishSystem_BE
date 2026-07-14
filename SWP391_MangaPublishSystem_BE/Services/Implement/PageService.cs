@@ -43,7 +43,10 @@ namespace Services.Implement
         public async Task<PageDto> GetByIdAsync(int id)
         {
             var page = await _pageRepository.GetPageByIdAsync(id);
-            return page != null ? MapToDto(page) : null;
+            if (page == null) return null;
+            var dto = MapToDto(page);
+            dto.Layers = await _pageLayerService.GetAllAsync(id);
+            return dto;
         }
 
         public async Task<int> CreateAsync(PageDto.Create pageDto, string pageImageUrl)
