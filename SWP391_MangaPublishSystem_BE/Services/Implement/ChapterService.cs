@@ -14,7 +14,7 @@ namespace Services.Implement
         private static readonly Dictionary<string, List<string>> _validTransitions = new(StringComparer.OrdinalIgnoreCase)
         {
             { "InProduction", new List<string> { "Ready", "Delayed", "Cancelled" } },
-            { "Ready", new List<string> { "Published", "Delayed", "Cancelled" } },
+            { "Ready", new List<string> { "Published", "InProduction", "Delayed", "Cancelled" } },
             { "Published", new List<string> { "Delayed", "Cancelled" } },
             { "Delayed", new List<string> { "InProduction", "Ready", "Published", "Cancelled" } }
         };
