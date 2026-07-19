@@ -93,19 +93,40 @@ namespace Services.Implement
 
                 var imageBytes = await httpClient.GetByteArrayAsync(layer.Fileurl);
                 using var currentImage = Image.Load<Rgba32>(imageBytes);
-                
-                // Apply opacity
-                if (layer.Opacity < 1.0m)
-                {
-                    currentImage.Mutate(x => x.Opacity((float)layer.Opacity));
-                }
 
                 if (compositeImage == null)
                 {
+                    // Layer đầu tiên quyết định kích thước canvas chung cho cả trang
                     compositeImage = currentImage.Clone();
+
+                    // Áp dụng opacity cho layer nền — trước đây bị bỏ sót vì code cũ
+                    // chỉ apply opacity ở nhánh "layer thứ 2 trở đi".
+                    if (layer.Opacity < 1.0m)
+                    {
+                        compositeImage.Mutate(x => x.Opacity((float)layer.Opacity));
+                    }
                 }
                 else
                 {
+                    // FIX: resize layer hiện tại về đúng kích thước canvas (bằng layer đầu tiên)
+                    // trước khi vẽ đè lên. Nếu không, layer có resolution khác sẽ bị DrawImage
+                    // dán nguyên kích thước gốc vào góc (0,0) — gây ra lỗi 2 ảnh không khớp,
+                    // ảnh nhỏ dán đè góc trên trái thay vì phủ đúng vị trí như ảnh nền.
+                    if (currentImage.Width != compositeImage.Width || currentImage.Height != compositeImage.Height)
+                    {
+                        currentImage.Mutate(x => x.Resize(new ResizeOptions
+                        {
+                            Size = new Size(compositeImage.Width, compositeImage.Height),
+                            Mode = ResizeMode.Stretch,
+                        }));
+                    }
+
+                    // Apply opacity
+                    if (layer.Opacity < 1.0m)
+                    {
+                        currentImage.Mutate(x => x.Opacity((float)layer.Opacity));
+                    }
+
                     // Draw current image on top of composite image
                     compositeImage.Mutate(x => x.DrawImage(currentImage, new Point(0, 0), 1f));
                 }
@@ -134,7 +155,7 @@ namespace Services.Implement
             if (string.Equals(existing.Status, status, StringComparison.OrdinalIgnoreCase))
                 return;
 
-            if (!_validTransitions.ContainsKey(existing.Status) || 
+            if (!_validTransitions.ContainsKey(existing.Status) ||
                 !_validTransitions[existing.Status].Contains(status, StringComparer.OrdinalIgnoreCase))
             {
                 throw new InvalidOperationException($"Không thể chuyển trạng thái từ '{existing.Status}' sang '{status}'. Luồng không hợp lệ!");
