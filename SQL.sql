@@ -169,7 +169,8 @@ CREATE TABLE [dbo].[pages](
 	[pageid] [int] IDENTITY(1,1) NOT NULL,
 	[chapterid] [int] NOT NULL,
 	[pagenumber] [int] NOT NULL,
-	[status] [nvarchar](50) NULL DEFAULT ('InWork'),
+	--[status] [nvarchar](50) NULL DEFAULT ('InWork'),
+	[issenttomangaka] [bit] NULL DEFAULT ((0)),
 	[isdeleted] [bit] NULL DEFAULT ((0)),
 	[pageimageurl] [varchar](500) NULL,
  CONSTRAINT [pages_pkey] PRIMARY KEY CLUSTERED ([pageid] ASC)
