@@ -12,7 +12,7 @@ namespace Repositories.Repository
         public PageRepository() { }
         public PageRepository(MangaPublishDBContext context) : base(context) => _context = context;
 
-        public async Task<List<Page>> GetPagesAsync(int? chapterId = null, string? status = null, bool includeDeleted = false)
+        public async Task<List<Page>> GetPagesAsync(int? chapterId = null, bool? isSentToMangaka = null, int? mangakaId = null, bool includeDeleted = false)
         {
             var query = _context.Pages.AsQueryable();
 
@@ -26,9 +26,14 @@ namespace Repositories.Repository
                 query = query.Where(p => p.Chapterid == chapterId.Value);
             }
 
-            if (!string.IsNullOrEmpty(status))
+            if (isSentToMangaka.HasValue)
             {
-                query = query.Where(p => p.Status == status);
+                query = query.Where(p => p.IsSentToMangaka == isSentToMangaka.Value);
+            }
+
+            if (mangakaId.HasValue)
+            {
+                query = query.Where(p => p.Chapter.Series.Mangakaid == mangakaId.Value);
             }
 
             return await query.OrderBy(p => p.Pagenumber).ToListAsync();

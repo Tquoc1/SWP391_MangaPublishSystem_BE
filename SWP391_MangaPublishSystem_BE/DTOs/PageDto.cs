@@ -10,7 +10,7 @@ namespace DTOs
         public int Chapterid { get; set; }
         public int Pagenumber { get; set; }
         public string Pageimageurl { get; set; }
-        public string Status { get; set; }
+        public bool? IsSentToMangaka { get; set; }
         public bool? Isdeleted { get; set; }
         public List<PageLayerDto> Layers { get; set; } = new();
 

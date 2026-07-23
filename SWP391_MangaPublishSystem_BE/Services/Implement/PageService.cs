@@ -17,11 +17,6 @@ namespace Services.Implement
 {
     public class PageService : IPageService
     {
-        private static readonly Dictionary<string, List<string>> _validTransitions = new(StringComparer.OrdinalIgnoreCase)
-        {
-            { "InWork", new List<string> { "Reviewing" } },
-            { "Reviewing", new List<string> { "Approved", "InWork" } }
-        };
 
         private readonly PageRepository _pageRepository;
         private readonly IPageLayerService _pageLayerService;
@@ -34,9 +29,9 @@ namespace Services.Implement
             _fileStorage = fileStorage;
         }
 
-        public async Task<List<PageDto>> GetAllAsync(int? chapterId, string? status)
+        public async Task<List<PageDto>> GetAllAsync(int? chapterId, bool? isSentToMangaka, int? mangakaId = null)
         {
-            var pages = await _pageRepository.GetPagesAsync(chapterId, status);
+            var pages = await _pageRepository.GetPagesAsync(chapterId, isSentToMangaka, mangakaId);
             return pages.Select(MapToDto).ToList();
         }
 
@@ -56,7 +51,7 @@ namespace Services.Implement
                 Chapterid = pageDto.Chapterid,
                 Pagenumber = pageDto.Pagenumber,
                 Pageimageurl = pageImageUrl,
-                Status = "InWork",
+                IsSentToMangaka = false,
                 Isdeleted = false
             };
 
@@ -142,26 +137,18 @@ namespace Services.Implement
             string newImageUrl = await _fileStorage.UploadAsync(memoryStream, fileName, "image/png", "manga-pages");
 
             page.Pageimageurl = newImageUrl;
+            page.IsSentToMangaka = false;
             await _pageRepository.UpdateAsync(page);
 
             return newImageUrl;
         }
 
-        public async Task UpdateStatusAsync(int id, string status)
+        public async Task UpdateIsSentToMangakaAsync(int id, bool isSentToMangaka)
         {
             var existing = await _pageRepository.GetByIdAsync(id);
             if (existing == null) throw new KeyNotFoundException("Không tìm thấy trang truyện để cập nhật trạng thái.");
 
-            if (string.Equals(existing.Status, status, StringComparison.OrdinalIgnoreCase))
-                return;
-
-            if (!_validTransitions.ContainsKey(existing.Status) ||
-                !_validTransitions[existing.Status].Contains(status, StringComparer.OrdinalIgnoreCase))
-            {
-                throw new InvalidOperationException($"Không thể chuyển trạng thái từ '{existing.Status}' sang '{status}'. Luồng không hợp lệ!");
-            }
-
-            existing.Status = status;
+            existing.IsSentToMangaka = isSentToMangaka;
             await _pageRepository.UpdateAsync(existing);
         }
 
@@ -190,7 +177,7 @@ namespace Services.Implement
                 Chapterid = page.Chapterid,
                 Pagenumber = page.Pagenumber,
                 Pageimageurl = page.Pageimageurl,
-                Status = page.Status,
+                IsSentToMangaka = page.IsSentToMangaka,
                 Isdeleted = page.Isdeleted
             };
         }

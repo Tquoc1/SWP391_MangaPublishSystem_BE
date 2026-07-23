@@ -419,10 +419,9 @@ public partial class MangaPublishDBContext : DbContext
                 .IsUnicode(false)
                 .HasColumnName("pageimageurl");
             entity.Property(e => e.Pagenumber).HasColumnName("pagenumber");
-            entity.Property(e => e.Status)
-                .HasMaxLength(50)
-                .HasDefaultValue("InWork")
-                .HasColumnName("status");
+            entity.Property(e => e.IsSentToMangaka)
+                .HasDefaultValue(false)
+                .HasColumnName("issenttomangaka");
 
             entity.HasOne(d => d.Chapter).WithMany(p => p.Pages)
                 .HasForeignKey(d => d.Chapterid)

@@ -33,9 +33,20 @@ namespace MangaPublishSystem.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<PageDto>>> GetAll([FromQuery] int? chapterId, [FromQuery] string? status)
+        public async Task<ActionResult<List<PageDto>>> GetAll([FromQuery] int? chapterId, [FromQuery] bool? isSentToMangaka, [FromQuery] int? mangakaId)
         {
-            var pages = await _pageService.GetAllAsync(chapterId, status);
+            if (User.IsInRole("Mangaka"))
+            {
+                if (User.HasClaim(c => c.Type == "userid"))
+                {
+                    if (int.TryParse(User.FindFirst("userid")?.Value, out int userId))
+                    {
+                        mangakaId = userId;
+                    }
+                }
+            }
+
+            var pages = await _pageService.GetAllAsync(chapterId, isSentToMangaka, mangakaId);
             return Ok(pages);
         }
 
@@ -145,14 +156,14 @@ namespace MangaPublishSystem.Controllers
             }
         }
 
-        [HttpPatch("{id:int}/status")]
+        [HttpPatch("{id:int}/is-sent-to-mangaka")]
         [Authorize(Roles = "Admin, EB, Editor, Mangaka,Assistant")]
-        public async Task<ActionResult> UpdateStatus(int id, [FromBody] string status)
+        public async Task<ActionResult> UpdateIsSentToMangaka(int id, [FromBody] bool isSentToMangaka)
         {
             try
             {
-                await _pageService.UpdateStatusAsync(id, status);
-                return Ok(new { Message = "Status updated successfully" });
+                await _pageService.UpdateIsSentToMangakaAsync(id, isSentToMangaka);
+                return Ok(new { Message = "IsSentToMangaka updated successfully" });
             }
             catch (KeyNotFoundException ex)
             {
